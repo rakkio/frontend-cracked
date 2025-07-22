@@ -267,6 +267,22 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
+                            {/* Advertisements Tile */}
+                            <div 
+                                onClick={() => router.push('/admin/advertisements')}
+                                className="col-span-4 sm:col-span-4 lg:col-span-6 bg-orange-600 hover:bg-orange-500 p-2 sm:p-4 cursor-pointer transition-all duration-200 flex flex-col justify-between"
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <div>
+                                    <FaBullhorn className="text-xl sm:text-2xl lg:text-3xl text-white mb-1 sm:mb-2 opacity-90" />
+                                    <h3 className="text-white text-sm sm:text-base lg:text-lg font-light">advertisements</h3>
+                                    <p className="text-orange-200 text-xs sm:text-sm font-light hidden sm:block">manage ad scripts & analytics</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-orange-200 text-base sm:text-lg">📢</span>
+                                </div>
+                            </div>
+
                             {/* User Management Wide Tile */}
                             <div 
                                 onClick={() => router.push('/admin/users')}

@@ -399,6 +399,67 @@ class API {
             method: 'DELETE',
         })
     }
+
+    // Advertisement methods
+    async getAdvertisements(params = {}) {
+        const cleanedParams = cleanParams(params)
+        const queryString = this.buildQueryString(cleanedParams)
+        return this.request(`/advertisements${queryString ? '?' + queryString : ''}`)
+    }
+
+    async getAdvertisement(id) {
+        return this.request(`/advertisements/${id}`)
+    }
+
+    async getActiveAdvertisement(params = {}) {
+        const cleanedParams = cleanParams(params)
+        const queryString = this.buildQueryString(cleanedParams)
+        return this.request(`/advertisements/active${queryString ? '?' + queryString : ''}`)
+    }
+
+    async createAdvertisement(advertisementData) {
+        return this.request('/advertisements', {
+            method: 'POST',
+            body: JSON.stringify(advertisementData),
+        })
+    }
+
+    async updateAdvertisement(id, advertisementData) {
+        return this.request(`/advertisements/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(advertisementData),
+        })
+    }
+
+    async deleteAdvertisement(id) {
+        return this.request(`/advertisements/${id}`, {
+            method: 'DELETE',
+        })
+    }
+
+    async trackAdvertisementImpression(id) {
+        return this.request(`/advertisements/${id}/impression`, {
+            method: 'POST',
+        })
+    }
+
+    async trackAdvertisementClick(id) {
+        return this.request(`/advertisements/${id}/click`, {
+            method: 'POST',
+        })
+    }
+
+    async trackAdvertisementConversion(id) {
+        return this.request(`/advertisements/${id}/conversion`, {
+            method: 'POST',
+        })
+    }
+
+    async getAdvertisementAnalytics(params = {}) {
+        const cleanedParams = cleanParams(params)
+        const queryString = this.buildQueryString(cleanedParams)
+        return this.request(`/advertisements/analytics${queryString ? '?' + queryString : ''}`)
+    }
 }
 
 export const api = new API()
