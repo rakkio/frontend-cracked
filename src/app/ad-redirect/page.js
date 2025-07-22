@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FaDownload, FaSpinner, FaClock, FaArrowRight, FaCheckCircle } from 'react-icons/fa'
 
-export default function AdRedirectPage() {
+// Componente interno que usa useSearchParams
+function AdRedirectContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [countdown, setCountdown] = useState(15)
@@ -22,12 +23,10 @@ export default function AdRedirectPage() {
                 console.log('📥 Loaded pending download:', parsed)
             } catch (error) {
                 console.error('Error parsing download data:', error)
-                // Si no hay datos válidos, regresar al home
                 router.push('/')
                 return
             }
         } else {
-            // Sin datos de descarga, regresar al home
             router.push('/')
             return
         }
@@ -36,7 +35,6 @@ export default function AdRedirectPage() {
         const adUrl = searchParams.get('adUrl')
         if (adUrl) {
             console.log('🎯 Loading advertisement:', adUrl)
-            // Simular carga de publicidad
             setTimeout(() => {
                 setAdLoaded(true)
                 console.log('✅ Advertisement loaded')
@@ -63,19 +61,15 @@ export default function AdRedirectPage() {
 
         console.log('🎯 Starting download:', pendingDownload.appName)
         
-        // Limpiar sessionStorage
         sessionStorage.removeItem('pendingDownload')
         
-        // Abrir descarga
         if (pendingDownload.url) {
             window.open(pendingDownload.url, '_blank')
             console.log('✅ Download opened:', pendingDownload.url)
         }
         
-        // Regresar a la página anterior o home
         setTimeout(() => {
-            window.close() // Cerrar pestaña si es posible
-            // Fallback: regresar al home
+            window.close()
             router.push('/')
         }, 2000)
     }
@@ -104,7 +98,6 @@ export default function AdRedirectPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-red-900">
             <div className="container mx-auto px-4 py-8">
-                {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">
                         Preparing Download: {pendingDownload.appName}
@@ -115,7 +108,6 @@ export default function AdRedirectPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Advertisement Area */}
                     <div className="lg:col-span-2">
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 mb-8">
                             <div className="flex items-center justify-between mb-4">
@@ -126,7 +118,6 @@ export default function AdRedirectPage() {
                                 </div>
                             </div>
                             
-                            {/* Advertisement Container */}
                             <div className="bg-gray-900 rounded-lg p-8 min-h-[400px] flex items-center justify-center">
                                 {searchParams.get('adUrl') ? (
                                     <iframe
@@ -147,7 +138,6 @@ export default function AdRedirectPage() {
                         </div>
                     </div>
 
-                    {/* Download Panel */}
                     <div className="lg:col-span-1">
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 sticky top-4">
                             <div className="text-center">
@@ -220,7 +210,6 @@ export default function AdRedirectPage() {
                                 )}
                             </div>
 
-                            {/* App Info */}
                             <div className="mt-6 pt-6 border-t border-gray-700">
                                 <h4 className="text-sm font-semibold text-gray-300 mb-3">Download Info</h4>
                                 <div className="space-y-2 text-sm">
@@ -238,7 +227,6 @@ export default function AdRedirectPage() {
                     </div>
                 </div>
 
-                {/* Instructions */}
                 <div className="mt-8 bg-blue-900/20 border border-blue-500/30 rounded-xl p-6">
                     <div className="flex items-start space-x-3">
                         <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -256,5 +244,26 @@ export default function AdRedirectPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+// Componente de loading para Suspense
+function LoadingFallback() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-red-900 flex items-center justify-center">
+            <div className="text-center text-white">
+                <FaSpinner className="animate-spin text-4xl mx-auto mb-4" />
+                <p className="text-lg">Loading advertisement page...</p>
+            </div>
+        </div>
+    )
+}
+
+// Componente principal exportado
+export default function AdRedirectPage() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <AdRedirectContent />
+        </Suspense>
     )
 } 
