@@ -25,7 +25,7 @@ function AppsContent() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('')
-    const [sortBy, setSortBy] = useState('createdAt')
+    const [sortBy, setSortBy] = useState('createdAt') // Backend controller default
     const [sortOrder, setSortOrder] = useState('desc')
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
@@ -69,8 +69,8 @@ function AppsContent() {
                 limit: 20,
                 search: searchTerm,
                 category: selectedCategory,
-                sortBy,
-                sortOrder,
+                sortBy: sortBy,
+                sortOrder: sortOrder,
                 featured: filters.featured ? 'true' : undefined,
                 popular: filters.popular ? 'true' : undefined,
                 newest: filters.newest ? 'true' : undefined,

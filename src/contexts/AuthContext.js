@@ -55,13 +55,13 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                const token = localStorage.getItem('auth_token')
+                const token = localStorage.getItem('token')
                 const user = localStorage.getItem('auth_user')
 
                 if (token && user) {
                     // Verify token is still valid
                     try {
-                        const response = await api.getProfile()
+                        const response = await api.getUserProfile()
                         dispatch({
                             type: 'LOGIN_SUCCESS',
                             payload: {
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
                         })
                     } catch (error) {
                         // Token invalid, clear storage
-                        localStorage.removeItem('auth_token')
+                        localStorage.removeItem('token')
                         localStorage.removeItem('auth_user')
                         dispatch({ type: 'LOGOUT' })
                     }
@@ -91,10 +91,10 @@ export const AuthProvider = ({ children }) => {
             dispatch({ type: 'SET_LOADING', payload: true })
             dispatch({ type: 'CLEAR_ERROR' })
 
-            const response = await api.login(email, password)
+            const response = await api.login({ email, password })
 
             // Store token and user data
-            localStorage.setItem('auth_token', response.token)
+            localStorage.setItem('token', response.token)
             localStorage.setItem('auth_user', JSON.stringify(response.user))
 
             dispatch({
@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
             const response = await api.register(userData)
 
             // Store token and user data
-            localStorage.setItem('auth_token', response.token)
+            localStorage.setItem('token', response.token)
             localStorage.setItem('auth_user', JSON.stringify(response.user))
 
             dispatch({
@@ -147,7 +147,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const logout = () => {
-        localStorage.removeItem('auth_token')
+        localStorage.removeItem('token')
         localStorage.removeItem('auth_user')
         dispatch({ type: 'LOGOUT' })
     }

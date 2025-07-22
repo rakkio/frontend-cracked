@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = generatePageMetadata({
-  title: 'Underground Apps Hub - Black Market Digital Network',
-  description: 'Your ultimate destination for premium applications. Access the digital underground with confidence, security, and cutting-edge technology.',
-  path: '/'
-});
+export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:3000'),
+  title: 'AppsCracked - Free Software Downloads',
+  description: 'Download free cracked software and applications safely',
+}
 
 export default function RootLayout({ children }) {
   return (

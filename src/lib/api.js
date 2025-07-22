@@ -9,6 +9,17 @@ class APIError extends Error {
     }
 }
 
+// Helper function to clean undefined parameters
+const cleanParams = (params) => {
+    const cleaned = {}
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== 'undefined') {
+            cleaned[key] = value
+        }
+    }
+    return cleaned
+}
+
 class API {
     constructor() {
         this.baseURL = `${API_BASE_URL}/api/v1`
@@ -28,7 +39,7 @@ class API {
 
         // Add auth token if available
         if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('auth_token')
+            const token = localStorage.getItem('token')
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`
             }
@@ -40,7 +51,7 @@ class API {
 
             if (!response.ok) {
                 throw new APIError(
-                    data.message || 'Request failed',
+                    data.message || `HTTP error! status: ${response.status}`,
                     response.status,
                     data
                 )
@@ -51,18 +62,36 @@ class API {
             if (error instanceof APIError) {
                 throw error
             }
-            throw new APIError('Network error occurred', 0, null)
+            throw new APIError(error.message, 0, null)
         }
     }
 
-    // Authentication methods
-    async login(email, password) {
-        return this.request('/users/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password }),
+    // Helper method to build query string with cleaned parameters
+    buildQueryString(params) {
+        const cleanedParams = cleanParams(params)
+        const searchParams = new URLSearchParams()
+        
+        Object.entries(cleanedParams).forEach(([key, value]) => {
+            // Skip empty strings completely
+            if (value === '' || value === null || value === undefined) {
+                return
+            }
+            
+            if (Array.isArray(value)) {
+                value.forEach(item => {
+                    if (item !== '' && item !== null && item !== undefined) {
+                        searchParams.append(key, item)
+                    }
+                })
+            } else {
+                searchParams.append(key, value)
+            }
         })
+        
+        return searchParams.toString()
     }
 
+    // Auth methods
     async register(userData) {
         return this.request('/users/register', {
             method: 'POST',
@@ -70,50 +99,112 @@ class API {
         })
     }
 
-    async getProfile() {
+    async login(credentials) {
+        return this.request('/users/login', {
+            method: 'POST',
+            body: JSON.stringify(credentials),
+        })
+    }
+
+    async getUserProfile() {
         return this.request('/users/profile')
     }
 
-    async updateProfile(userData) {
+    async updateUserProfile(userData) {
         return this.request('/users/profile', {
             method: 'PUT',
             body: JSON.stringify(userData),
         })
     }
 
-    async changePassword(currentPassword, newPassword, confirmPassword) {
-        return this.request('/users/change-password', {
-            method: 'PUT',
-            body: JSON.stringify({
-                currentPassword,
-                newPassword,
-                confirmPassword,
-            }),
-        })
-    }
-
     // Apps methods
     async getApps(params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/apps?${queryString}`)
+        const queryString = this.buildQueryString(params)
+        return this.request(`/apps${queryString ? '?' + queryString : ''}`)
     }
 
     async getAppBySlug(slug) {
         return this.request(`/apps/${slug}`)
     }
 
-    async getApp(id) {
+    async getAppById(id) {
         return this.request(`/apps/id/${id}`)
     }
 
-    async getFeaturedApps(limit = 8) {
-        return this.request(`/apps/featured?limit=${limit}`)
+    async searchApps(query, params = {}) {
+        const searchParams = { ...params, search: query }
+        const queryString = this.buildQueryString(searchParams)
+        return this.request(`/apps/search?${queryString}`)
     }
 
-    async getAppStats() {
-        return this.request('/apps/stats')
+    async getFeaturedApps(limit = 10) {
+        const queryString = this.buildQueryString({ featured: true, limit })
+        return this.request(`/apps?${queryString}`)
     }
 
+    async getPopularApps(limit = 10) {
+        const queryString = this.buildQueryString({ popular: true, limit })
+        return this.request(`/apps?${queryString}`)
+    }
+
+    async getNewApps(limit = 10) {
+        const queryString = this.buildQueryString({ newest: true, limit })
+        return this.request(`/apps?${queryString}`)
+    }
+
+    async getAppsByCategory(categorySlug, params = {}) {
+        try {
+            // First get the category by slug to get the ID
+            const categoryResponse = await this.getCategoryBySlug(categorySlug)
+            const categoryId = categoryResponse.data?.category?._id || categoryResponse.category?._id
+            
+            if (!categoryId) {
+                throw new Error(`Category not found: ${categorySlug}`)
+            }
+            
+            // Then get apps by category ID
+            const cleanedParams = cleanParams(params)
+            const queryString = this.buildQueryString({ category: categoryId, ...cleanedParams })
+            return this.request(`/apps?${queryString}`)
+        } catch (error) {
+            throw new APIError(`Failed to get apps by category: ${error.message}`, 0, null)
+        }
+    }
+
+    async searchAppsInCategory(categorySlug, params = {}) {
+        try {
+            // First get the category by slug to get the ID
+            const categoryResponse = await this.getCategoryBySlug(categorySlug)
+            const categoryId = categoryResponse.data?.category?._id || categoryResponse.category?._id
+            
+            if (!categoryId) {
+                throw new Error(`Category not found: ${categorySlug}`)
+            }
+            
+            // Then search apps by category ID
+            const cleanedParams = cleanParams(params)
+            const queryString = this.buildQueryString({ category: categoryId, ...cleanedParams })
+            return this.request(`/apps/search?${queryString}`)
+        } catch (error) {
+            throw new APIError(`Failed to search apps in category: ${error.message}`, 0, null)
+        }
+    }
+
+    // Categories methods
+    async getCategories(params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/categories${queryString ? '?' + queryString : ''}`)
+    }
+
+    async getCategoryBySlug(slug) {
+        return this.request(`/categories/${slug}`)
+    }
+
+    async getCategoryById(id) {
+        return this.request(`/categories/id/${id}`)
+    }
+
+    // Admin methods - Fixed routes
     async getAppsStats() {
         return this.request('/apps/stats')
     }
@@ -123,75 +214,114 @@ class API {
     }
 
     async getUsersStats() {
-        return this.request('/users/admin/stats')
+        return this.request('/users/stats')
     }
 
+    // Note: These methods don't exist in the backend yet
+    // Uncomment when backend implementation is ready
+    /*
     async getRecentActivity() {
-        return this.request('/admin/recent-activity')
+        return this.request('/users/activity')
     }
 
-    async getGrowthMetrics(period = '30d') {
-        return this.request(`/admin/growth-metrics?period=${period}`)
+    async getGrowthMetrics() {
+        return this.request('/users/growth')
+    }
+    */
+
+    // Public banner methods
+    async getBannersByPosition(position, params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/banners/position/${position}${queryString ? '?' + queryString : ''}`)
     }
 
-    async registerDownload(appId) {
-        return this.request(`/apps/${appId}/download`, {
-            method: 'POST',
+    async getFeaturedBanners(params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/banners/featured${queryString ? '?' + queryString : ''}`)
+    }
+
+    async getBannerStats() {
+        return this.request('/banners/stats')
+    }
+
+    async getBannerById(id) {
+        return this.request(`/banners/${id}`)
+    }
+
+    async searchBanners(query, params = {}) {
+        const searchParams = { ...params, q: query }
+        const queryString = this.buildQueryString(searchParams)
+        return this.request(`/banners/search?${queryString}`)
+    }
+
+    async incrementBannerImpressions(id) {
+        return this.request(`/banners/${id}/impressions`, {
+            method: 'PATCH'
         })
     }
 
-    // Categories methods
-    async getCategories() {
-        return this.request('/categories')
+    async incrementBannerClicks(id) {
+        return this.request(`/banners/${id}/clicks`, {
+            method: 'PATCH'
+        })
     }
 
-    async getFeaturedCategories(limit = 6) {
-        return this.request(`/categories/featured?limit=${limit}`)
+    // Admin banner methods
+    async getAllBanners(params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/banners${queryString ? '?' + queryString : ''}`)
     }
 
-    async getAppsByCategory(categorySlug, params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/categories/${categorySlug}/apps?${queryString}`)
-    }
-
-    async searchAppsInCategory(categorySlug, params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/categories/${categorySlug}/apps/search?${queryString}`)
-    }
-
-    // Admin methods
-    async createApp(appData) {
-        const config = {
+    async createBanner(bannerData) {
+        return this.request('/banners', {
             method: 'POST',
-            body: appData instanceof FormData ? appData : JSON.stringify(appData),
-        }
-        
-        // Si es FormData, no configurar Content-Type para que el browser lo haga automáticamente
-        if (!(appData instanceof FormData)) {
-            config.headers = { 'Content-Type': 'application/json' }
-        }
-        
-        return this.request('/apps', config)
+            body: bannerData, // FormData
+        })
+    }
+
+    async updateBanner(id, bannerData) {
+        return this.request(`/banners/${id}`, {
+            method: 'PATCH',
+            body: bannerData, // FormData
+        })
+    }
+
+    async deleteBanner(id) {
+        return this.request(`/banners/${id}`, {
+            method: 'DELETE',
+        })
+    }
+
+    // Admin apps methods
+    async getAllAppsAdmin(params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/apps/admin${queryString ? '?' + queryString : ''}`)
+    }
+
+    async createApp(appData) {
+        return this.request('/apps', {
+            method: 'POST',
+            body: appData,
+        })
     }
 
     async updateApp(id, appData) {
-        const config = {
+        return this.request(`/apps/${id}`, {
             method: 'PUT',
-            body: appData instanceof FormData ? appData : JSON.stringify(appData),
-        }
-        
-        // Si es FormData, no configurar Content-Type para que el browser lo haga automáticamente
-        if (!(appData instanceof FormData)) {
-            config.headers = { 'Content-Type': 'application/json' }
-        }
-        
-        return this.request(`/apps/${id}`, config)
+            body: appData,
+        })
     }
 
     async deleteApp(id) {
         return this.request(`/apps/${id}`, {
             method: 'DELETE',
         })
+    }
+
+    // Admin categories methods
+    async getAllCategoriesAdmin(params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/categories/admin${queryString ? '?' + queryString : ''}`)
     }
 
     async createCategory(categoryData) {
@@ -214,106 +344,21 @@ class API {
         })
     }
 
-    // User management methods (admin only)
-    async getUsers(params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/users?${queryString}`)
+    // Admin users methods
+    async getAllUsersAdmin(params = {}) {
+        const queryString = this.buildQueryString(params)
+        return this.request(`/users/admin${queryString ? '?' + queryString : ''}`)
     }
 
-    async getUser(id) {
-        return this.request(`/users/${id}`)
-    }
-
-    async updateUserRole(id, roleData) {
-        return this.request(`/users/${id}/role`, {
+    async updateUser(id, userData) {
+        return this.request(`/users/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(roleData),
+            body: JSON.stringify(userData),
         })
     }
 
     async deleteUser(id) {
         return this.request(`/users/${id}`, {
-            method: 'DELETE',
-        })
-    }
-
-    // ================ BANNER METHODS ================
-
-    // Public banner methods
-    async getBannersByPosition(position, params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/banners/position/${position}?${queryString}`)
-    }
-
-    async getFeaturedBanners(params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/banners/featured?${queryString}`)
-    }
-
-    async getBannerStats() {
-        return this.request('/banners/stats')
-    }
-
-    async getBannerById(id) {
-        return this.request(`/banners/${id}`)
-    }
-
-    async searchBanners(query, params = {}) {
-        const searchParams = { query, ...params }
-        const queryString = new URLSearchParams(searchParams).toString()
-        return this.request(`/banners/search?${queryString}`)
-    }
-
-    async incrementBannerImpressions(id) {
-        return this.request(`/banners/${id}/impressions`, {
-            method: 'PATCH',
-        })
-    }
-
-    async incrementBannerClicks(id) {
-        return this.request(`/banners/${id}/clicks`, {
-            method: 'PATCH',
-        })
-    }
-
-    // Admin banner methods (require authentication)
-    async getAllBanners(params = {}) {
-        const queryString = new URLSearchParams(params).toString()
-        return this.request(`/banners?${queryString}`)
-    }
-
-    async createBanner(bannerData) {
-        // Si bannerData es FormData, no necesitamos JSON.stringify
-        if (bannerData instanceof FormData) {
-            return this.request('/banners', {
-                method: 'POST',
-                body: bannerData,
-            })
-        }
-
-        return this.request('/banners', {
-            method: 'POST',
-            body: JSON.stringify(bannerData),
-        })
-    }
-
-    async updateBanner(id, bannerData) {
-        // Si bannerData es FormData, no necesitamos JSON.stringify
-        if (bannerData instanceof FormData) {
-            return this.request(`/banners/${id}`, {
-                method: 'PATCH',
-                body: bannerData,
-            })
-        }
-
-        return this.request(`/banners/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(bannerData),
-        })
-    }
-
-    async deleteBanner(id) {
-        return this.request(`/banners/${id}`, {
             method: 'DELETE',
         })
     }

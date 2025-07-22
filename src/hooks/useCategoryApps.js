@@ -30,7 +30,7 @@ export const useCategoryApps = (categorySlug) => {
       const response = await api.getAppsByCategory(categorySlug, {
         page,
         limit,
-        sort: 'popularity' // or 'newest', 'rating'
+        sort: 'popularity' // Valid values: popularity, newest, rating, downloads, name
       })
 
       const newApps = response.data?.apps || []

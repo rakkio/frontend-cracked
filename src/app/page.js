@@ -32,7 +32,7 @@ export default function Home() {
 
   const fetchStats = async () => {
     try {
-      const response = await api.getAppStats()
+      const response = await api.getAppsStats()
       setStats(response.stats || {})
     } catch (error) {
       console.error('Error fetching stats:', error)

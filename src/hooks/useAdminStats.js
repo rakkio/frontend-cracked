@@ -83,10 +83,12 @@ export const useAdminStats = () => {
   }, [])
 
   // Get recent activity data
+  // TODO: Implement when backend route is ready
   const getRecentActivity = useCallback(async () => {
     try {
-      const response = await api.getRecentActivity()
-      return response.data || []
+      // Return mock data for now
+      console.warn('Recent activity endpoint not implemented yet')
+      return []
     } catch (err) {
       console.error('Error fetching recent activity:', err)
       return []
@@ -94,10 +96,12 @@ export const useAdminStats = () => {
   }, [])
 
   // Get growth metrics
+  // TODO: Implement when backend route is ready
   const getGrowthMetrics = useCallback(async (period = '30d') => {
     try {
-      const response = await api.getGrowthMetrics(period)
-      return response.data || null
+      // Return mock data for now
+      console.warn('Growth metrics endpoint not implemented yet')
+      return null
     } catch (err) {
       console.error('Error fetching growth metrics:', err)
       return null

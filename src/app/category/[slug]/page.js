@@ -23,7 +23,7 @@ export default function CategoryPage() {
     const [apps, setApps] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
-    const [sortBy, setSortBy] = useState('createdAt')
+    const [sortBy, setSortBy] = useState('createdAt') // Backend controller default
     const [sortOrder, setSortOrder] = useState('desc')
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
@@ -63,8 +63,8 @@ export default function CategoryPage() {
                 page: currentPage,
                 limit: 12,
                 search: searchTerm,
-                sortBy,
-                sortOrder,
+                sortBy: sortBy,
+                sortOrder: sortOrder,
                 featured: filters.featured ? 'true' : undefined,
                 popular: filters.popular ? 'true' : undefined,
                 newest: filters.newest ? 'true' : undefined
