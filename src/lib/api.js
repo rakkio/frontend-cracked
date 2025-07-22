@@ -460,6 +460,11 @@ class API {
         const queryString = this.buildQueryString(cleanedParams)
         return this.request(`/advertisements/analytics${queryString ? '?' + queryString : ''}`)
     }
+
+    // Test authentication
+    async testAuth() {
+        return this.request('/advertisements/test-auth')
+    }
 }
 
 export const api = new API()

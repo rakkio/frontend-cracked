@@ -39,18 +39,18 @@ export default function AppPage() {
     const fetchApp = async (slug) => {
         try {
             setLoading(true)
-            const response = await api.getApp(slug)
-            setApp(response.data.app)
+            const response = await api.getAppBySlug(slug)
+            setApp(response.app) // Changed from response.data.app to response.app
             
             // Fetch related apps
-            if (response.data.app.category?._id) {
+            if (response.app.category?._id) {
                 try {
                     const relatedResponse = await api.getApps({
-                        category: response.data.app.category._id,
+                        category: response.app.category._id,
                         limit: 4
                     })
                     const related = relatedResponse.data.apps.filter(relatedApp => 
-                        relatedApp._id !== response.data.app._id
+                        relatedApp._id !== response.app._id
                     )
                     setRelatedApps(related.slice(0, 3))
                 } catch (relatedError) {

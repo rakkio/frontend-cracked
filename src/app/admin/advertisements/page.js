@@ -67,13 +67,13 @@ export default function AdvertisementsAdminPage() {
     const fetchAdvertisements = async () => {
         try {
             setLoading(true)
-            const params = new URLSearchParams()
-            if (searchTerm) params.append('search', searchTerm)
-            if (selectedType) params.append('type', selectedType)
-            if (selectedPlacement) params.append('placement', selectedPlacement)
-            if (selectedStatus) params.append('isActive', selectedStatus === 'active')
+            const params = {}
+            if (searchTerm) params.search = searchTerm
+            if (selectedType) params.type = selectedType
+            if (selectedPlacement) params.placement = selectedPlacement
+            if (selectedStatus) params.isActive = selectedStatus === 'active'
 
-            const response = await api.get(`/advertisements?${params}`)
+            const response = await api.getAdvertisements(params)
             setAdvertisements(response.data?.advertisements || [])
         } catch (error) {
             console.error('Error fetching advertisements:', error)
@@ -85,31 +85,110 @@ export default function AdvertisementsAdminPage() {
 
     const fetchAnalytics = async () => {
         try {
-            const response = await api.get('/advertisements/analytics')
+            const response = await api.getAdvertisementAnalytics()
             setAnalytics(response.data?.analytics)
         } catch (error) {
             console.error('Error fetching analytics:', error)
         }
     }
 
+    const testAuthentication = async () => {
+        try {
+            console.log('=== Testing Authentication ===')
+            const response = await api.testAuth()
+            console.log('Auth test response:', response)
+            alert(`Authentication successful!\nUser: ${response.user.name}\nRole: ${response.user.role}`)
+        } catch (error) {
+            console.error('Auth test failed:', error)
+            alert(`Authentication failed: ${error.message}`)
+        }
+    }
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault()
+        
+        // Check authentication status
+        console.log('=== Authentication Debug ===')
+        console.log('User:', user)
+        console.log('User role:', user?.role)
+        console.log('Token in localStorage:', localStorage.getItem('token') ? 'Present' : 'Missing')
+        
+        // Basic frontend validation
+        if (!formData.name?.trim()) {
+            alert('Advertisement name is required')
+            return
+        }
+        
+        if (!formData.script?.trim()) {
+            alert('Advertisement script is required')
+            return
+        }
+        
+        if (formData.name.length > 100) {
+            alert('Advertisement name must be less than 100 characters')
+            return
+        }
+        
+        if (formData.script.length > 100000) {
+            alert('Advertisement script must be less than 100KB')
+            return
+        }
+        
+        // Clean formData - remove empty strings
+        const cleanedData = {
+            ...formData,
+            description: formData.description?.trim() || undefined,
+            schedule: {
+                ...formData.schedule,
+                startDate: formData.schedule.startDate?.trim() || undefined,
+                endDate: formData.schedule.endDate?.trim() || undefined
+            }
+        }
+        
         try {
-            const response = await api.post('/advertisements', formData)
+            // Debug: Log formData before sending
+            console.log('Creating advertisement with cleaned data:', cleanedData)
+            
+            const response = await api.createAdvertisement(cleanedData)
             setAdvertisements([response.data.advertisement, ...advertisements])
             setShowCreateForm(false)
             resetForm()
             fetchAnalytics()
         } catch (error) {
             console.error('Error creating advertisement:', error)
-            alert('Failed to create advertisement: ' + (error.response?.data?.message || error.message))
+            
+            // Show detailed validation errors
+            let errorMessage = 'Failed to create advertisement: '
+            if (error.data?.errors && Array.isArray(error.data.errors)) {
+                errorMessage += error.data.errors.map(err => err.msg).join(', ')
+            } else if (error.data?.message) {
+                errorMessage += error.data.message
+            } else {
+                errorMessage += error.message
+            }
+            
+            alert(errorMessage)
         }
     }
 
     const handleUpdateSubmit = async (e) => {
         e.preventDefault()
+        
+        // Clean formData - remove empty strings
+        const cleanedData = {
+            ...formData,
+            description: formData.description?.trim() || undefined,
+            schedule: {
+                ...formData.schedule,
+                startDate: formData.schedule.startDate?.trim() || undefined,
+                endDate: formData.schedule.endDate?.trim() || undefined
+            }
+        }
+        
         try {
-            const response = await api.put(`/advertisements/${editingAd._id}`, formData)
+            console.log('Updating advertisement with cleaned data:', cleanedData)
+            
+            const response = await api.updateAdvertisement(editingAd._id, cleanedData)
             setAdvertisements(advertisements.map(ad => 
                 ad._id === editingAd._id ? response.data.advertisement : ad
             ))
@@ -118,7 +197,18 @@ export default function AdvertisementsAdminPage() {
             fetchAnalytics()
         } catch (error) {
             console.error('Error updating advertisement:', error)
-            alert('Failed to update advertisement: ' + (error.response?.data?.message || error.message))
+            
+            // Show detailed validation errors
+            let errorMessage = 'Failed to update advertisement: '
+            if (error.data?.errors && Array.isArray(error.data.errors)) {
+                errorMessage += error.data.errors.map(err => err.msg).join(', ')
+            } else if (error.data?.message) {
+                errorMessage += error.data.message
+            } else {
+                errorMessage += error.message
+            }
+            
+            alert(errorMessage)
         }
     }
 
@@ -126,7 +216,7 @@ export default function AdvertisementsAdminPage() {
         if (!confirm('Are you sure you want to delete this advertisement?')) return
 
         try {
-            await api.delete(`/advertisements/${id}`)
+            await api.deleteAdvertisement(id)
             setAdvertisements(advertisements.filter(ad => ad._id !== id))
             fetchAnalytics()
         } catch (error) {
@@ -137,7 +227,7 @@ export default function AdvertisementsAdminPage() {
 
     const handleToggleStatus = async (id, currentStatus) => {
         try {
-            const response = await api.put(`/advertisements/${id}`, { isActive: !currentStatus })
+            const response = await api.updateAdvertisement(id, { isActive: !currentStatus })
             setAdvertisements(advertisements.map(ad => 
                 ad._id === id ? response.data.advertisement : ad
             ))
@@ -221,17 +311,25 @@ export default function AdvertisementsAdminPage() {
                             <h1 className="text-3xl font-bold text-white">Advertisements</h1>
                         </div>
                     </div>
-                    <button
-                        onClick={() => {
-                            setShowCreateForm(true)
-                            setEditingAd(null)
-                            resetForm()
-                        }}
-                        className="flex items-center space-x-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                    >
-                        <FaPlus />
-                        <span>New Advertisement</span>
-                    </button>
+                    <div className="flex items-center space-x-4">
+                        <button
+                            onClick={testAuthentication}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                        >
+                            Test Auth
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowCreateForm(true)
+                                setEditingAd(null)
+                                resetForm()
+                            }}
+                            className="flex items-center space-x-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                        >
+                            <FaPlus />
+                            <span>New Advertisement</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Analytics Cards */}
