@@ -465,6 +465,11 @@ class API {
     async testAuth() {
         return this.request('/advertisements/test-auth')
     }
+
+    // Debug advertisements
+    async debugAdvertisements() {
+        return this.request('/advertisements/debug')
+    }
 }
 
 export const api = new API()

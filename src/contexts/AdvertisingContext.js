@@ -11,37 +11,65 @@ export function AdvertisingProvider({ children }) {
     const [adTimer, setAdTimer] = useState(0)
     const [canProceed, setCanProceed] = useState(false)
 
+    // Debug: Log state changes
+    useEffect(() => {
+        console.log('=== AdvertisingContext State Change ===')
+        console.log('isAdModalOpen:', isAdModalOpen)
+        console.log('pendingDownload:', pendingDownload)
+        console.log('adViewed:', adViewed)
+        console.log('adTimer:', adTimer)
+        console.log('canProceed:', canProceed)
+    }, [isAdModalOpen, pendingDownload, adViewed, adTimer, canProceed])
+
     // Reset ad state
     const resetAdState = useCallback(() => {
+        console.log('=== resetAdState called ===')
         setAdViewed(false)
         setAdTimer(0)
         setCanProceed(false)
-        setPendingDownload(null)
+        // DON'T reset pendingDownload here - it should only be reset when modal closes
     }, [])
 
     // Show ad modal for download
     const showAdForDownload = useCallback((appData) => {
+        console.log('=== showAdForDownload called ===')
+        console.log('App data:', appData)
+        console.log('Current modal state:', isAdModalOpen)
+        
+        // Reset ad state FIRST (but not pendingDownload)
+        resetAdState()
+        
+        // Then set the download and open modal
         setPendingDownload(appData)
         setIsAdModalOpen(true)
-        resetAdState()
-    }, [resetAdState])
+        
+        console.log('📢 Modal state should be TRUE now, pending download set')
+    }, [resetAdState, isAdModalOpen])
 
     // Close ad modal
     const closeAdModal = useCallback(() => {
+        console.log('=== closeAdModal called ===')
         setIsAdModalOpen(false)
-        resetAdState()
-    }, [resetAdState])
+        // Reset everything when closing
+        setAdViewed(false)
+        setAdTimer(0)
+        setCanProceed(false)
+        setPendingDownload(null)  // Only reset pendingDownload when closing
+    }, [])
 
     // Mark ad as viewed and start timer
     const markAdViewed = useCallback(() => {
+        console.log('=== markAdViewed called ===')
         setAdViewed(true)
         setAdTimer(15) // 15 seconds countdown
         
         const countdown = setInterval(() => {
             setAdTimer(prev => {
+                console.log('Timer countdown:', prev - 1)
                 if (prev <= 1) {
                     clearInterval(countdown)
                     setCanProceed(true)
+                    console.log('Timer finished, user can proceed')
                     return 0
                 }
                 return prev - 1

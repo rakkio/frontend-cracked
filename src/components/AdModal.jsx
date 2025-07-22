@@ -18,19 +18,40 @@ export default function AdModal() {
 
     const [advertisement, setAdvertisement] = useState(null)
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState(null)  // Add error state
+    const [adViewed, setAdViewed] = useState(false)
     const [scriptLoaded, setScriptLoaded] = useState(false)
     const [scriptError, setScriptError] = useState(false)
     const [verificationPassed, setVerificationPassed] = useState(false)
     const modalRef = useRef()
     const scriptContainerRef = useRef()
 
+    // Debug: Log when modal state changes
+    console.log('=== AdModal Render ===')
+    console.log('isAdModalOpen:', isAdModalOpen)
+    console.log('pendingDownload:', pendingDownload)
+    console.log('advertisement:', advertisement)
+    console.log('loading:', loading)
+
     // Load advertisement when modal opens
     useEffect(() => {
-        if (isAdModalOpen && pendingDownload && !advertisement) {
+        console.log('=== useEffect [isAdModalOpen, pendingDownload, advertisement] ===')
+        console.log('isAdModalOpen:', isAdModalOpen)
+        console.log('pendingDownload:', pendingDownload) 
+        console.log('advertisement:', advertisement)
+        
+        if (isAdModalOpen && pendingDownload && !advertisement && !loading && !error) {  // Don't retry if error
+            console.log('📢 Calling loadAdvertisement()')
             loadAdvertisement()
+        } else {
+            console.log('🚫 Not calling loadAdvertisement because:')
+            console.log('  - isAdModalOpen:', isAdModalOpen)
+            console.log('  - pendingDownload:', !!pendingDownload)
+            console.log('  - advertisement:', !!advertisement)
+            console.log('  - loading:', loading)
+            console.log('  - error:', !!error)  // Add error to logs
         }
-    }, [isAdModalOpen, pendingDownload])
+    }, [isAdModalOpen, pendingDownload, advertisement, loading, error])  // Add error to dependencies
 
     // Load and inject script when advertisement is loaded
     useEffect(() => {
@@ -60,25 +81,46 @@ export default function AdModal() {
         try {
             setLoading(true)
             setError(null)
+            
+            console.log('=== Loading Advertisement ===')
+            console.log('Pending download:', pendingDownload)
 
             // Get active advertisement for download placement
-            const response = await api.getActiveAdvertisement({
+            const requestParams = {
                 type: 'download',
-                placement: 'before_download',
+                placement: 'before_download',  // Back to correct placement
                 page: window.location.pathname
-            })
+            }
+            console.log('API request params:', requestParams)
+            console.log('Searching for ads with placement: before_download')
+
+            const response = await api.getActiveAdvertisement(requestParams)
+            console.log('API response:', response)
+            
+            if (response?.success === false) {
+                console.log('❌ API returned error:', response.message)
+                console.log('💡 Make sure you have an active advertisement with:')
+                console.log('   - type: "download"')
+                console.log('   - placement: "before_download"') 
+                console.log('   - isActive: true')
+                setError('Failed to load advertisement. Proceeding with download...')
+                return
+            }
 
             if (response?.data?.advertisement) {
                 const ad = response.data.advertisement
+                console.log('Advertisement loaded:', ad)
                 setAdvertisement(ad)
 
                 // Track impression
                 try {
                     await api.trackAdvertisementImpression(ad._id)
+                    console.log('Impression tracked for ad:', ad._id)
                 } catch (trackError) {
                     console.warn('Failed to track impression:', trackError)
                 }
             } else {
+                console.log('No advertisement available, proceeding with download')
                 // No advertisement available, proceed with download
                 const download = proceedWithDownload()
                 if (download) {
@@ -87,15 +129,19 @@ export default function AdModal() {
             }
         } catch (error) {
             console.error('Error loading advertisement:', error)
-            setError('Failed to load advertisement. Proceeding with download...')
+            setError('Failed to load advertisement')
             
-            // Fallback: proceed with download after error
+            // Fallback: proceed with download after 3 seconds
+            console.log('⏰ Will proceed with download in 3 seconds due to error...')
             setTimeout(() => {
+                console.log('🎯 Proceeding with download due to advertisement error')
                 const download = proceedWithDownload()
                 if (download) {
-                    triggerDownload(download)
+                    // Close modal and trigger download
+                    closeAdModal()
+                    window.open(download.downloadUrl, '_blank')
                 }
-            }, 2000)
+            }, 3000)
         } finally {
             setLoading(false)
         }
@@ -306,7 +352,12 @@ export default function AdModal() {
 
     const canClose = advertisement?.settings?.closable || scriptError || error
 
-    if (!isAdModalOpen) return null
+    if (!isAdModalOpen) {
+        console.log('❌ Modal not open, returning null')
+        return null
+    }
+
+    console.log('✅ Modal is open, rendering modal')
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
