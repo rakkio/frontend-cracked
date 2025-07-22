@@ -113,7 +113,7 @@ export default function FAQ() {
                     <div className="card p-8 max-w-2xl mx-auto">
                         <h2 className="text-2xl font-bold text-white mb-4">Still have questions?</h2>
                         <p className="text-gray-400 mb-6">
-                            If you couldn't find the answer you're looking for, feel free to contact us directly.
+                            If you couldn&apos;t find the answer you&apos;re looking for, feel free to contact us directly.
                         </p>
                         <a
                             href="/contact"

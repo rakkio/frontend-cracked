@@ -63,7 +63,7 @@ export default function HowToInstall() {
                                 <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
                                 <div>
                                     <h4 className="text-white font-medium mb-1">Extract Archive</h4>
-                                    <p className="text-gray-400 text-sm">If it's a ZIP/RAR file, extract it using WinRAR or 7-Zip. Use the provided password if required.</p>
+                                    <p className="text-gray-400 text-sm">If it&apos;s a ZIP/RAR file, extract it using WinRAR or 7-Zip. Use the provided password if required.</p>
                                 </div>
                             </div>
                             
@@ -71,7 +71,7 @@ export default function HowToInstall() {
                                 <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
                                 <div>
                                     <h4 className="text-white font-medium mb-1">Run as Administrator</h4>
-                                    <p className="text-gray-400 text-sm">Right-click the installer and select "Run as administrator" for proper installation.</p>
+                                    <p className="text-gray-400 text-sm">Right-click the installer and select &quot;Run as administrator&quot; for proper installation.</p>
                                 </div>
                             </div>
                             
@@ -113,7 +113,7 @@ export default function HowToInstall() {
                                 <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
                                 <div>
                                     <h4 className="text-white font-medium mb-1">Allow Unknown Developers</h4>
-                                    <p className="text-gray-400 text-sm">Go to System Preferences → Security & Privacy → Allow apps downloaded from "Anywhere".</p>
+                                    <p className="text-gray-400 text-sm">Go to System Preferences → Security & Privacy → Allow apps downloaded from &quot;Anywhere&quot;.</p>
                                 </div>
                             </div>
                             
@@ -253,7 +253,7 @@ export default function HowToInstall() {
                         </div>
                         
                         <div>
-                            <h3 className="text-white font-semibold mb-3">App Won't Start</h3>
+                            <h3 className="text-white font-semibold mb-3">App Won&apos;t Start</h3>
                             <p className="text-gray-400 text-sm mb-2">
                                 Run as administrator (Windows) or check if all dependencies are installed. 
                                 Some apps require Visual C++ Redistributables.
@@ -263,7 +263,7 @@ export default function HowToInstall() {
                         <div>
                             <h3 className="text-white font-semibold mb-3">Password Protected Archive</h3>
                             <p className="text-gray-400 text-sm mb-2">
-                                Check the download page for the password. It's usually provided in the description 
+                                Check the download page for the password. It&apos;s usually provided in the description 
                                 or readme file.
                             </p>
                         </div>

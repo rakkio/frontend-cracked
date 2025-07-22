@@ -41,7 +41,7 @@ export default function SafetyGuide() {
                                 <FaCheckCircle className="text-green-500 mr-3 mt-1" />
                                 <div>
                                     <h4 className="text-white font-medium mb-1">Scan All Downloads</h4>
-                                    <p className="text-gray-400 text-sm">Scan every file before opening, even if it's from a trusted source.</p>
+                                    <p className="text-gray-400 text-sm">Scan every file before opening, even if it&apos;s from a trusted source.</p>
                                 </div>
                             </div>
                             
@@ -142,7 +142,7 @@ export default function SafetyGuide() {
                             <ul className="text-gray-400 space-y-2 text-sm">
                                 <li>✓ Use direct download links</li>
                                 <li>✓ Avoid download managers</li>
-                                <li>✓ Don't install browser extensions</li>
+                                <li>✓ Don&apos;t install browser extensions</li>
                                 <li>✓ Watch for bundled software</li>
                             </ul>
                         </div>

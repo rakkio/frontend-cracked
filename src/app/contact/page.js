@@ -44,7 +44,7 @@ export default function Contact() {
                         </h1>
                     </div>
                     <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                        Have questions, suggestions, or need help? We're here to assist you. 
+                        Have questions, suggestions, or need help? We&apos;re here to assist you. 
                         Choose your preferred way to get in touch with our support team.
                     </p>
                 </div>
@@ -59,7 +59,7 @@ export default function Contact() {
                                 <div className="text-green-500 text-4xl mb-4">✓</div>
                                 <h3 className="text-green-400 font-semibold mb-2">Message Sent Successfully!</h3>
                                 <p className="text-gray-300">
-                                    Thank you for contacting us. We'll get back to you within 24-48 hours.
+                                    Thank you for contacting us. We&apos;ll get back to you within 24-48 hours.
                                 </p>
                             </div>
                         ) : (
@@ -211,9 +211,9 @@ export default function Contact() {
                                 <div>
                                     <h3 className="text-yellow-500 font-semibold mb-2">Important Notice</h3>
                                     <ul className="text-gray-300 text-sm space-y-1">
-                                        <li>• We don't provide direct download links via email</li>
+                                        <li>• We don&apos;t provide direct download links via email</li>
                                         <li>• Always download from our official website</li>
-                                        <li>• We don't support illegal distribution of software</li>
+                                        <li>• We don&apos;t support illegal distribution of software</li>
                                         <li>• Use cracked software at your own risk</li>
                                     </ul>
                                 </div>

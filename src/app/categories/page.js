@@ -61,7 +61,7 @@ export default function CategoriesPage() {
                         All Categories
                     </h1>
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                        Explore our complete collection of application categories. Find exactly what you're looking for.
+                        Explore our complete collection of application categories. Find exactly what you&apos;re looking for.
                     </p>
                 </div>
 
@@ -237,7 +237,7 @@ export default function CategoriesPage() {
             <section className="container mx-auto px-4 py-12">
                 <div className="text-center">
                     <h2 className="text-3xl font-bold text-white mb-4">
-                        Can't find what you're looking for?
+                        Can&apos;t find what you&apos;re looking for?
                     </h2>
                     <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
                         Browse all our applications or use our advanced search to find the perfect app for your needs.

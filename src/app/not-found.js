@@ -48,8 +48,8 @@ export default function NotFound() {
                         </h1>
                         
                         <p className="text-xl md:text-2xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                            The page you're looking for has vanished into the digital void. 
-                            But don't worry, we'll help you find your way back to the treasure.
+                            The page you&apos;re looking for has vanished into the digital void. 
+                            But don&apos;t worry, we&apos;ll help you find your way back to the treasure.
                         </p>
                     </div>
 
