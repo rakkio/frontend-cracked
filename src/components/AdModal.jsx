@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAdvertising } from '@/contexts/AdvertisingContext'
 import { api } from '@/lib/api'
-import { FaTimes, FaSpinner, FaExclamationTriangle, FaDownload } from 'react-icons/fa'
+import { FaTimes, FaSpinner, FaExclamationTriangle, FaDownload, FaInfoCircle } from 'react-icons/fa'
 
 export default function AdModal() {
     const {
@@ -103,66 +103,90 @@ export default function AdModal() {
             console.log('=== Loading Advertisement ===')
             console.log('Pending download:', pendingDownload)
 
-            // Get active advertisement for download placement
-            const requestParams = {
-                type: 'download',
-                placement: 'before_download',  // Back to correct placement
-                page: window.location.pathname
-            }
-            console.log('API request params:', requestParams)
-            console.log('Searching for ads with placement: before_download')
+            // Set a fallback timeout - if no response in 10 seconds, proceed with download
+            const fallbackTimeout = setTimeout(() => {
+                console.log('⏰ Advertisement loading timeout - proceeding with download...')
+                handleFallbackDownload('Advertisement loading timeout')
+            }, 10000)
 
-            const response = await api.getActiveAdvertisement(requestParams)
-            console.log('API response:', response)
+            // Try multiple placements to find active ads
+            const placements = ['before_download', 'button_click', 'after_download']
+            let advertisement = null
             
-            if (response?.success === false) {
-                console.log('❌ API returned error:', response.message)
+            for (const placement of placements) {
+                try {
+                    const requestParams = {
+                        type: 'download',
+                        placement: placement,
+                        page: window.location.pathname
+                    }
+                    console.log('API request params:', requestParams)
+                    console.log(`Searching for ads with placement: ${placement}`)
+
+                    // Add timeout to the API request
+                    const controller = new AbortController()
+                    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout per request
+
+                    const response = await api.getActiveAdvertisement(requestParams)
+                    clearTimeout(timeoutId)
+                    console.log('API response:', response)
+                    
+                    if (response?.data?.advertisement) {
+                        advertisement = response.data.advertisement
+                        console.log(`✅ Found advertisement with placement: ${placement}`)
+                        break
+                    }
+                } catch (error) {
+                    console.log(`❌ No ads found for placement: ${placement} - ${error.message}`)
+                    continue
+                }
+            }
+            
+            // Clear the fallback timeout since we got a response
+            clearTimeout(fallbackTimeout)
+            
+            if (!advertisement) {
+                console.log('❌ No advertisements found with any placement')
                 console.log('💡 Make sure you have an active advertisement with:')
                 console.log('   - type: "download"')
-                console.log('   - placement: "before_download"') 
+                console.log('   - placement: "before_download", "button_click", or "after_download"') 
                 console.log('   - isActive: true')
-                setError('Failed to load advertisement. Proceeding with download...')
+                
+                handleFallbackDownload('No active advertisements found')
                 return
             }
 
-            if (response?.data?.advertisement) {
-                const ad = response.data.advertisement
-                console.log('Advertisement loaded:', ad)
-                setAdvertisement(ad)
+            console.log('Advertisement loaded:', advertisement)
+            setAdvertisement(advertisement)
 
-                // Track impression
-                try {
-                    await api.trackAdvertisementImpression(ad._id)
-                    console.log('Impression tracked for ad:', ad._id)
-                } catch (trackError) {
-                    console.warn('Failed to track impression:', trackError)
-                }
-            } else {
-                console.log('No advertisement available, proceeding with download')
-                // No advertisement available, proceed with download
-                const download = proceedWithDownload()
-                if (download) {
-                    triggerDownload(download)
-                }
+            // Track impression
+            try {
+                await api.trackAdvertisementImpression(advertisement._id)
+                console.log('Impression tracked for ad:', advertisement._id)
+            } catch (trackError) {
+                console.warn('Failed to track impression:', trackError)
             }
         } catch (error) {
-            console.error('Error loading advertisement:', error)
-            setError('Failed to load advertisement')
-            
-            // Fallback: proceed with download after 3 seconds
-            console.log('⏰ Will proceed with download in 3 seconds due to error...')
-            setTimeout(() => {
-                console.log('🎯 Proceeding with download due to advertisement error')
-                const download = proceedWithDownload()
-                if (download) {
-                    // Close modal and trigger download
-                    closeAdModal()
-                    window.open(download.downloadUrl, '_blank')
-                }
-            }, 3000)
+            console.error('❌ Error loading advertisement:', error)
+            handleFallbackDownload(`Advertisement loading error: ${error.message}`)
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleFallbackDownload = (reason) => {
+        console.log(`🎯 Handling fallback download: ${reason}`)
+        setError(`${reason} - Proceeding with download...`)
+        
+        // Show fallback message for 2 seconds then proceed
+        setTimeout(() => {
+            console.log('🎯 Proceeding with fallback download')
+            const download = proceedWithDownload()
+            if (download) {
+                closeAdModal()
+                window.open(download.downloadUrl, '_blank')
+            }
+        }, 2000)
     }
 
     const loadAdScript = () => {
@@ -185,93 +209,124 @@ export default function AdModal() {
             // Clear container
             scriptContainerRef.current.innerHTML = ''
 
-            // Create container for the script
-            const scriptContainer = document.createElement('div')
-            scriptContainer.innerHTML = advertisement.script
-
-            // Find and execute script tags
-            const scripts = scriptContainer.getElementsByTagName('script')
-            console.log('Found', scripts.length, 'script tags')
-
-            if (scripts.length === 0) {
-                // No script tags, just insert content as HTML
-                scriptContainerRef.current.appendChild(scriptContainer)
-                console.log('✅ No script tags, inserted as HTML content')
-                setScriptLoaded(true)
-                startAdTimer()
-                return
-            }
-
-            // Execute each script
-            let executedScripts = 0
-            Array.from(scripts).forEach((oldScript, index) => {
-                const newScript = document.createElement('script')
+            // Check if script is just a URL or a complete script
+            const isUrl = advertisement.script.startsWith('http://') || advertisement.script.startsWith('https://')
+            
+            if (isUrl) {
+                console.log('🔗 Script is a URL, creating external script tag')
                 
-                console.log(`Processing script ${index + 1}:`)
-                console.log('- Has src:', !!oldScript.src)
-                console.log('- Has content:', !!oldScript.textContent)
+                // Create external script element
+                const scriptElement = document.createElement('script')
+                scriptElement.src = advertisement.script
+                scriptElement.type = 'text/javascript'
+                scriptElement.async = true
                 
-                // Copy attributes
-                Array.from(oldScript.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value)
-                })
+                scriptElement.onload = () => {
+                    console.log('✅ External script loaded successfully')
+                    setScriptLoaded(true)
+                    startAdTimer()
+                }
+                
+                scriptElement.onerror = () => {
+                    console.error('❌ Failed to load external script')
+                    setScriptError(true)
+                }
+                
+                // Add to container
+                scriptContainerRef.current.appendChild(scriptElement)
+                console.log('📄 External script added to DOM')
+                
+            } else {
+                console.log('📜 Script is HTML content, parsing for script tags')
+                
+                // Create container for the script
+                const scriptContainer = document.createElement('div')
+                scriptContainer.innerHTML = advertisement.script
 
-                if (oldScript.src) {
-                    // External script - use onload
-                    newScript.onload = () => {
-                        console.log(`✅ External script ${index + 1} loaded`)
-                        executedScripts++
-                        if (executedScripts === scripts.length) {
-                            setScriptLoaded(true)
-                            startAdTimer()
-                        }
-                    }
+                // Find and execute script tags
+                const scripts = scriptContainer.getElementsByTagName('script')
+                console.log('Found', scripts.length, 'script tags')
 
-                    newScript.onerror = () => {
-                        console.error(`❌ External script ${index + 1} failed`)
-                        setScriptError(true)
-                    }
-
-                    newScript.src = oldScript.src
-                } else {
-                    // Inline script - execute immediately 
-                    newScript.textContent = oldScript.textContent
-                    console.log(`✅ Inline script ${index + 1} ready for execution`)
-                    executedScripts++
+                if (scripts.length === 0) {
+                    // No script tags, just insert content as HTML
+                    scriptContainerRef.current.appendChild(scriptContainer)
+                    console.log('✅ No script tags, inserted as HTML content')
+                    setScriptLoaded(true)
+                    startAdTimer()
+                    return
                 }
 
-                // Add to container (this will execute inline scripts)
-                scriptContainerRef.current.appendChild(newScript)
-                console.log(`📄 Script ${index + 1} appended to DOM`)
-            })
+                // Execute each script
+                let executedScripts = 0
+                Array.from(scripts).forEach((oldScript, index) => {
+                    const newScript = document.createElement('script')
+                    
+                    console.log(`Processing script ${index + 1}:`)
+                    console.log('- Has src:', !!oldScript.src)
+                    console.log('- Has content:', !!oldScript.textContent)
+                    
+                    // Copy attributes
+                    Array.from(oldScript.attributes).forEach(attr => {
+                        newScript.setAttribute(attr.name, attr.value)
+                    })
 
-            // Add non-script content
-            const nonScriptContent = scriptContainer.cloneNode(true)
-            Array.from(nonScriptContent.getElementsByTagName('script')).forEach(script => {
-                script.remove()
-            })
-            
-            if (nonScriptContent.innerHTML.trim()) {
-                scriptContainerRef.current.appendChild(nonScriptContent)
-                console.log('📄 Non-script content added')
-            }
+                    if (oldScript.src) {
+                        // External script - use onload
+                        newScript.onload = () => {
+                            console.log(`✅ External script ${index + 1} loaded`)
+                            executedScripts++
+                            if (executedScripts === scripts.length) {
+                                setScriptLoaded(true)
+                                startAdTimer()
+                            }
+                        }
 
-            // For inline scripts, consider them loaded immediately
-            const inlineScripts = Array.from(scripts).filter(s => !s.src)
-            if (inlineScripts.length > 0 && executedScripts >= inlineScripts.length) {
-                console.log('✅ All inline scripts executed, starting timer')
-                setScriptLoaded(true)
-                startAdTimer()
-            }
+                        newScript.onerror = () => {
+                            console.error(`❌ External script ${index + 1} failed`)
+                            setScriptError(true)
+                        }
 
-            // Set timeout for external script loading
-            if (Array.from(scripts).some(s => s.src)) {
-                setTimeout(() => {
-                    if (!scriptLoaded && !scriptError) {
-                        console.warn('⏰ Ad script loading timeout')
-                        setScriptError(true)
+                        newScript.src = oldScript.src
+                    } else {
+                        // Inline script - execute immediately 
+                        newScript.textContent = oldScript.textContent
+                        console.log(`✅ Inline script ${index + 1} ready for execution`)
+                        executedScripts++
                     }
-                }, 10000) // 10 second timeout
+
+                    // Add to container (this will execute inline scripts)
+                    scriptContainerRef.current.appendChild(newScript)
+                    console.log(`📄 Script ${index + 1} appended to DOM`)
+                })
+
+                // Add non-script content
+                const nonScriptContent = scriptContainer.cloneNode(true)
+                Array.from(nonScriptContent.getElementsByTagName('script')).forEach(script => {
+                    script.remove()
+                })
+                
+                if (nonScriptContent.innerHTML.trim()) {
+                    scriptContainerRef.current.appendChild(nonScriptContent)
+                    console.log('📄 Non-script content added')
+                }
+
+                // For inline scripts, consider them loaded immediately
+                const inlineScripts = Array.from(scripts).filter(s => !s.src)
+                if (inlineScripts.length > 0 && executedScripts >= inlineScripts.length) {
+                    console.log('✅ All inline scripts executed, starting timer')
+                    setScriptLoaded(true)
+                    startAdTimer()
+                }
+
+                // Set timeout for external script loading
+                if (Array.from(scripts).some(s => s.src)) {
+                    setTimeout(() => {
+                        if (!scriptLoaded && !scriptError) {
+                            console.warn('⏰ Ad script loading timeout')
+                            setScriptError(true)
+                        }
+                    }, 10000) // 10 second timeout
+                }
             }
 
         } catch (error) {
@@ -293,6 +348,18 @@ export default function AdModal() {
 
         return countdown
     }
+
+    // Auto-proceed when timer finishes
+    useEffect(() => {
+        if (canProceed && verificationPassed && adViewed && adTimer === 0) {
+            console.log('🎯 Auto-proceeding with download after countdown...')
+            
+            // Small delay to show completion state
+            setTimeout(() => {
+                handleProceed()
+            }, 1000)
+        }
+    }, [canProceed, verificationPassed, adViewed, adTimer])
 
     const checkAdVerification = () => {
         // Simple verification check - look for expected ad elements or behavior
@@ -357,20 +424,41 @@ export default function AdModal() {
     }
 
     const handleProceed = async () => {
-        if (!canProceed || !verificationPassed) return
+        if (!canProceed) return
 
-        // Track conversion
-        if (advertisement?._id) {
-            try {
-                await api.trackAdvertisementConversion(advertisement._id)
-            } catch (trackError) {
-                console.warn('Failed to track conversion:', trackError)
+        try {
+            // Track click
+            if (advertisement?._id) {
+                await api.trackAdvertisementClick(advertisement._id)
+                console.log('Click tracked for ad:', advertisement._id)
             }
-        }
 
-        const download = proceedWithDownload()
-        if (download) {
-            triggerDownload(download)
+            const download = proceedWithDownload()
+            if (download) {
+                closeAdModal()
+                
+                // 🎯 Use crackmarket.xyz direct link if available
+                let finalUrl = download.downloadUrl
+                
+                if (advertisement?.crackmarket?.enabled && 
+                    advertisement?.crackmarket?.adFormat === 'direct_link' && 
+                    advertisement?.crackmarket?.directLink) {
+                    finalUrl = advertisement.crackmarket.directLink
+                    console.log('🎯 Using crackmarket direct link:', finalUrl)
+                } else {
+                    console.log('🎯 Using original download URL:', finalUrl)
+                }
+                
+                window.open(finalUrl, '_blank')
+                
+                // Track conversion
+                if (advertisement?._id) {
+                    await api.trackAdvertisementConversion(advertisement._id)
+                    console.log('Conversion tracked for ad:', advertisement._id)
+                }
+            }
+        } catch (error) {
+            console.error('Error in handleProceed:', error)
         }
     }
 
@@ -443,20 +531,36 @@ export default function AdModal() {
                     {loading && (
                         <div className="text-center py-12">
                             <FaSpinner className="animate-spin text-4xl text-red-500 mx-auto mb-4" />
-                            <p className="text-gray-300">Loading advertisement...</p>
+                            <h3 className="text-xl font-semibold text-white mb-3">Loading Advertisement...</h3>
+                            <p className="text-gray-300 mb-4">Please wait while we prepare your download</p>
+                            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 max-w-md mx-auto">
+                                <p className="text-blue-300 text-sm">
+                                    💡 <strong>Note:</strong> If no advertisement is available, your download will start automatically
+                                </p>
+                            </div>
                         </div>
                     )}
 
                     {error && (
                         <div className="text-center py-12">
-                            <FaExclamationTriangle className="text-4xl text-yellow-500 mx-auto mb-4" />
-                            <p className="text-yellow-300 mb-4">{error}</p>
-                            <button
-                                onClick={closeAdModal}
-                                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                            >
-                                Continue to Download
-                            </button>
+                            <div className="flex items-center justify-center mb-4">
+                                <FaSpinner className="animate-spin text-3xl text-blue-500 mr-3" />
+                                <FaExclamationTriangle className="text-4xl text-yellow-500" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-white mb-4">Preparing Your Download</h3>
+                            <p className="text-yellow-300 mb-6">{error}</p>
+                            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+                                <p className="text-blue-300 text-sm mb-2">
+                                    <strong>Don't worry!</strong> Your download will start automatically.
+                                </p>
+                                <p className="text-blue-200 text-xs">
+                                    We're working to show you relevant content, but if none is available, 
+                                    we'll proceed directly to your download.
+                                </p>
+                            </div>
+                            <p className="text-sm text-gray-400 animate-pulse">
+                                🔄 Your download will begin shortly...
+                            </p>
                         </div>
                     )}
 
@@ -484,47 +588,96 @@ export default function AdModal() {
                             />
 
                             {/* Timer and Proceed Button */}
-                            <div className="flex items-center justify-between">
-                                <div className="text-gray-300">
+                            <div className="space-y-4">
+                                {/* Countdown Display */}
+                                <div className="text-center">
                                     {!scriptLoaded ? (
-                                        <div className="flex items-center space-x-2">
-                                            <FaSpinner className="animate-spin" />
-                                            <span>Loading advertisement...</span>
+                                        <div className="flex items-center justify-center space-x-2 py-4">
+                                            <FaSpinner className="animate-spin text-blue-500" />
+                                            <span className="text-gray-300">Loading advertisement...</span>
                                         </div>
                                     ) : !verificationPassed ? (
-                                        <div className="flex items-center space-x-2">
-                                            <FaSpinner className="animate-spin" />
-                                            <span>Verifying advertisement...</span>
+                                        <div className="flex items-center justify-center space-x-2 py-4">
+                                            <FaSpinner className="animate-spin text-yellow-500" />
+                                            <span className="text-gray-300">Verifying advertisement...</span>
                                         </div>
                                     ) : adTimer > 0 ? (
-                                        <span>Please wait {adTimer} seconds before proceeding</span>
+                                        <div className="py-6">
+                                            <div className="mb-4">
+                                                <div className="text-6xl font-bold text-red-500 mb-2">
+                                                    {adTimer}
+                                                </div>
+                                                <div className="text-gray-300 text-lg">
+                                                    seconds remaining
+                                                </div>
+                                            </div>
+                                            <div className="w-full bg-gray-700 rounded-full h-3 mb-4">
+                                                <div 
+                                                    className="bg-gradient-to-r from-red-500 to-orange-500 h-3 rounded-full transition-all duration-1000 ease-linear"
+                                                    style={{
+                                                        width: `${((advertisement.settings?.countdown || 15) - adTimer) / (advertisement.settings?.countdown || 15) * 100}%`
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="text-gray-400 text-sm">
+                                                Please wait while the advertisement loads...
+                                            </p>
+                                        </div>
                                     ) : (
-                                        <span>You can now proceed to download</span>
+                                        <div className="py-6">
+                                            <div className="text-4xl font-bold text-green-500 mb-2">
+                                                ✓ Ready!
+                                            </div>
+                                            <div className="text-gray-300 text-lg mb-4">
+                                                Your download will start automatically
+                                            </div>
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <FaSpinner className="animate-spin text-green-500" />
+                                                <span className="text-green-400">Preparing download...</span>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
 
-                                <button
-                                    onClick={handleProceed}
-                                    disabled={!canProceed || !verificationPassed}
-                                    className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                                        canProceed && verificationPassed
-                                            ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
-                                            : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                    }`}
-                                >
-                                    {pendingDownload ? `Download ${pendingDownload.name}` : 'Proceed to Download'}
-                                </button>
+                                {/* Download Button */}
+                                <div className="text-center">
+                                    <button
+                                        onClick={handleProceed}
+                                        disabled={!canProceed || !verificationPassed}
+                                        className={`px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform ${
+                                            canProceed && verificationPassed
+                                                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white cursor-pointer hover:scale-105 shadow-lg'
+                                                : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                        }`}
+                                    >
+                                        {canProceed && verificationPassed ? (
+                                            <div className="flex items-center space-x-2">
+                                                <FaDownload />
+                                                <span>Download {pendingDownload?.name || 'Now'}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center space-x-2">
+                                                <FaSpinner className="animate-spin" />
+                                                <span>Please Wait...</span>
+                                            </div>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Instructions */}
-                            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-                                <p className="text-gray-300 text-sm">
-                                    <strong>Instructions:</strong> Please view the advertisement above for {advertisement.settings?.countdown || 15} seconds, 
-                                    then click "Proceed to Download" to continue with your download.
-                                    {advertisement.settings?.verificationRequired && (
-                                        <span> The advertisement must be fully loaded before you can proceed.</span>
-                                    )}
-                                </p>
+                            <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                                <div className="flex items-start space-x-2">
+                                    <FaInfoCircle className="text-blue-400 mt-1 flex-shrink-0" />
+                                    <div className="text-sm">
+                                        <p className="text-blue-300 font-medium mb-1">How it works:</p>
+                                        <ol className="text-blue-200 space-y-1">
+                                            <li>1. Advertisement loads and displays above</li>
+                                            <li>2. Wait for the {advertisement.settings?.countdown || 15}-second countdown to complete</li>
+                                            <li>3. Download starts automatically or click the download button</li>
+                                        </ol>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}

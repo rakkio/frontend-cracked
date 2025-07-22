@@ -43,7 +43,7 @@ export default function EditApp() {
 
     const fetchApp = async () => {
         try {
-            const response = await api.getApp(id)
+            const response = await api.getAppById(id)
             const app = response.app
             setFormData({
                 name: app.name || '',

@@ -50,12 +50,19 @@ export function AdvertisingProvider({ children }) {
     const closeAdModal = useCallback(() => {
         console.log('=== closeAdModal called ===')
         setIsAdModalOpen(false)
+        
+        // Clear safety timeout if it exists
+        if (pendingDownload?._safetyTimeout) {
+            console.log('🧹 Clearing safety timeout')
+            clearTimeout(pendingDownload._safetyTimeout)
+        }
+        
         // Reset everything when closing
         setAdViewed(false)
         setAdTimer(0)
         setCanProceed(false)
         setPendingDownload(null)  // Only reset pendingDownload when closing
-    }, [])
+    }, [pendingDownload])
 
     // Mark ad as viewed and start timer
     const markAdViewed = useCallback(() => {
@@ -65,14 +72,24 @@ export function AdvertisingProvider({ children }) {
         
         const countdown = setInterval(() => {
             setAdTimer(prev => {
-                console.log('Timer countdown:', prev - 1)
-                if (prev <= 1) {
+                const newValue = prev - 1
+                console.log('Timer countdown:', newValue)
+                
+                if (newValue <= 0) {
                     clearInterval(countdown)
                     setCanProceed(true)
-                    console.log('Timer finished, user can proceed')
+                    console.log('🎉 Timer finished, user can proceed')
+                    
+                    // Show completion message
+                    if (typeof window !== 'undefined') {
+                        setTimeout(() => {
+                            console.log('📢 Advertisement viewing completed!')
+                        }, 500)
+                    }
+                    
                     return 0
                 }
-                return prev - 1
+                return newValue
             })
         }, 1000)
 
@@ -84,6 +101,13 @@ export function AdvertisingProvider({ children }) {
         if (!canProceed || !pendingDownload) return null
         
         const download = pendingDownload
+        
+        // Clear safety timeout if it exists
+        if (download._safetyTimeout) {
+            console.log('🧹 Clearing safety timeout before download')
+            clearTimeout(download._safetyTimeout)
+        }
+        
         closeAdModal()
         return download
     }, [canProceed, pendingDownload, closeAdModal])

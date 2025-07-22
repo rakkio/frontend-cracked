@@ -54,6 +54,22 @@ export default function AdvertisementsAdminPage() {
             startDate: '',
             endDate: '',
             timezone: 'UTC'
+        },
+        // Crackmarket.xyz fields
+        crackmarket: {
+            enabled: false,
+            adFormat: '',
+            directLink: '',
+            zoneId: '',
+            customSettings: {
+                autoOptimization: true,
+                fillRate: 100,
+                subscriptionPrompt: true,
+                position: 'top',
+                frequency: 1,
+                userFriendly: true,
+                adBlockBypass: false
+            }
         }
     })
 
@@ -259,21 +275,64 @@ export default function AdvertisementsAdminPage() {
                 startDate: '',
                 endDate: '',
                 timezone: 'UTC'
+            },
+            // Crackmarket.xyz fields
+            crackmarket: {
+                enabled: false,
+                adFormat: '',
+                directLink: '',
+                zoneId: '',
+                customSettings: {
+                    autoOptimization: true,
+                    fillRate: 100,
+                    subscriptionPrompt: true,
+                    position: 'top',
+                    frequency: 1,
+                    userFriendly: true,
+                    adBlockBypass: false
+                }
             }
         })
     }
 
     const startEdit = (ad) => {
         setFormData({
-            name: ad.name,
+            name: ad.name || '',
             description: ad.description || '',
-            script: ad.script,
-            type: ad.type,
-            placement: ad.placement,
-            priority: ad.priority,
+            script: ad.script || '',
+            type: ad.type || 'download',
+            placement: ad.placement || 'before_download',
+            priority: ad.priority || 0,
             targetPages: ad.targetPages || [],
-            settings: ad.settings,
-            schedule: ad.schedule
+            settings: {
+                countdown: ad.settings?.countdown || 15,
+                closable: ad.settings?.closable || false,
+                autoClose: ad.settings?.autoClose || false,
+                autoCloseDelay: ad.settings?.autoCloseDelay || 30,
+                verificationRequired: ad.settings?.verificationRequired !== false
+            },
+            schedule: {
+                enabled: ad.schedule?.enabled || false,
+                startDate: ad.schedule?.startDate || '',
+                endDate: ad.schedule?.endDate || '',
+                timezone: ad.schedule?.timezone || 'UTC'
+            },
+            // Crackmarket.xyz fields - ensure all are always defined
+            crackmarket: {
+                enabled: ad.crackmarket?.enabled || false,
+                adFormat: ad.crackmarket?.adFormat || '',
+                directLink: ad.crackmarket?.directLink || '',
+                zoneId: ad.crackmarket?.zoneId || '',
+                customSettings: {
+                    autoOptimization: ad.crackmarket?.customSettings?.autoOptimization !== false,
+                    fillRate: ad.crackmarket?.customSettings?.fillRate || 100,
+                    subscriptionPrompt: ad.crackmarket?.customSettings?.subscriptionPrompt !== false,
+                    position: ad.crackmarket?.customSettings?.position || 'top',
+                    frequency: ad.crackmarket?.customSettings?.frequency || 1,
+                    userFriendly: ad.crackmarket?.customSettings?.userFriendly !== false,
+                    adBlockBypass: ad.crackmarket?.customSettings?.adBlockBypass || false
+                }
+            }
         })
         setEditingAd(ad)
         setShowCreateForm(true)
@@ -396,6 +455,12 @@ export default function AdvertisementsAdminPage() {
                             <option value="popup">Popup</option>
                             <option value="banner">Banner</option>
                             <option value="interstitial">Interstitial</option>
+                            <option value="multitag">MultiTag</option>
+                            <option value="onclick">OnClick</option>
+                            <option value="push_notifications">Push Notifications</option>
+                            <option value="in_page_push">In-Page Push</option>
+                            <option value="vignette_banner">Vignette Banner</option>
+                            <option value="direct_link">Direct Link</option>
                         </select>
 
                         <select
@@ -408,6 +473,13 @@ export default function AdvertisementsAdminPage() {
                             <option value="after_download">After Download</option>
                             <option value="page_load">Page Load</option>
                             <option value="manual">Manual</option>
+                            <option value="button_click">Button Click</option>
+                            <option value="page_scroll">Page Scroll</option>
+                            <option value="page_exit">Page Exit</option>
+                            <option value="time_based">Time Based</option>
+                            <option value="category_browse">Category Browse</option>
+                            <option value="app_details">App Details</option>
+                            <option value="search_results">Search Results</option>
                         </select>
 
                         <select
@@ -423,7 +495,7 @@ export default function AdvertisementsAdminPage() {
                 </div>
 
                 {/* Create/Edit Form */}
-                {showCreateForm && (
+                {showCreateForm && formData && formData.crackmarket && (
                     <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 mb-8">
                         <h2 className="text-xl font-bold text-white mb-6">
                             {editingAd ? 'Edit Advertisement' : 'Create New Advertisement'}
@@ -466,6 +538,12 @@ export default function AdvertisementsAdminPage() {
                                         <option value="popup">Popup</option>
                                         <option value="banner">Banner</option>
                                         <option value="interstitial">Interstitial</option>
+                                        <option value="multitag">MultiTag (All-in-One)</option>
+                                        <option value="onclick">OnClick (Popunder)</option>
+                                        <option value="push_notifications">Push Notifications</option>
+                                        <option value="in_page_push">In-Page Push (Banner)</option>
+                                        <option value="vignette_banner">Vignette Banner</option>
+                                        <option value="direct_link">Direct Link</option>
                                     </select>
                                 </div>
 
@@ -480,6 +558,13 @@ export default function AdvertisementsAdminPage() {
                                         <option value="after_download">After Download</option>
                                         <option value="page_load">Page Load</option>
                                         <option value="manual">Manual</option>
+                                        <option value="button_click">Button Click</option>
+                                        <option value="page_scroll">Page Scroll</option>
+                                        <option value="page_exit">Page Exit</option>
+                                        <option value="time_based">Time Based</option>
+                                        <option value="category_browse">Category Browse</option>
+                                        <option value="app_details">App Details</option>
+                                        <option value="search_results">Search Results</option>
                                     </select>
                                 </div>
                             </div>
@@ -555,6 +640,199 @@ export default function AdvertisementsAdminPage() {
                                         <span>Verification Required</span>
                                     </label>
                                 </div>
+                            </div>
+
+                            {/* Crackmarket.xyz Configuration Section */}
+                            <div className="border-t border-gray-700 pt-6">
+                                <div className="flex items-center mb-4">
+                                    <label className="flex items-center space-x-2 text-white">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.crackmarket?.enabled || false}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                crackmarket: {...formData.crackmarket, enabled: e.target.checked}
+                                            })}
+                                            className="rounded bg-gray-700 border-gray-600"
+                                        />
+                                        <span className="font-medium">Enable Crackmarket.xyz Integration</span>
+                                    </label>
+                                </div>
+
+                                {(formData.crackmarket?.enabled || false) && (
+                                    <div className="ml-6 space-y-4 p-4 bg-gray-900/50 rounded-lg border border-gray-600">
+                                        {/* Quick Setup Guide */}
+                                        <div className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-3 mb-4">
+                                            <h4 className="text-blue-400 font-medium mb-2">🚀 Quick Setup Guide</h4>
+                                            <ol className="text-blue-200 text-sm space-y-1">
+                                                <li>1. Register at <a href="https://crackmarket.xyz" target="_blank" className="text-blue-400 underline">crackmarket.xyz</a></li>
+                                                <li>2. Create an ad zone in your publisher panel</li>
+                                                <li>3. Copy the Zone ID and Direct Link (if applicable)</li>
+                                                <li>4. Paste your ad script in the "Script Code" field above</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-white font-medium mb-2">Ad Format</label>
+                                                <select
+                                                    value={formData.crackmarket?.adFormat || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {...formData.crackmarket, adFormat: e.target.value}
+                                                    })}
+                                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                                >
+                                                    <option value="">Select Format</option>
+                                                    <option value="multitag">MultiTag (All-in-One)</option>
+                                                    <option value="onclick_popunder">OnClick (Popunder)</option>
+                                                    <option value="push_notifications">Push Notifications</option>
+                                                    <option value="in_page_push">In-Page Push (Banner)</option>
+                                                    <option value="vignette_banner">Vignette Banner</option>
+                                                    <option value="interstitial">Interstitial</option>
+                                                    <option value="direct_link">Direct Link</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-white font-medium mb-2">
+                                                    Zone ID 
+                                                    <span className="text-gray-400 text-sm font-normal ml-2">
+                                                        (from crackmarket.xyz panel)
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.crackmarket?.zoneId || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {...formData.crackmarket, zoneId: e.target.value}
+                                                    })}
+                                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                                    placeholder="e.g. 1234567"
+                                                />
+                                                <p className="text-gray-400 text-xs mt-1">
+                                                    Get this from your crackmarket.xyz publisher panel when creating an ad zone
+                                                    {formData.crackmarket?.adFormat === 'direct_link' && (
+                                                        <span className="text-yellow-400 block mt-1">
+                                                            ⚠️ Required for Direct Link format
+                                                        </span>
+                                                    )}
+                                                    {formData.crackmarket?.adFormat === 'multitag' && (
+                                                        <span className="text-blue-400 block mt-1">
+                                                            💡 Recommended for MultiTag optimization
+                                                        </span>
+                                                    )}
+                                                    {!formData.crackmarket?.adFormat && (
+                                                        <span className="text-gray-500 block mt-1">
+                                                            Select an ad format above to see requirements
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {(formData.crackmarket?.adFormat || '') === 'direct_link' && (
+                                            <div>
+                                                <label className="block text-white font-medium mb-2">Direct Link URL *</label>
+                                                <input
+                                                    type="url"
+                                                    value={formData.crackmarket?.directLink || ''}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {...formData.crackmarket, directLink: e.target.value}
+                                                    })}
+                                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-500"
+                                                    placeholder="https://crackmarket.xyz/direct-link..."
+                                                    required
+                                                />
+                                                <p className="text-gray-400 text-sm mt-1">
+                                                    This URL will override the original download URL
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <label className="flex items-center space-x-2 text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.crackmarket?.customSettings?.userFriendly || false}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {
+                                                            ...formData.crackmarket,
+                                                            customSettings: {
+                                                                ...formData.crackmarket?.customSettings,
+                                                                userFriendly: e.target.checked
+                                                            }
+                                                        }
+                                                    })}
+                                                    className="rounded bg-gray-700 border-gray-600"
+                                                />
+                                                <span className="text-sm">User Friendly</span>
+                                            </label>
+
+                                            <label className="flex items-center space-x-2 text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.crackmarket?.customSettings?.adBlockBypass || false}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {
+                                                            ...formData.crackmarket,
+                                                            customSettings: {
+                                                                ...formData.crackmarket?.customSettings,
+                                                                adBlockBypass: e.target.checked
+                                                            }
+                                                        }
+                                                    })}
+                                                    className="rounded bg-gray-700 border-gray-600"
+                                                />
+                                                <span className="text-sm">AdBlock Bypass</span>
+                                            </label>
+
+                                            <label className="flex items-center space-x-2 text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.crackmarket?.customSettings?.autoOptimization || false}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {
+                                                            ...formData.crackmarket,
+                                                            customSettings: {
+                                                                ...formData.crackmarket?.customSettings,
+                                                                autoOptimization: e.target.checked
+                                                            }
+                                                        }
+                                                    })}
+                                                    className="rounded bg-gray-700 border-gray-600"
+                                                />
+                                                <span className="text-sm">Auto Optimization</span>
+                                            </label>
+
+                                            <div>
+                                                <label className="block text-white text-sm mb-1">Fill Rate %</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    value={formData.crackmarket?.customSettings?.fillRate || 100}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        crackmarket: {
+                                                            ...formData.crackmarket,
+                                                            customSettings: {
+                                                                ...formData.crackmarket?.customSettings,
+                                                                fillRate: parseInt(e.target.value) || 100
+                                                            }
+                                                        }
+                                                    })}
+                                                    className="w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-red-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center space-x-4 pt-6 border-t border-gray-700">
