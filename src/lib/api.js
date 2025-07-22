@@ -106,8 +106,45 @@ class API {
         })
     }
 
+    // User profile and preferences
     async getUserProfile() {
         return this.request('/users/profile')
+    }
+
+    async getUserDownloads(params = {}) {
+        const query = this.buildQueryString(params)
+        return this.request(`/users/downloads${query ? `?${query}` : ''}`)
+    }
+
+    async getUserFavorites(params = {}) {
+        const query = this.buildQueryString(params)
+        return this.request(`/users/favorites${query ? `?${query}` : ''}`)
+    }
+
+    async addToFavorites(appId) {
+        return this.request(`/users/favorites/${appId}`, {
+            method: 'POST'
+        })
+    }
+
+    async removeFromFavorites(appId) {
+        return this.request(`/users/favorites/${appId}`, {
+            method: 'DELETE'
+        })
+    }
+
+    async forgotPassword(email) {
+        return this.request('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        })
+    }
+
+    async resetPassword(token, password) {
+        return this.request('/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ token, password })
+        })
     }
 
     async updateUserProfile(userData) {
