@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -19,7 +19,7 @@ import {
     FaList
 } from 'react-icons/fa'
 
-export default function AppsPage() {
+function AppsContent() {
     const [apps, setApps] = useState([])
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(true)
@@ -562,5 +562,30 @@ export default function AppsPage() {
                 )}
             </div>
         </>
+    )
+}
+
+// Loading component for Suspense fallback
+function AppsPageLoading() {
+    return (
+        <div className="min-h-screen bg-gray-900">
+            <div className="container mx-auto px-4 py-8">
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="text-center">
+                        <FaSpinner className="animate-spin text-4xl text-red-500 mx-auto mb-4" />
+                        <p className="text-gray-400">Loading apps...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// Main page component with Suspense wrapper
+export default function AppsPage() {
+    return (
+        <Suspense fallback={<AppsPageLoading />}>
+            <AppsContent />
+        </Suspense>
     )
 } 
