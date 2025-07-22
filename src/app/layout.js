@@ -25,6 +25,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="dark scroll-smooth">
       <head>
+      <meta name="monetag" content="e441af84d95b06ad46cb441048bc22c9"/>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
