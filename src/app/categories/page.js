@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
@@ -20,7 +20,7 @@ import {
     FaSort
 } from 'react-icons/fa'
 
-export default function CategoriesPage() {
+function CategoriesContent() {
     const [categories, setCategories] = useState([])
     const [categoryApps, setCategoryApps] = useState({}) // Store apps per category
     const [loading, setLoading] = useState(true)
@@ -464,5 +464,26 @@ export default function CategoriesPage() {
                 </div>
             </section>
         </div>
+    )
+}
+
+// Loading component for Suspense fallback
+function CategoriesPageLoading() {
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black flex items-center justify-center">
+            <div className="text-center">
+                <FaSpinner className="animate-spin text-4xl text-purple-500 mx-auto mb-4" />
+                <p className="text-gray-400">Loading categories...</p>
+            </div>
+        </div>
+    )
+}
+
+// Main page component with Suspense wrapper
+export default function CategoriesPage() {
+    return (
+        <Suspense fallback={<CategoriesPageLoading />}>
+            <CategoriesContent />
+        </Suspense>
     )
 } 
