@@ -55,20 +55,38 @@ export default function AdModal() {
 
     // Load and inject script when advertisement is loaded
     useEffect(() => {
+        console.log('=== useEffect [advertisement] triggered ===')
+        console.log('advertisement exists:', !!advertisement)
+        console.log('scriptLoaded:', scriptLoaded) 
+        console.log('scriptError:', scriptError)
+        
         if (advertisement && !scriptLoaded && !scriptError) {
+            console.log('🎯 Calling loadAdScript()!')
             loadAdScript()
+        } else {
+            console.log('🚫 NOT calling loadAdScript because:')
+            console.log('  - advertisement:', !!advertisement)
+            console.log('  - scriptLoaded:', scriptLoaded)
+            console.log('  - scriptError:', scriptError)
         }
-    }, [advertisement])
+    }, [advertisement, scriptLoaded, scriptError])  // Add dependencies
 
     // Clean up script when modal closes
     useEffect(() => {
+        console.log('=== useEffect [isAdModalOpen] triggered ===')
+        console.log('isAdModalOpen:', isAdModalOpen)
+        
         if (!isAdModalOpen) {
+            console.log('🧹 Modal closed, cleaning up...')
             cleanupScript()
             resetState()
+        } else {
+            console.log('✅ Modal is open, no cleanup needed')
         }
     }, [isAdModalOpen])
 
     const resetState = () => {
+        console.log('🔄 resetState() called - resetting all states')
         setAdvertisement(null)
         setLoading(false)
         setError(null)
@@ -148,9 +166,22 @@ export default function AdModal() {
     }
 
     const loadAdScript = () => {
-        if (!advertisement?.script || !scriptContainerRef.current) return
+        console.log('=== loadAdScript() called ===')
+        console.log('advertisement exists:', !!advertisement)
+        console.log('advertisement.script exists:', !!advertisement?.script)
+        console.log('scriptContainerRef.current exists:', !!scriptContainerRef.current)
+        
+        if (!advertisement?.script || !scriptContainerRef.current) {
+            console.log('❌ Missing requirements for script loading:')
+            console.log('  - advertisement?.script:', !!advertisement?.script)
+            console.log('  - scriptContainerRef.current:', !!scriptContainerRef.current)
+            return
+        }
 
         try {
+            console.log('=== Loading Ad Script ===')
+            console.log('Script content preview:', advertisement.script.substring(0, 100) + '...')
+            
             // Clear container
             scriptContainerRef.current.innerHTML = ''
 
@@ -160,49 +191,58 @@ export default function AdModal() {
 
             // Find and execute script tags
             const scripts = scriptContainer.getElementsByTagName('script')
-            let scriptsToLoad = scripts.length
-            let scriptsLoaded = 0
+            console.log('Found', scripts.length, 'script tags')
 
-            if (scriptsToLoad === 0) {
-                // No script tags, just insert content
+            if (scripts.length === 0) {
+                // No script tags, just insert content as HTML
                 scriptContainerRef.current.appendChild(scriptContainer)
+                console.log('✅ No script tags, inserted as HTML content')
                 setScriptLoaded(true)
                 startAdTimer()
                 return
             }
 
-            // Load each script
-            Array.from(scripts).forEach((oldScript) => {
+            // Execute each script
+            let executedScripts = 0
+            Array.from(scripts).forEach((oldScript, index) => {
                 const newScript = document.createElement('script')
+                
+                console.log(`Processing script ${index + 1}:`)
+                console.log('- Has src:', !!oldScript.src)
+                console.log('- Has content:', !!oldScript.textContent)
                 
                 // Copy attributes
                 Array.from(oldScript.attributes).forEach(attr => {
                     newScript.setAttribute(attr.name, attr.value)
                 })
 
-                // Set onload handler
-                newScript.onload = () => {
-                    scriptsLoaded++
-                    if (scriptsLoaded === scriptsToLoad) {
-                        setScriptLoaded(true)
-                        startAdTimer()
-                    }
-                }
-
-                newScript.onerror = () => {
-                    console.error('Failed to load ad script')
-                    setScriptError(true)
-                }
-
-                // Set script content
                 if (oldScript.src) {
+                    // External script - use onload
+                    newScript.onload = () => {
+                        console.log(`✅ External script ${index + 1} loaded`)
+                        executedScripts++
+                        if (executedScripts === scripts.length) {
+                            setScriptLoaded(true)
+                            startAdTimer()
+                        }
+                    }
+
+                    newScript.onerror = () => {
+                        console.error(`❌ External script ${index + 1} failed`)
+                        setScriptError(true)
+                    }
+
                     newScript.src = oldScript.src
                 } else {
+                    // Inline script - execute immediately 
                     newScript.textContent = oldScript.textContent
+                    console.log(`✅ Inline script ${index + 1} ready for execution`)
+                    executedScripts++
                 }
 
-                // Add to container
+                // Add to container (this will execute inline scripts)
                 scriptContainerRef.current.appendChild(newScript)
+                console.log(`📄 Script ${index + 1} appended to DOM`)
             })
 
             // Add non-script content
@@ -213,18 +253,29 @@ export default function AdModal() {
             
             if (nonScriptContent.innerHTML.trim()) {
                 scriptContainerRef.current.appendChild(nonScriptContent)
+                console.log('📄 Non-script content added')
             }
 
-            // Set timeout for script loading
-            setTimeout(() => {
-                if (!scriptLoaded && !scriptError) {
-                    console.warn('Ad script loading timeout')
-                    setScriptError(true)
-                }
-            }, 10000) // 10 second timeout
+            // For inline scripts, consider them loaded immediately
+            const inlineScripts = Array.from(scripts).filter(s => !s.src)
+            if (inlineScripts.length > 0 && executedScripts >= inlineScripts.length) {
+                console.log('✅ All inline scripts executed, starting timer')
+                setScriptLoaded(true)
+                startAdTimer()
+            }
+
+            // Set timeout for external script loading
+            if (Array.from(scripts).some(s => s.src)) {
+                setTimeout(() => {
+                    if (!scriptLoaded && !scriptError) {
+                        console.warn('⏰ Ad script loading timeout')
+                        setScriptError(true)
+                    }
+                }, 10000) // 10 second timeout
+            }
 
         } catch (error) {
-            console.error('Error injecting ad script:', error)
+            console.error('❌ Error injecting ad script:', error)
             setScriptError(true)
         }
     }
