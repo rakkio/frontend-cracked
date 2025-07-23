@@ -1,7 +1,7 @@
 export const siteConfig = {
     name: 'Apps Cracked',
     description: 'Download premium applications for free. Access thousands of cracked apps, games, and software with direct download links.',
-    url: 'https://appscracked.com',
+    url: 'https://crackmarket.xyz',
     ogImage: '/og-image.jpg',
     links: {
         twitter: 'https://twitter.com/appscracked',
@@ -119,7 +119,7 @@ export const metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://appscracked.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz'),
   alternates: {
     canonical: '/',
     languages: {

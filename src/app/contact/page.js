@@ -5,7 +5,7 @@ import { FaEnvelope, FaPaperPlane, FaDiscord, FaTelegram, FaReddit, FaExclamatio
 
 // SEO Structured Data Generator
 const generateContactStructuredData = () => {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://appscracked.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz'
     
     return {
         "@context": "https://schema.org",

@@ -23,7 +23,7 @@ import {
 
 // SEO Structured Data Generator
 const generateAppsStructuredData = (apps, searchTerm, category) => {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://appscracked.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz'
     
     return {
         "@context": "https://schema.org",

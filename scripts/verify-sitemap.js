@@ -3,11 +3,10 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://appscracked.com'
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://crackmarket.xyz'
 const DEV_URL = 'http://localhost:3000'
 
 async function testSitemap(url) {
-    console.log(`\n🔍 Testing sitemap at: ${url}`)
     
     try {
         const response = await fetch(`${url}/sitemap.xml`, {
