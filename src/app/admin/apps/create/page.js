@@ -77,6 +77,62 @@ export default function CreateApp() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        
+        // Client-side validation
+        if (!formData.name || formData.name.length < 3) {
+            alert('App name must be at least 3 characters long')
+            return
+        }
+        
+        if (!formData.description || formData.description.length < 50) {
+            alert('Description must be at least 50 characters long')
+            return
+        }
+        
+        if (!formData.category) {
+            alert('Please select a category')
+            return
+        }
+        
+        if (!formData.version) {
+            alert('Please enter a version')
+            return
+        }
+        
+        if (!formData.size) {
+            alert('Please enter the app size')
+            return
+        }
+        
+        if (!formData.developer) {
+            alert('Please enter the developer name')
+            return
+        }
+        
+        // Validate download links
+        if (downloadLinks.length === 0) {
+            alert('Please add at least one download link')
+            return
+        }
+        
+        for (let i = 0; i < downloadLinks.length; i++) {
+            const link = downloadLinks[i]
+            if (!link.platform) {
+                alert(`Please select a platform for link ${i + 1}`)
+                return
+            }
+            if (!link.url) {
+                alert(`Please enter a URL for link ${i + 1}`)
+                return
+            }
+            try {
+                new URL(link.url)
+            } catch {
+                alert(`Please enter a valid URL for link ${i + 1}`)
+                return
+            }
+        }
+        
         setLoading(true)
 
         try {
@@ -194,8 +250,11 @@ export default function CreateApp() {
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                        placeholder="e.g., 1.0.0"
+                                        placeholder="e.g., 1.0.0, v2.1.3, 2025 v1.0.0"
                                     />
+                                    <p className="text-gray-400 text-xs mt-1">
+                                        Format: 1.0.0, v2.1.3, 2025 v1.0.0, 1.0.0-beta
+                                    </p>
                                 </div>
 
                                 <div>
@@ -211,12 +270,15 @@ export default function CreateApp() {
                                         className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                                         placeholder="e.g., 2.5GB, 150MB"
                                     />
+                                    <p className="text-gray-400 text-xs mt-1">
+                                        Format: 150MB, 2.5GB, 1.2TB (with space between number and unit)
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    Description *
+                                    Description * (minimum 50 characters)
                                 </label>
                                 <RichTextEditor
                                     value={formData.description || ''}
@@ -224,6 +286,9 @@ export default function CreateApp() {
                                     placeholder="Write a detailed app description. You can use Markdown for formatting."
                                     rows={8}
                                 />
+                                <p className="text-gray-400 text-xs mt-1">
+                                    Current length: {formData.description?.length || 0} characters (minimum 50 required)
+                                </p>
                             </div>
 
                             <div className="mt-6">
@@ -251,7 +316,7 @@ export default function CreateApp() {
                         {/* Download Links Section */}
                         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-semibold text-white">Download Links</h3>
+                                <h3 className="text-xl font-semibold text-white">Download Links * (at least one required)</h3>
                                 <button
                                     type="button"
                                     onClick={addDownloadLink}
