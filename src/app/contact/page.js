@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FaEnvelope, FaPaperPlane, FaDiscord, FaTelegram, FaReddit, FaExclamationTriangle, FaPhone, FaMapMarkerAlt, FaClock, FaQuestionCircle, FaShieldAlt } from 'react-icons/fa'
 
 // SEO Structured Data Generator
@@ -105,7 +105,7 @@ export default function Contact() {
     const [isSubmitted, setIsSubmitted] = useState(false)
 
     // Insert structured data on component mount
-    useState(() => {
+    useEffect(() => {
         const structuredData = generateContactStructuredData()
         
         // Remove existing structured data

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { FaSpinner, FaDownload, FaArrowRight, FaClock, FaCheckCircle, FaExclamationTriangle, FaSkull } from 'react-icons/fa'
 
-export default function AdRedirectPage() {
+function AdRedirectContent() {
     const [countdown, setCountdown] = useState(15)
     const [advertisement, setAdvertisement] = useState(null)
     const [adLoaded, setAdLoaded] = useState(false)
@@ -865,4 +865,12 @@ export default function AdRedirectPage() {
      </div>
     </div>
   )
+}
+
+export default function AdRedirectPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><FaSpinner className="text-4xl text-red-500 animate-spin" /><span className="ml-4 text-white">Loading...</span></div>}>
+            <AdRedirectContent />
+        </Suspense>
+    )
 }

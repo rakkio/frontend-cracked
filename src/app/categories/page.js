@@ -115,32 +115,6 @@ function CategoriesContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // Filtered and sorted categories
-    const filteredCategories = useMemo(() => {
-        let filtered = categories.filter(category => {
-            const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
-            const matchesFeatured = !showFeaturedOnly || category.isFeatured
-            return matchesSearch && matchesFeatured
-        })
-
-        // Sort categories
-        filtered.sort((a, b) => {
-            switch (sortBy) {
-                case 'apps':
-                    return (b.appCount || 0) - (a.appCount || 0)
-                case 'featured':
-                    if (a.isFeatured && !b.isFeatured) return -1
-                    if (!a.isFeatured && b.isFeatured) return 1
-                    return a.name.localeCompare(b.name)
-                default: // 'name'
-                    return a.name.localeCompare(b.name)
-            }
-        })
-
-        return filtered
-    }, [categories, searchTerm, sortBy, showFeaturedOnly])
-
     useEffect(() => {
         fetchCategories()
         // Read URL params
@@ -216,7 +190,31 @@ function CategoriesContent() {
         setAppsLoading(prev => ({ ...prev, ...loadingState }))
     }
 
- 
+    // Filtered and sorted categories
+    const filteredCategories = useMemo(() => {
+        let filtered = categories.filter(category => {
+            const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
+            const matchesFeatured = !showFeaturedOnly || category.isFeatured
+            return matchesSearch && matchesFeatured
+        })
+
+        // Sort categories
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'apps':
+                    return (b.appCount || 0) - (a.appCount || 0)
+                case 'featured':
+                    if (a.isFeatured && !b.isFeatured) return -1
+                    if (!a.isFeatured && b.isFeatured) return 1
+                    return a.name.localeCompare(b.name)
+                default: // 'name'
+                    return a.name.localeCompare(b.name)
+            }
+        })
+
+        return filtered
+    }, [categories, searchTerm, sortBy, showFeaturedOnly])
 
     const handleAppClick = (app) => {
         router.push(`/app/${app.slug || app._id}`)
