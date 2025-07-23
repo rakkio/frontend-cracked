@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import formatFileSize from '@/utils/formatFileSize'
 import { 
     FaDownload, 
     FaStar, 
@@ -28,6 +27,14 @@ import {
 } from 'react-icons/fa'
 
 // SEO Structured Data Generator
+const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
 const generateAppStructuredData = (app, relatedApps) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz'
     
@@ -663,7 +670,10 @@ export default function AppPage() {
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-gray-600/30">
                                         <span className="text-gray-300 font-medium">File Size</span>
-                                        <span className="text-white font-bold" itemProp="fileSize">{formatFileSize(app.size)}</span>
+                                        <span className="text-white font-bold" itemProp="fileSize">
+                                                {
+                                                    formatFileSize(app.fileSize)
+                                                }
                                 </div>
                                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-gray-600/30">
                                         <span className="text-gray-300 font-medium">Downloads</span>

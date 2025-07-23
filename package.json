@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "verify-sitemap": "node scripts/verify-sitemap.js"
+    "verify-sitemap": "node scripts/verify-sitemap.js",
+    "test-google-sitemap": "node scripts/google-sitemap-test.js"
   },
   "dependencies": {
     "@uiw/react-textarea-code-editor": "^3.1.1",

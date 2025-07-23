@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /profile/
+Disallow: /_next/
+Disallow: /private/
+Disallow: /ad-redirect/
+Disallow: /*?*utm*
+Disallow: /*?*session*
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /profile/
+Disallow: /ad-redirect/
+Disallow: /*?*utm*
+
+# Crawl delay for all bots
+Crawl-delay: 1
+
+# Sitemap locations
+Sitemap: https://crackmarket.xyz/sitemap.xml
+Sitemap: https://crackmarket.xyz/api/sitemap
+
+# Host
+Host: https://crackmarket.xyz 
