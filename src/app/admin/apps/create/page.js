@@ -50,6 +50,20 @@ export default function CreateApp() {
             ...prev,
             [name]: value
         }))
+        
+        // Real-time validation for size field
+        if (name === 'size' && value) {
+            const sizeRegex = /^\d+(\.\d+)?\s?(B|KB|MB|GB|TB)$/i
+            const isValid = sizeRegex.test(value)
+            const sizeInput = e.target
+            if (isValid) {
+                sizeInput.classList.remove('border-red-500')
+                sizeInput.classList.add('border-gray-600')
+            } else {
+                sizeInput.classList.remove('border-gray-600')
+                sizeInput.classList.add('border-red-500')
+            }
+        }
     }
 
     const handleImageUpload = (e) => {
@@ -104,6 +118,13 @@ export default function CreateApp() {
             return
         }
         
+        // Validate size format
+        const sizeRegex = /^\d+(\.\d+)?\s?(B|KB|MB|GB|TB)$/i
+        if (!sizeRegex.test(formData.size)) {
+            alert('Size must be in format like "150 MB" or "2.5 GB" (with unit)')
+            return
+        }
+        
         if (!formData.developer) {
             alert('Please enter the developer name')
             return
@@ -142,6 +163,18 @@ export default function CreateApp() {
             Object.keys(formData).forEach(key => {
                 formDataToSend.append(key, formData[key])
             })
+
+            // Append default boolean values
+            formDataToSend.append('isPremium', 'false')
+            formDataToSend.append('isHot', 'false')
+            formDataToSend.append('isFeatured', 'false')
+            formDataToSend.append('isActive', 'true')
+
+            // Append empty tags array
+            formDataToSend.append('tags', '[]')
+
+            // Append empty system requirements
+            formDataToSend.append('systemRequirements', '{}')
 
             // Append download links as JSON
             formDataToSend.append('downloadLinks', JSON.stringify(downloadLinks))
@@ -268,10 +301,10 @@ export default function CreateApp() {
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                        placeholder="e.g., 2.5GB, 150MB"
+                                        placeholder="e.g., 1.7 GB, 150 MB"
                                     />
                                     <p className="text-gray-400 text-xs mt-1">
-                                        Format: 150MB, 2.5GB, 1.2TB (with space between number and unit)
+                                        Format: 1.7 GB, 150 MB, 2.5 TB (number + space + unit required)
                                     </p>
                                 </div>
                             </div>
