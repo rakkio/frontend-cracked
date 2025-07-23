@@ -674,18 +674,19 @@ export default function AppPage() {
                                                 {
                                                     formatFileSize(app.fileSize)
                                                 }
+                                        </span>
                                 </div>
                                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-gray-600/30">
                                         <span className="text-gray-300 font-medium">Downloads</span>
                                         <span className="text-green-400 font-bold">{app.downloadCount?.toLocaleString() || '0'}</span>
-                                </div>
+                                    </div>
                                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-gray-600/30">
                                         <span className="text-gray-300 font-medium">Platform</span>
                                         <div className="flex items-center space-x-2">
                                             {getPlatformIcon(app.platform)}
                                             <span className="text-white font-bold">{app.platform || 'Windows'}</span>
-                                </div>
-                                </div>
+                                        </div>
+                                    </div>
                                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-gray-600/30">
                                         <span className="text-gray-300 font-medium">Category</span>
                                         <span className="text-white font-bold" itemProp="applicationCategory">
