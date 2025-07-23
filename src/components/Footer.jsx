@@ -84,7 +84,7 @@ export default function Footer() {
               </div>
               <div>
                 <h3 className='text-2xl font-bold bg-gradient-to-r from-red-400 via-red-500 to-orange-500 bg-clip-text text-transparent'>
-                  Black Market
+                  Crack Market
                 </h3>
                 <p className='text-sm text-gray-400 font-medium'>Underground Apps Hub</p>
               </div>
@@ -199,15 +199,7 @@ export default function Footer() {
               </div>
             </div>
             
-            {/* Special features */}
-            <div className='mt-8 p-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 rounded-xl border border-purple-500/20'>
-              <h5 className='text-purple-400 font-semibold text-sm mb-2'>💎 VIP Benefits:</h5>
-              <ul className='text-xs text-gray-400 space-y-1'>
-                <li>• Early access to premium apps</li>
-                <li>• Exclusive cracking tutorials</li>
-                <li>• Priority support channel</li>
-              </ul>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -229,7 +221,7 @@ export default function Footer() {
             </div>
             <div className='text-center lg:text-right'>
               <p className='text-sm text-gray-500 mb-2 font-medium'>
-                © 2025 Black Market Hub. All rights reserved.
+                © 2025 Crack Market Hub. All rights reserved.
               </p>
               <p className='text-xs text-gray-600 flex items-center justify-center lg:justify-end space-x-2'>
                 <FaSkull className='text-red-500 animate-pulse' />

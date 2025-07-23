@@ -306,7 +306,7 @@ export default function Header() {
 
             {/* Menú de navegación */}
             {isOpen && (
-                <div className='fixed inset-0 bg-black/40 backdrop-blur-lg z-50 transition-all duration-500' onClick={handleBackdropClick}>
+                <div className='fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-all duration-500' onClick={handleBackdropClick}>
                     <div className='fixed top-0 right-0 h-full w-full max-w-md bg-gradient-to-b from-gray-900/98 to-black/98 border-l border-red-500/30 shadow-2xl transform transition-all duration-500 backdrop-blur-xl' onClick={handleChildClick}>
                         {/* Glowing edge effect */}
                         
@@ -363,6 +363,9 @@ export default function Header() {
                                             <>
                                                 <p className='text-white font-semibold text-lg'>{user.name || 'User'}</p>
                                                 <p className='text-gray-400 text-sm'>{user.email || 'user@blackmarket.com'}</p>
+                                                {user.role === 'admin' && (
+                                                    <Link href='/admin' className='text-gray-400 text-sm'>Go to Dashboard Admin</Link>  
+                                                )}
                                             </>
                                         ) : (
                                             <>
@@ -404,7 +407,7 @@ export default function Header() {
                             <div className='mt-auto pt-8 border-t border-gray-800/50'>
                                 <div className='text-center text-xs text-gray-500 space-y-2'>
                                     <div className='bg-gray-800/30 rounded-xl p-4'>
-                                        <p className='font-medium text-red-400'>© 2025 Black Market Hub</p>
+                                        <p className='font-medium text-red-400'>© 2025 Crack Market Hub</p>
                                         <p className='mt-1'>Underground Apps Network</p>
                                         <div className='flex justify-center items-center mt-2 space-x-1'>
                                             <span className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></span>

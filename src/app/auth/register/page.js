@@ -63,7 +63,7 @@ export default function RegisterPage() {
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center mb-4">
                         <FaSkull className="text-4xl text-red-500 animate-pulse" />
-                        <span className="ml-3 text-2xl font-bold text-white">Black Market</span>
+                        <span className="ml-3 text-2xl font-bold text-white">Crack Market</span>
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-2">Join the Market</h1>
                     <p className="text-gray-400">Create your account to access premium apps</p>
