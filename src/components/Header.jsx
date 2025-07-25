@@ -198,7 +198,7 @@ export default function Header() {
                                 </div>
                                 <div className="relative">
                                     <h1 className="text-2xl font-bold bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent">
-                                        APPS<span className="text-red-500">[</span>CRACKED<span className="text-red-500">]</span>
+                                        CRACK<span className="text-red-500">[</span>MARKET<span className="text-red-500">]</span>
                                     </h1>
                                 </div>
                             </Link>
@@ -217,11 +217,11 @@ export default function Header() {
     return (
         <>
             {/* Matrix Rain Background */}
-            <div className="fixed top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
+            <div className="fixed z-[-1] top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
                 <div className="matrix-rain opacity-20"></div>
             </div>
 
-            <header className="sticky top-0 bg-black/95 backdrop-blur-md border-b-2 border-red-500 shadow-2xl z-50">
+            <header className="sticky top-0 bg-black/45 backdrop-blur-md border-b-2 border-red-500 shadow-2xl z-50">
                 {/* Scan Lines Effect */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-pulse"></div>
                 <div className="scan-lines"></div>
@@ -256,7 +256,7 @@ export default function Header() {
                                     {isMounted && window.innerWidth < 640 ? (
                                         <>AC<span className="text-red-500">[</span>C<span className="text-red-500">]</span></>
                                     ) : (
-                                        <>APPS<span className="text-red-500">[</span>CRACKED<span className="text-red-500">]</span></>
+                                        <>CRACK<span className="text-red-500">[</span>MARKET<span className="text-red-500">]</span></>
                                     )}
                                 </h1>
                                 <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-transparent"></div>
@@ -293,16 +293,12 @@ export default function Header() {
 
                         {/* Navigation - Hidden on mobile */}
                         <nav className="hidden xl:flex items-center space-x-4">
-                            {[
-                                { href: '/', label: 'HOME', icon: FaTerminal },
-                                { href: '/categories', label: 'CATEGORIES', icon: FaCode },
-                                { href: '/latest', label: 'LATEST', icon: FaShieldAlt }
-                            ].map((item, index) => (
+                            {navigationItems.map((item, index) => (    
                                 <Link key={item.href} href={item.href} className="group relative">
                                     <div className="flex items-center space-x-2 px-3 py-2 border border-transparent hover:border-red-500 transition-all duration-300 bg-black/50 hover:bg-red-500/10">
-                                        <item.icon className="text-red-500 group-hover:text-red-400" />
+                                        <span className="text-red-500 group-hover:text-red-400">{item.icon}</span>
                                         <span className="text-gray-300 group-hover:text-red-400 font-mono text-xs tracking-wider">
-                                            {item.label}
+                                            {item.name}
                                         </span>
                                     </div>
                                     <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300"></div>

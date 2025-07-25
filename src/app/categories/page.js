@@ -500,16 +500,21 @@ function CategoriesContent() {
                                                                     onClick={() => handleAppClick(app)}
                                                                     className="bg-gray-800/50 border border-gray-700 hover:border-red-500 p-2 transition-all group/app"
                                                                 >
-                                                                    {app.icon ? (
+                                                                    {app.images && app.images.length > 0 ? (
                                                                         <Image
-                                                                            src={app.icon}
+                                                                            src={app.images[0]}
                                                                             alt={app.name}
                                                                             width={48}
                                                                             height={48}
-                                                                            className="w-full h-12 object-cover mb-2"
+                                                                            className='w-50 h-10 object-contain mb-2'
+                                                                            onError={(e) => {
+                                                                                e.target.style.display = 'none'
+                                                                                e.target.nextSibling.style.display = 'flex'
+                                                                            }}
                                                                         />
-                                                                    ) : (
-                                                                        <div className="w-full h-12 bg-gray-700 flex items-center justify-center mb-2">
+                                                                    ) : null}
+                                                                    {(!app.images || app.images.length === 0) && (
+                                                                        <div className="w-full h-12 bg-gray-700 flex items-center justify-center mb-2 rounded">
                                                                             <MdApps className="text-gray-500" />
                                                                         </div>
                                                                     )}

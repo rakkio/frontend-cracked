@@ -39,7 +39,7 @@ const SEOHead = ({ stats, featuredApps, pageData = {} }) => {
       <meta name="keywords" content={metaTags.keywords} />
       <meta name="robots" content={metaTags.robots} />
       <meta name="author" content={metaTags.author} />
-      <link rel="canonical" href="https://appscracked.com/" />
+      <link rel="canonical" href="https://crackmarket.xyz/" />
       
       {/* Open Graph */}
       <meta property="og:title" content={ogTags.title} />

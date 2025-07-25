@@ -699,3 +699,220 @@ h3 {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #dc2626, #b91c1c);
 }
+
+/* Metro Tile Sizes */
+.metro-tile-small {
+  width: 120px;
+  height: 120px;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.metro-tile-large {
+  width: 200px;
+  height: 120px;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .metro-tile-large {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* Metro Tile Content */
+.metro-tile-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.metro-tile-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+/* Optimización de animaciones para mejor rendimiento */
+
+/* Scan Lines Effect - Optimizado */
+.scan-lines {
+  background: linear-gradient(
+    90deg,
+    transparent 98%,
+    rgba(255, 0, 0, 0.03) 100%
+  );
+  background-size: 3px 100%;
+  animation: scan-lines 0.1s linear infinite;
+  pointer-events: none;
+  will-change: background-position;
+  transform: translateZ(0); /* Forzar capa de composición */
+}
+
+@keyframes scan-lines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+/* Typewriter Animation - Optimizado */
+.animate-typewriter {
+  overflow: hidden;
+  border-right: 2px solid #ef4444;
+  white-space: nowrap;
+  animation: typewriter 3s steps(40, end), blink-caret 0.75s step-end infinite;
+  display: inline-block;
+  will-change: width;
+  transform: translateZ(0);
+}
+
+@keyframes typewriter {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #ef4444;
+  }
+}
+
+/* Float Animation - Optimizado */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateZ(0);
+  }
+  50% {
+    transform: translateY(-10px) translateZ(0);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 2s;
+  will-change: transform;
+}
+
+/* Pulse Animation - Optimizado */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity;
+}
+
+/* Optimización general para elementos animados */
+.animate-pulse,
+.animate-float,
+.animate-float-delayed,
+.animate-typewriter {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimización de transiciones */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Optimización de contenido para evitar layout shifts */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-style {
+  contain: style;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-all {
+  contain: layout style paint;
+}
+
+/* Float Delayed Animation */
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Terminal Text Effect */
+.terminal-text {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+
+/* Enhanced Z-index for content visibility */
+.relative.z-10 {
+  z-index: 10;
+}
+
+/* Ensure content is visible over backgrounds */
+.container {
+  position: relative;
+  z-index: 10;
+}
