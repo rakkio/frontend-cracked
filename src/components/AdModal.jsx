@@ -26,67 +26,40 @@ export default function AdModal() {
     const modalRef = useRef()
     const scriptContainerRef = useRef()
 
-    // Debug: Log when modal state changes
-    console.log('=== AdModal Render ===')
-    console.log('isAdModalOpen:', isAdModalOpen)
-    console.log('pendingDownload:', pendingDownload)
-    console.log('advertisement:', advertisement)
-    console.log('loading:', loading)
+
 
     // Load advertisement when modal opens
     useEffect(() => {
-        console.log('=== useEffect [isAdModalOpen, pendingDownload, advertisement] ===')
-        console.log('isAdModalOpen:', isAdModalOpen)
-        console.log('pendingDownload:', pendingDownload) 
-        console.log('advertisement:', advertisement)
+
         
         if (isAdModalOpen && pendingDownload && !advertisement && !loading && !error) {  // Don't retry if error
-            console.log('📢 Calling loadAdvertisement()')
             loadAdvertisement()
         } else {
-            console.log('🚫 Not calling loadAdvertisement because:')
-            console.log('  - isAdModalOpen:', isAdModalOpen)
-            console.log('  - pendingDownload:', !!pendingDownload)
-            console.log('  - advertisement:', !!advertisement)
-            console.log('  - loading:', loading)
-            console.log('  - error:', !!error)  // Add error to logs
+
         }
     }, [isAdModalOpen, pendingDownload, advertisement, loading, error])  // Add error to dependencies
 
     // Load and inject script when advertisement is loaded
     useEffect(() => {
-        console.log('=== useEffect [advertisement] triggered ===')
-        console.log('advertisement exists:', !!advertisement)
-        console.log('scriptLoaded:', scriptLoaded) 
-        console.log('scriptError:', scriptError)
+
         
         if (advertisement && !scriptLoaded && !scriptError) {
-            console.log('🎯 Calling loadAdScript()!')
             loadAdScript()
         } else {
-            console.log('🚫 NOT calling loadAdScript because:')
-            console.log('  - advertisement:', !!advertisement)
-            console.log('  - scriptLoaded:', scriptLoaded)
-            console.log('  - scriptError:', scriptError)
+  
         }
     }, [advertisement, scriptLoaded, scriptError])  // Add dependencies
 
     // Clean up script when modal closes
     useEffect(() => {
-        console.log('=== useEffect [isAdModalOpen] triggered ===')
-        console.log('isAdModalOpen:', isAdModalOpen)
-        
         if (!isAdModalOpen) {
-            console.log('🧹 Modal closed, cleaning up...')
             cleanupScript()
             resetState()
         } else {
-            console.log('✅ Modal is open, no cleanup needed')
         }
     }, [isAdModalOpen])
 
     const resetState = () => {
-        console.log('🔄 resetState() called - resetting all states')
         setAdvertisement(null)
         setLoading(false)
         setError(null)
@@ -99,13 +72,10 @@ export default function AdModal() {
         try {
             setLoading(true)
             setError(null)
-            
-            console.log('=== Loading Advertisement ===')
-            console.log('Pending download:', pendingDownload)
+    
 
             // Set a fallback timeout - if no response in 10 seconds, proceed with download
             const fallbackTimeout = setTimeout(() => {
-                console.log('⏰ Advertisement loading timeout - proceeding with download...')
                 handleFallbackDownload('Advertisement loading timeout')
             }, 10000)
 
@@ -120,8 +90,7 @@ export default function AdModal() {
                         placement: placement,
                         page: window.location.pathname
                     }
-                    console.log('API request params:', requestParams)
-                    console.log(`Searching for ads with placement: ${placement}`)
+
 
                     // Add timeout to the API request
                     const controller = new AbortController()
@@ -129,15 +98,12 @@ export default function AdModal() {
 
                     const response = await api.getActiveAdvertisement(requestParams)
                     clearTimeout(timeoutId)
-                    console.log('API response:', response)
                     
                     if (response?.data?.advertisement) {
                         advertisement = response.data.advertisement
-                        console.log(`✅ Found advertisement with placement: ${placement}`)
                         break
                     }
                 } catch (error) {
-                    console.log(`❌ No ads found for placement: ${placement} - ${error.message}`)
                     continue
                 }
             }
@@ -146,28 +112,20 @@ export default function AdModal() {
             clearTimeout(fallbackTimeout)
             
             if (!advertisement) {
-                console.log('❌ No advertisements found with any placement')
-                console.log('💡 Make sure you have an active advertisement with:')
-                console.log('   - type: "download"')
-                console.log('   - placement: "before_download", "button_click", or "after_download"') 
-                console.log('   - isActive: true')
+
                 
                 handleFallbackDownload('No active advertisements found')
                 return
             }
 
-            console.log('Advertisement loaded:', advertisement)
             setAdvertisement(advertisement)
 
             // Track impression
             try {
                 await api.trackAdvertisementImpression(advertisement._id)
-                console.log('Impression tracked for ad:', advertisement._id)
             } catch (trackError) {
-                console.warn('Failed to track impression:', trackError)
             }
         } catch (error) {
-            console.error('❌ Error loading advertisement:', error)
             handleFallbackDownload(`Advertisement loading error: ${error.message}`)
         } finally {
             setLoading(false)
@@ -175,12 +133,10 @@ export default function AdModal() {
     }
 
     const handleFallbackDownload = (reason) => {
-        console.log(`🎯 Handling fallback download: ${reason}`)
         setError(`${reason} - Proceeding with download...`)
         
         // Show fallback message for 2 seconds then proceed
         setTimeout(() => {
-            console.log('🎯 Proceeding with fallback download')
             const download = proceedWithDownload()
             if (download) {
                 closeAdModal()
@@ -190,22 +146,13 @@ export default function AdModal() {
     }
 
     const loadAdScript = () => {
-        console.log('=== loadAdScript() called ===')
-        console.log('advertisement exists:', !!advertisement)
-        console.log('advertisement.script exists:', !!advertisement?.script)
-        console.log('scriptContainerRef.current exists:', !!scriptContainerRef.current)
-        
         if (!advertisement?.script || !scriptContainerRef.current) {
-            console.log('❌ Missing requirements for script loading:')
-            console.log('  - advertisement?.script:', !!advertisement?.script)
-            console.log('  - scriptContainerRef.current:', !!scriptContainerRef.current)
+ 
             return
         }
 
         try {
-            console.log('=== Loading Ad Script ===')
-            console.log('Script content preview:', advertisement.script.substring(0, 100) + '...')
-            
+
             // Clear container
             scriptContainerRef.current.innerHTML = ''
 
@@ -213,7 +160,6 @@ export default function AdModal() {
             const isUrl = advertisement.script.startsWith('http://') || advertisement.script.startsWith('https://')
             
             if (isUrl) {
-                console.log('🔗 Script is a URL, creating external script tag')
                 
                 // Create external script element
                 const scriptElement = document.createElement('script')
@@ -222,22 +168,18 @@ export default function AdModal() {
                 scriptElement.async = true
                 
                 scriptElement.onload = () => {
-                    console.log('✅ External script loaded successfully')
                     setScriptLoaded(true)
                     startAdTimer()
                 }
                 
                 scriptElement.onerror = () => {
-                    console.error('❌ Failed to load external script')
                     setScriptError(true)
                 }
                 
                 // Add to container
                 scriptContainerRef.current.appendChild(scriptElement)
-                console.log('📄 External script added to DOM')
                 
             } else {
-                console.log('📜 Script is HTML content, parsing for script tags')
                 
                 // Create container for the script
                 const scriptContainer = document.createElement('div')
@@ -245,12 +187,10 @@ export default function AdModal() {
 
                 // Find and execute script tags
                 const scripts = scriptContainer.getElementsByTagName('script')
-                console.log('Found', scripts.length, 'script tags')
 
                 if (scripts.length === 0) {
                     // No script tags, just insert content as HTML
                     scriptContainerRef.current.appendChild(scriptContainer)
-                    console.log('✅ No script tags, inserted as HTML content')
                     setScriptLoaded(true)
                     startAdTimer()
                     return
@@ -260,11 +200,7 @@ export default function AdModal() {
                 let executedScripts = 0
                 Array.from(scripts).forEach((oldScript, index) => {
                     const newScript = document.createElement('script')
-                    
-                    console.log(`Processing script ${index + 1}:`)
-                    console.log('- Has src:', !!oldScript.src)
-                    console.log('- Has content:', !!oldScript.textContent)
-                    
+
                     // Copy attributes
                     Array.from(oldScript.attributes).forEach(attr => {
                         newScript.setAttribute(attr.name, attr.value)
@@ -273,7 +209,6 @@ export default function AdModal() {
                     if (oldScript.src) {
                         // External script - use onload
                         newScript.onload = () => {
-                            console.log(`✅ External script ${index + 1} loaded`)
                             executedScripts++
                             if (executedScripts === scripts.length) {
                                 setScriptLoaded(true)
@@ -282,7 +217,6 @@ export default function AdModal() {
                         }
 
                         newScript.onerror = () => {
-                            console.error(`❌ External script ${index + 1} failed`)
                             setScriptError(true)
                         }
 
@@ -290,13 +224,11 @@ export default function AdModal() {
                     } else {
                         // Inline script - execute immediately 
                         newScript.textContent = oldScript.textContent
-                        console.log(`✅ Inline script ${index + 1} ready for execution`)
                         executedScripts++
                     }
 
                     // Add to container (this will execute inline scripts)
                     scriptContainerRef.current.appendChild(newScript)
-                    console.log(`📄 Script ${index + 1} appended to DOM`)
                 })
 
                 // Add non-script content
@@ -307,13 +239,11 @@ export default function AdModal() {
                 
                 if (nonScriptContent.innerHTML.trim()) {
                     scriptContainerRef.current.appendChild(nonScriptContent)
-                    console.log('📄 Non-script content added')
                 }
 
                 // For inline scripts, consider them loaded immediately
                 const inlineScripts = Array.from(scripts).filter(s => !s.src)
                 if (inlineScripts.length > 0 && executedScripts >= inlineScripts.length) {
-                    console.log('✅ All inline scripts executed, starting timer')
                     setScriptLoaded(true)
                     startAdTimer()
                 }
@@ -322,7 +252,6 @@ export default function AdModal() {
                 if (Array.from(scripts).some(s => s.src)) {
                     setTimeout(() => {
                         if (!scriptLoaded && !scriptError) {
-                            console.warn('⏰ Ad script loading timeout')
                             setScriptError(true)
                         }
                     }, 10000) // 10 second timeout
@@ -330,7 +259,6 @@ export default function AdModal() {
             }
 
         } catch (error) {
-            console.error('❌ Error injecting ad script:', error)
             setScriptError(true)
         }
     }
@@ -352,7 +280,6 @@ export default function AdModal() {
     // Auto-proceed when timer finishes
     useEffect(() => {
         if (canProceed && verificationPassed && adViewed && adTimer === 0) {
-            console.log('🎯 Auto-proceeding with download after countdown...')
             
             // Small delay to show completion state
             setTimeout(() => {
@@ -430,7 +357,6 @@ export default function AdModal() {
             // Track click
             if (advertisement?._id) {
                 await api.trackAdvertisementClick(advertisement._id)
-                console.log('Click tracked for ad:', advertisement._id)
             }
 
             const download = proceedWithDownload()
@@ -492,11 +418,9 @@ export default function AdModal() {
     const canClose = advertisement?.settings?.closable || scriptError || error
 
     if (!isAdModalOpen) {
-        console.log('❌ Modal not open, returning null')
         return null
     }
 
-    console.log('✅ Modal is open, rendering modal')
 
     return (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4">

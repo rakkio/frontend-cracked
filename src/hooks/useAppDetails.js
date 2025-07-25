@@ -44,7 +44,6 @@ export function useAppDetails(slug) {
                         const relatedAppsData = relatedResponse.data?.apps || relatedResponse.apps || []
                         setRelatedApps(relatedAppsData)
                     } catch (relatedError) {
-                        console.warn('Failed to fetch related apps:', relatedError)
                         setRelatedApps([])
                     }
                 }
@@ -63,7 +62,6 @@ export function useAppDetails(slug) {
                     }
                 }
             } catch (err) {
-                console.error('Error fetching app:', err)
                 setError(err.message || 'Failed to load app')
             } finally {
                 setLoading(false)
@@ -76,7 +74,6 @@ export function useAppDetails(slug) {
     const handleDownload = () => {
         if (!app) return
     
-        console.log('🎯 Starting download process for:', app.name)
         
         // Prepare download data for ad-redirect page
         const downloadData = {
@@ -86,13 +83,11 @@ export function useAppDetails(slug) {
             timestamp: Date.now()
         }
         
-        console.log('💾 Saving download data to sessionStorage:', downloadData)
         
         // Save to sessionStorage for ad-redirect page
         sessionStorage.setItem('pendingDownload', JSON.stringify(downloadData))
         
         // Redirect to ad-redirect page instead of non-existent download page
-        console.log('🔄 Redirecting to ad-redirect page')
         router.push('/ad-redirect')
     }
 

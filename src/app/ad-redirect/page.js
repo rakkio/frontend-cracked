@@ -74,43 +74,34 @@ function AdRedirectContent() {
         
         detectDevice()
         
-        console.log('=== Ad Redirect Page Loaded ===')
         
         // Pequeño delay para asegurar que sessionStorage esté disponible
         setTimeout(() => {
             // Get pending download from sessionStorage
-            console.log('🔍 Checking sessionStorage for pending download...')
             const storedDownload = sessionStorage.getItem('pendingDownload')
-            console.log('Raw sessionStorage data:', storedDownload)
             
             if (storedDownload) {
                 try {
                     const downloadData = JSON.parse(storedDownload)
-                    console.log('📦 Parsed download data:', downloadData)
                     
                     // Validar que los datos son válidos
                     if (!downloadData.url || !downloadData.appName) {
-                        console.error('❌ Invalid download data structure')
                         setError('Invalid download data')
                         handleDirectDownload()
                         return
                     }
                     
                     setPendingDownload(downloadData)
-                    console.log('✅ Download data set successfully')
                     
                     // Load advertisement data
                     loadAdvertisement()
                     
                 } catch (e) {
-                    console.error('❌ Failed to parse pending download:', e)
                     setError('Invalid download data format')
                     handleDirectDownload()
                     return
                 }
             } else {
-                console.error('❌ No pending download found in sessionStorage')
-                console.log('Available sessionStorage keys:', Object.keys(sessionStorage))
                 setError('No download information found')
                 handleDirectDownload()
                 return
@@ -126,7 +117,6 @@ function AdRedirectContent() {
     }, [])
     
     const loadAdvertisement = async () => {
-        console.log('🔄 Loading advertisement data...')
         
         // Detect ad blockers first
         detectAdBlock()
@@ -139,7 +129,6 @@ function AdRedirectContent() {
                 page: '/app/' // Generic app page reference
             })
             
-            console.log('Advertisement response:', response)
             
             if (!response?.data?.advertisement) {
                 // Try to get other placements as fallback
@@ -154,7 +143,6 @@ function AdRedirectContent() {
                         })
                         
                         if (fallbackResponse?.data?.advertisement) {
-                            console.log(`✅ Found fallback ad with placement: ${placement}`)
                             const ad = fallbackResponse.data.advertisement
                             setAdvertisement(ad)
                             setAvailableAds([ad])
@@ -166,7 +154,6 @@ function AdRedirectContent() {
                     }
                 }
                 
-                console.warn('No advertisement found with any placement, proceeding with direct download')
                 handleDirectDownload()
                 return
             }
@@ -175,20 +162,10 @@ function AdRedirectContent() {
             setAdvertisement(ad)
             setAvailableAds([ad]) // For now, single ad - can be extended to multiple
             
-            console.log('🔍 Advertisement loaded:', {
-                id: ad._id,
-                name: ad.name,
-                type: ad.type,
-                crackmarketEnabled: ad.crackmarket?.enabled,
-                adFormat: ad.crackmarket?.adFormat,
-                hasDirectLink: !!ad.crackmarket?.directLink,
-                hasScript: !!ad.script
-            })
-            
+
             // Track impression
             try {
                 await api.trackAdvertisementImpression(ad._id)
-                console.log('📊 Advertisement impression tracked')
             } catch (trackError) {
                 console.warn('Failed to track impression:', trackError)
             }
@@ -204,10 +181,8 @@ function AdRedirectContent() {
     }
     
     const handleAdvertisementType = async (ad) => {
-        console.log('🎯 Handling advertisement type:', ad.crackmarket?.adFormat || ad.type)
         
         if (!ad.crackmarket?.enabled) {
-            console.log('Crackmarket not enabled, using fallback')
             handleDirectDownload()
             return
         }
@@ -227,14 +202,12 @@ function AdRedirectContent() {
                 break
                 
             default:
-                console.log('Unknown ad format, using script-based handler')
                 await handleScriptBasedAd(ad)
                 break
         }
     }
     
     const handleDirectLink = async (ad) => {
-        console.log('🔗 Handling direct link advertisement')
         
         if (!ad.crackmarket?.directLink) {
             console.error('No direct link provided')
@@ -243,8 +216,6 @@ function AdRedirectContent() {
             return
         }
         
-        console.log('Direct link URL:', ad.crackmarket.directLink)
-        console.log('Advertisement settings:', ad.settings)
         
         // Use settings from advertisement
         const adCountdown = ad.settings?.countdown || 15
@@ -252,19 +223,15 @@ function AdRedirectContent() {
         const autoClose = ad.settings?.autoClose || false
         const autoCloseDelay = ad.settings?.autoCloseDelay || 30
         
-        console.log('Using countdown:', adCountdown, 'seconds')
-        console.log('Closable:', isClosable, 'AutoClose:', autoClose)
         
         // Track click
         try {
             await api.trackAdvertisementClick(ad._id)
-            console.log('📊 Advertisement click tracked')
         } catch (trackError) {
             console.warn('Failed to track click:', trackError)
         }
         
         // For direct links, open in new tab and proceed with download
-        console.log('🎯 Direct link strategy: open ad in new tab, download after countdown')
         
         setAdLoaded(true)
         setCanSkip(isClosable) // Use closable setting
@@ -281,13 +248,10 @@ function AdRedirectContent() {
             
             if (directLinkCountdown <= 0) {
                 clearInterval(directLinkInterval)
-                console.log('⏰ Direct link countdown finished, starting download')
                 
                 if (autoClose) {
-                    console.log('🔄 Auto-close enabled, proceeding with download')
                     proceedWithDownload()
                 } else {
-                    console.log('⏸️ Auto-close disabled, waiting for user action')
                     // User needs to click the download button
                 }
             }
@@ -295,8 +259,6 @@ function AdRedirectContent() {
     }
     
     const handleScriptBasedAd = async (ad) => {
-        console.log('📜 Handling script-based advertisement')
-        console.log('Advertisement settings:', ad.settings)
         
         if (!ad.script) {
             console.error('No script provided for advertisement')
@@ -311,8 +273,6 @@ function AdRedirectContent() {
         const autoClose = ad.settings?.autoClose || false
         const verificationRequired = ad.settings?.verificationRequired !== false
         
-        console.log('Using countdown:', adCountdown, 'seconds')
-        console.log('Closable:', isClosable, 'AutoClose:', autoClose, 'Verification:', verificationRequired)
         
         try {
             await injectAdScript(ad)
@@ -340,7 +300,6 @@ function AdRedirectContent() {
     }
     
     const injectAdScript = async (ad) => {
-        console.log('💉 Injecting advertisement script...')
         
         if (!adContainerRef.current || scriptLoadedRef.current) {
             return
@@ -354,7 +313,6 @@ function AdRedirectContent() {
             const isScriptUrl = ad.script.trim().startsWith('http://') || ad.script.trim().startsWith('https://')
             
             if (isScriptUrl) {
-                console.log('🔗 Loading external script:', ad.script)
                 
                 // Create script element for external script
                 const scriptElement = document.createElement('script')
@@ -363,7 +321,6 @@ function AdRedirectContent() {
                 scriptElement.type = 'text/javascript'
                 
                 scriptElement.onload = () => {
-                    console.log('✅ External script loaded successfully')
                     scriptLoadedRef.current = true
                 }
                 
@@ -375,7 +332,6 @@ function AdRedirectContent() {
                 adContainerRef.current.appendChild(scriptElement)
                 
             } else {
-                console.log('📝 Injecting HTML/JavaScript content')
                 
                 // Create container div
                 const container = document.createElement('div')
@@ -383,7 +339,6 @@ function AdRedirectContent() {
                 
                 // Find and execute any script tags
                 const scripts = container.getElementsByTagName('script')
-                console.log(`Found ${scripts.length} script tags`)
                 
                 for (let i = 0; i < scripts.length; i++) {
                     const script = scripts[i]
@@ -407,7 +362,6 @@ function AdRedirectContent() {
                 
                 adContainerRef.current.appendChild(container)
                 scriptLoadedRef.current = true
-                console.log('✅ HTML content injected successfully')
             }
             
         } catch (error) {
@@ -417,20 +371,15 @@ function AdRedirectContent() {
     }
     
     const startCountdown = (initialTime, autoClose = false, verificationRequired = true) => {
-        console.log('⏰ Starting countdown from:', initialTime, 'seconds')
-        console.log('AutoClose:', autoClose, 'Verification required:', verificationRequired)
         
         countdownIntervalRef.current = setInterval(() => {
             setCountdown(prev => {
                 if (prev <= 1) {
                     clearInterval(countdownIntervalRef.current)
-                    console.log('⏰ Countdown finished')
                     
                     if (autoClose) {
-                        console.log('🔄 Auto-close enabled, proceeding with download')
                         proceedWithDownload()
                     } else {
-                        console.log('⏸️ Auto-close disabled, user must click download button')
                         // Just stop countdown, user needs to click download button
                     }
                     return 0
@@ -441,16 +390,13 @@ function AdRedirectContent() {
     }
     
     const proceedWithDownload = async () => {
-        console.log('🎯 Proceeding with download')
         
         if (pendingDownload) {
-            console.log('Download URL:', pendingDownload.url)
             
             // Track conversion
             if (advertisement?._id) {
                 try {
                     await api.trackAdvertisementConversion(advertisement._id)
-                    console.log('📊 Advertisement conversion tracked')
                 } catch (trackError) {
                     console.warn('Failed to track conversion:', trackError)
                 }
@@ -483,7 +429,6 @@ function AdRedirectContent() {
     }
     
     const handleDirectDownload = () => {
-        console.log('🔄 Proceeding with direct download (no ads)')
         
         // Update UI to show direct download
         setError(null)
@@ -492,12 +437,10 @@ function AdRedirectContent() {
         
         setTimeout(() => {
             if (pendingDownload) {
-                console.log('📥 Starting direct download:', pendingDownload.url)
                 
                 // Track direct download if possible
                 try {
                     // Could track this as a direct download event
-                    console.log('📊 Direct download initiated')
                 } catch (trackError) {
                     console.warn('Failed to track direct download:', trackError)
                 }
@@ -528,7 +471,6 @@ function AdRedirectContent() {
     }
     
     const handleSkip = async () => {
-        console.log('⏭️ User skipped advertisement')
         
         if (countdownIntervalRef.current) {
             clearInterval(countdownIntervalRef.current)
@@ -538,7 +480,6 @@ function AdRedirectContent() {
         if (advertisement?._id) {
             try {
                 await api.trackAdvertisementClick(advertisement._id)
-                console.log('📊 Advertisement click tracked (skip)')
             } catch (trackError) {
                 console.warn('Failed to track click:', trackError)
             }
@@ -546,7 +487,6 @@ function AdRedirectContent() {
         
         // Try to load another advertisement instead of proceeding with download
         if (availableAds.length > 1 && currentAdIndex < availableAds.length - 1) {
-            console.log('🔄 Loading next available advertisement...')
             const nextAdIndex = currentAdIndex + 1
             setCurrentAdIndex(nextAdIndex)
             const nextAd = availableAds[nextAdIndex]
@@ -554,7 +494,6 @@ function AdRedirectContent() {
             await handleAdvertisementType(nextAd)
         } else {
             // Try to get a different advertisement from backend
-            console.log('🔄 Trying to get different advertisement...')
             try {
                 const response = await api.getActiveAdvertisement({
                     type: 'download',
@@ -563,19 +502,16 @@ function AdRedirectContent() {
                 })
                 
                 if (response?.data?.advertisement && response.data.advertisement._id !== advertisement._id) {
-                    console.log('✅ Found different advertisement')
                     const newAd = response.data.advertisement
                     setAdvertisement(newAd)
                     setAvailableAds([...availableAds, newAd])
                     setCurrentAdIndex(availableAds.length)
                     await handleAdvertisementType(newAd)
                 } else {
-                    console.log('ℹ️ No different advertisement available, proceeding with download')
                     proceedWithDownload()
                 }
       } catch (error) {
                 console.error('❌ Error loading different advertisement:', error)
-                console.log('ℹ️ Proceeding with download due to error')
                 proceedWithDownload()
             }
         }
@@ -618,14 +554,12 @@ function AdRedirectContent() {
     
     // Enhanced skip function
     const handleEnhancedSkip = () => {
-        console.log('🔄 Enhanced skip triggered')
         // Add skip logic here
         handleSkip()
     }
     
     // Enhanced download function
     const proceedWithEnhancedDownload = () => {
-        console.log('⬇️ Enhanced download triggered')
         // Add enhanced download logic here
         proceedWithDownload()
     }
@@ -648,7 +582,6 @@ function AdRedirectContent() {
     
     // Anti-adblock detection
     const detectAdBlock = () => {
-        console.log('🔍 Detecting ad blockers...')
         
         // Method 1: Try to create ad-like element
         const adElement = document.createElement('div')
@@ -686,17 +619,11 @@ function AdRedirectContent() {
             
             const adBlockActive = isBlocked || extensionDetected || isBrave
             
-            console.log('🛡️ AdBlock detection results:', {
-                elementBlocked: isBlocked,
-                extensionDetected: extensionDetected,
-                isBrave: isBrave,
-                adBlockActive: adBlockActive
-            })
+      
             
             setAdBlockDetected(adBlockActive)
             
             if (adBlockActive) {
-                console.log('🚨 AdBlock detected - using anti-adblock strategy')
             }
         }, 100)
     }

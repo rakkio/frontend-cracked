@@ -1,8 +1,8 @@
-import { api } from '@/lib/api'
 import { siteConfig } from './metadata'
 
 export default async function sitemap() {
     const baseUrl = siteConfig.url.replace(/\/$/, '') // Remove trailing slash
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
     // Static pages with proper URL structure
     const staticPages = [
@@ -86,20 +86,90 @@ export default async function sitemap() {
         }
     ]
 
+    // Direct API call without authentication for server-side rendering
+    const makeAPICall = async (endpoint) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // No authentication headers for public endpoints
+                },
+                cache: 'no-store' // Ensure fresh data for sitemap
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+
+            return await response.json()
+        } catch (error) {
+            console.error(`❌ API call failed for ${endpoint}:`, error.message)
+            return null
+        }
+    }
+
     try {
-        // Use Promise.allSettled for better error handling
+        
+        // Function to fetch all apps with pagination (respecting 100 limit)
+        const fetchAllApps = async () => {
+            const allApps = []
+            let page = 1
+            let hasMore = true
+            const limit = 100 // Respect backend validation limit
+            
+            while (hasMore && allApps.length < 1000) { // Limit total to 1000 for performance
+                try {
+                    const response = await makeAPICall(`/apps?page=${page}&limit=${limit}&isActive=true`)
+                    
+                    if (!response || !response.success) {
+                        console.error(`❌ API response error for page ${page}:`, response?.message || 'Unknown error')
+                        break
+                    }
+                    
+                    const apps = response?.data?.apps || []
+                    allApps.push(...apps)
+                    
+                    // Check if there are more pages
+                    const pagination = response?.data?.pagination
+                    hasMore = pagination?.hasNext || false
+                    page++
+                    
+                    
+                    // Safety break to avoid infinite loops
+                    if (page > 20) {
+                        console.log('⚠️ Reached maximum page limit (20), stopping pagination')
+                        break
+                    }
+                } catch (error) {
+                    console.error(`❌ Error fetching apps page ${page}:`, error.message)
+                    break
+                }
+            }
+            
+            return allApps
+        }
+
+        // Fetch categories and apps with better error handling
         const [categoriesResult, appsResult] = await Promise.allSettled([
-            api.getCategories().catch(err => {
-                console.warn('Failed to fetch categories for sitemap:', err.message)
-                return { categories: [] }
+            makeAPICall('/categories').then(response => {
+                console.log('📂 Categories API response:', {
+                    success: !!response?.success,
+                    categoriesCount: response?.categories?.length || 0
+                })
+                return response
             }),
-            api.getApps({ limit: 500, isActive: true }).catch(err => {
-                console.warn('Failed to fetch apps for sitemap:', err.message)
-                return { data: { apps: [] } }
+            
+            fetchAllApps().then(apps => {
+                console.log('📱 All apps fetched:', {
+                    totalApps: apps.length
+                })
+                return { data: { apps } }
             })
         ])
 
-        const categories = categoriesResult.status === 'fulfilled' 
+        // Extract data with multiple fallback paths
+        const categories = categoriesResult.status === 'fulfilled' && categoriesResult.value?.success
             ? (categoriesResult.value?.categories || [])
             : []
         
@@ -107,8 +177,7 @@ export default async function sitemap() {
             ? (appsResult.value?.data?.apps || [])
             : []
 
-        console.log(`Generating sitemap with ${categories.length} categories and ${apps.length} apps`)
-
+   
         // Dynamic category pages with proper validation
         const categoryPages = categories
             .filter(category => {
@@ -135,50 +204,41 @@ export default async function sitemap() {
                        app.isActive !== false &&
                        app.status !== 'draft'
             })
-            .slice(0, 1000) // Limit to 1000 apps for performance
             .map((app) => ({
                 url: `${baseUrl}/app/${encodeURIComponent(app.slug)}`,
                 lastModified: new Date(app.updatedAt || app.createdAt || Date.now()),
                 changeFrequency: 'weekly',
-                priority: 0.6,
+                priority: 0.8,
             }))
 
+        // Combine all pages
         const allPages = [...staticPages, ...categoryPages, ...appPages]
-        
-        // Remove duplicates and validate URLs
-        const uniquePages = allPages
-            .filter((page, index, self) => {
-                // Remove duplicates based on URL
-                const isDuplicate = index !== self.findIndex(p => p.url === page.url)
-                if (isDuplicate) return false
-                
-                // Validate URL format
+
+        // Validate URLs and remove invalid ones
+        const validPages = allPages
+            .filter(page => {
                 try {
                     new URL(page.url)
                     return true
                 } catch {
-                    console.warn(`Invalid URL in sitemap: ${page.url}`)
                     return false
                 }
             })
             .slice(0, 50000) // Google sitemap limit
 
-        console.log(`Sitemap generated with ${uniquePages.length} unique URLs`)
 
-        return uniquePages.map(page => ({
-            url: page.url,
-            lastModified: page.lastModified,
-            changeFrequency: page.changeFrequency,
-            priority: page.priority
-        }))
+        return validPages
 
     } catch (error) {
-        console.error('Critical error generating sitemap:', error)
-        // Return only static pages if everything fails
-        return staticPages
+        
+        // Return minimal sitemap with just static pages on error
+        return staticPages.filter(page => {
+            try {
+                new URL(page.url)
+                return true
+            } catch {
+                return false
+            }
+        })
     }
 }
-
-// Ensure proper content-type headers for Google
-export const contentType = 'application/xml'
-export const dynamic = 'force-dynamic' 

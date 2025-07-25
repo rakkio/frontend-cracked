@@ -11,15 +11,7 @@ export function AdvertisingProvider({ children }) {
     const [adTimer, setAdTimer] = useState(0)
     const [canProceed, setCanProceed] = useState(false)
 
-    // Debug: Log state changes
-    useEffect(() => {
-        console.log('=== AdvertisingContext State Change ===')
-        console.log('isAdModalOpen:', isAdModalOpen)
-        console.log('pendingDownload:', pendingDownload)
-        console.log('adViewed:', adViewed)
-        console.log('adTimer:', adTimer)
-        console.log('canProceed:', canProceed)
-    }, [isAdModalOpen, pendingDownload, adViewed, adTimer, canProceed])
+
 
     // Reset ad state
     const resetAdState = useCallback(() => {

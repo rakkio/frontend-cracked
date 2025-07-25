@@ -25,11 +25,12 @@ export const CategoryPageContainer = ({
     
     return (
         <main className="min-h-screen relative" itemScope itemType="https://schema.org/CollectionPage">
-            <MetroBackground />
             
             {/* Matrix Rain Background */}
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
                 <div className="matrix-rain opacity-10"></div>
+            <MetroBackground />
+
             </div>
             
             {/* Scan Lines Effect */}
