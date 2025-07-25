@@ -1,23 +1,46 @@
 'use client'
-import React from 'react'
-import { FaBars, FaSearch, FaUser, FaTimes, FaSkull, FaSignOutAlt, FaCog, FaSpinner } from 'react-icons/fa'
-import { useState, useEffect } from 'react'
+
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { api } from '@/lib/api'
 import Logo from './Logo'
+import { 
+    FaTerminal, 
+    FaSearch, 
+    FaUser, 
+    FaSignOutAlt, 
+    FaSignInAlt, 
+    FaUserPlus, 
+    FaBars, 
+    FaTimes, 
+    FaCode, 
+    FaShieldAlt 
+} from 'react-icons/fa'
+import { MdDashboard, MdSettings, MdFavorite } from 'react-icons/md'
 
 export default function Header() {
+    // Add client-side mounting state
+    const [isMounted, setIsMounted] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [isSearchOpen, setIsSearchOpen] = useState(false)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [searchLoading, setSearchLoading] = useState(false)
     const [showResults, setShowResults] = useState(false)
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    
     const { user, isAuthenticated, logout, loading } = useAuth()
     const router = useRouter()
+    const userMenuRef = useRef(null)
     
+    // Client-side mounting effect
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
     const navigationItems = [
         { name: 'Home', href: '/', icon: '🏠' },
         { name: 'Apps', href: '/apps', icon: '📱' },
@@ -31,6 +54,7 @@ export default function Header() {
         try {
             logout()
             setIsOpen(false)
+            setIsUserMenuOpen(false)
         } catch (error) {
             console.error('Logout error:', error)
         }
@@ -57,8 +81,9 @@ export default function Header() {
         setIsSearchOpen(!isSearchOpen)
     }
 
+    // Fixed useEffect with consistent dependency array
     useEffect(() => {
-        if (isOpen || isSearchOpen) {
+        if (isOpen || isSearchOpen || isMobileMenuOpen) {
             document.body.style.overflow = 'hidden'
         } else {
             document.body.style.overflow = 'auto'
@@ -67,7 +92,7 @@ export default function Header() {
         return () => {
             document.body.style.overflow = 'auto'
         }
-    }, [isOpen, isSearchOpen])    
+    }, [isOpen, isSearchOpen, isMobileMenuOpen])
 
     const handleChildClick = (event) => {
         event.stopPropagation() 
@@ -76,20 +101,22 @@ export default function Header() {
     const handleBackdropClick = () => {
         setIsOpen(false)
         setIsSearchOpen(false)
+        setIsMobileMenuOpen(false)
     }
 
     // Search functionality
     const handleSearch = async (query) => {
-        if (!query.trim()) {
+        if (!query && !searchQuery.trim()) {
             setSearchResults([])
             setShowResults(false)
             return
         }
 
+        const searchTerm = query || searchQuery
         setSearchLoading(true)
         try {
             const response = await api.getApps({
-                search: query.trim(),
+                search: searchTerm.trim(),
                 limit: 8
             })
             setSearchResults(response.data.apps || [])
@@ -107,6 +134,12 @@ export default function Header() {
         if (searchQuery.trim()) {
             setIsSearchOpen(false)
             router.push(`/apps?search=${encodeURIComponent(searchQuery.trim())}`)
+        }
+    }
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit(e)
         }
     }
 
@@ -131,297 +164,371 @@ export default function Header() {
         return () => clearTimeout(timer)
     }, [searchQuery])
 
+    // Close user menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+                setIsUserMenuOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
+
+    // Prevent hydration mismatch by not rendering responsive elements until mounted
+    if (!isMounted) {
+        return (
+            <>
+                <div className="fixed top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
+                    <div className="matrix-rain opacity-20"></div>
+                </div>
+
+                <header className="relative bg-black/95 backdrop-blur-md border-b-2 border-red-500 shadow-2xl z-50">
+                    <div className="container mx-auto px-4">
+                        <div className="flex items-center justify-between h-16">
+                            {/* Simple logo for SSR */}
+                            <Link href="/" className="flex items-center space-x-3 group relative">
+                                <div className="relative">
+                                    <div className="relative bg-black border-2 border-red-500 p-2">
+                                        <FaTerminal className="text-red-500 text-xl" />
+                                    </div>
+                                </div>
+                                <div className="relative">
+                                    <h1 className="text-2xl font-bold bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent">
+                                        APPS<span className="text-red-500">[</span>CRACKED<span className="text-red-500">]</span>
+                                    </h1>
+                                </div>
+                            </Link>
+                            
+                            {/* Placeholder for other elements */}
+                            <div className="flex items-center space-x-4">
+                                <div className="w-8 h-8"></div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            </>
+        )
+    }
+
     return (
         <>
-            <header className='sticky top-0 z-40 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 shadow-2xl border-b border-red-500/20 backdrop-blur-xl'>
-                {/* Subtle pattern overlay */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] [background-size:20px_20px] opacity-30"></div>
+            {/* Matrix Rain Background */}
+            <div className="fixed top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
+                <div className="matrix-rain opacity-20"></div>
+            </div>
+
+            <header className="sticky top-0 bg-black/95 backdrop-blur-md border-b-2 border-red-500 shadow-2xl z-50">
+                {/* Scan Lines Effect */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-pulse"></div>
+                <div className="scan-lines"></div>
                 
-                {/* Animated glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-transparent to-red-600/10 animate-pulse"></div>
-                
-                <div className='container mx-auto px-6 py-4 relative'>
-                    <div className='flex justify-between items-center'>
-                        {/* Logo y título */}
-                        <Link href="/" className='flex items-center space-x-3 group relative z-10'>
-                            <Logo />
+                {/* Floating Code Elements - Hidden on mobile */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="floating-code text-red-500/20 text-xs font-mono hidden md:block">
+                        {['sudo access granted', 'root@system:~#', 'exploit.exe', 'bypass.dll'].map((code, i) => (
+                            <span key={i} className={`absolute animate-float-${i + 1}`} style={{
+                                left: `${20 + i * 25}%`,
+                                top: `${10 + i * 15}%`,
+                                animationDelay: `${i * 0.5}s`
+                            }}>
+                                {code}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="container mx-auto px-4">
+                    <div className="flex items-center justify-between h-16">
+                        {/* Logo Section - Fixed responsive classes */}
+                        <Link href="/" className="flex items-center group relative flex-shrink-0" style={{ gap: isMounted ? (window.innerWidth >= 768 ? '0.75rem' : '0.5rem') : '0.75rem' }}>
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-red-500 blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                                <div className="relative bg-black border-2 border-red-500 transform group-hover:scale-110 transition-transform" style={{ padding: isMounted ? (window.innerWidth >= 768 ? '0.5rem' : '0.375rem') : '0.5rem' }}>
+                                    <FaTerminal className="text-red-500" style={{ fontSize: isMounted ? (window.innerWidth >= 768 ? '1.25rem' : '1.125rem') : '1.25rem' }} />
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <h1 className="font-bold bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent" style={{ fontSize: isMounted ? (window.innerWidth >= 768 ? '1.5rem' : '1.125rem') : '1.5rem' }}>
+                                    {isMounted && window.innerWidth < 640 ? (
+                                        <>AC<span className="text-red-500">[</span>C<span className="text-red-500">]</span></>
+                                    ) : (
+                                        <>APPS<span className="text-red-500">[</span>CRACKED<span className="text-red-500">]</span></>
+                                    )}
+                                </h1>
+                                <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-transparent"></div>
+                            </div>
                         </Link>
 
-                        {/* Botones de acción */}
-                        <div className='flex items-center space-x-3'>
-                            <button 
-                                onClick={toggleSearch}
-                                className='p-3 bg-gray-800/60 hover:bg-gradient-to-r hover:from-red-900/70 hover:to-red-800/70 rounded-xl transition-all duration-500 border border-gray-600/50 hover:border-red-400/60 group backdrop-blur-sm shadow-lg hover:shadow-red-500/20 hover:shadow-xl transform hover:scale-105'
-                                aria-label="Search"
+                        {/* Search Bar - Hidden on mobile, shown in mobile menu */}
+                        <div className="hidden md:flex flex-1 max-w-2xl mx-4 lg:mx-8 relative">
+                            <div className="relative group w-full">
+                                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-sm group-focus-within:blur-none transition-all"></div>
+                                <div className="relative bg-gray-900/90 border border-red-500/50 rounded-none backdrop-blur-sm">
+                                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-500"></div>
+                                    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-500"></div>
+                                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-500"></div>
+                                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-500"></div>
+                                    
+                                    <input
+                                        type="text"
+                                        placeholder="> search_apps --query"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        className="w-full px-4 py-2 md:py-3 bg-transparent text-green-400 placeholder-gray-500 font-mono focus:outline-none focus:text-red-400 transition-colors text-sm"
+                                    />
+                                    <button
+                                        onClick={() => handleSearch()}
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded z-[10]"
+                                    >
+                                        <FaSearch />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Navigation - Hidden on mobile */}
+                        <nav className="hidden xl:flex items-center space-x-4">
+                            {[
+                                { href: '/', label: 'HOME', icon: FaTerminal },
+                                { href: '/categories', label: 'CATEGORIES', icon: FaCode },
+                                { href: '/latest', label: 'LATEST', icon: FaShieldAlt }
+                            ].map((item, index) => (
+                                <Link key={item.href} href={item.href} className="group relative">
+                                    <div className="flex items-center space-x-2 px-3 py-2 border border-transparent hover:border-red-500 transition-all duration-300 bg-black/50 hover:bg-red-500/10">
+                                        <item.icon className="text-red-500 group-hover:text-red-400" />
+                                        <span className="text-gray-300 group-hover:text-red-400 font-mono text-xs tracking-wider">
+                                            {item.label}
+                                        </span>
+                                    </div>
+                                    <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300"></div>
+                                </Link>
+                            ))}
+                        </nav>
+
+                        {/* User Menu & Mobile Controls */}
+                        <div className="flex items-center space-x-2 md:space-x-4">
+                            {/* Search Button for Mobile */}
+                            <button
+                                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                                className="md:hidden p-2 text-red-500 hover:text-red-400 border border-red-500/50 hover:border-red-500 transition-all duration-300 z-[10]"
                             >
-                                <FaSearch className='text-gray-300 group-hover:text-red-300 transition-all duration-500 group-hover:rotate-12' />
+                                <FaSearch />
                             </button>
-                            
-                            <button 
-                                onClick={toggleNavigation}
-                                className='p-3 bg-gray-800/60 hover:bg-gradient-to-r hover:from-red-900/70 hover:to-red-800/70 rounded-xl transition-all duration-500 border border-gray-600/50 hover:border-red-400/60 group backdrop-blur-sm shadow-lg hover:shadow-red-500/20 hover:shadow-xl transform hover:scale-105'
-                                aria-label="Menu"
+
+                            {user ? (
+                                <div className="relative" ref={userMenuRef}>
+                                    <button
+                                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                        className="flex items-center space-x-2 px-2 md:px-4 py-2 bg-gray-900/90 border border-red-500/50 hover:border-red-500 transition-all duration-300 group z-[10]"
+                                    >
+                                        <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-none flex items-center justify-center">
+                                            <FaUser className="text-black text-xs md:text-sm" />
+                                        </div>
+                                        <span className="hidden md:inline text-green-400 font-mono text-sm group-hover:text-red-400 transition-colors">
+                                            {user.username}
+                                        </span>
+                                    </button>
+
+                                    {isUserMenuOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 md:w-64 bg-black/95 border-2 border-red-500 backdrop-blur-md z-[1001]">
+                                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-500/10 to-transparent"></div>
+                                            <div className="relative">
+                                                {[
+                                                    { href: '/dashboard', label: 'Dashboard', icon: MdDashboard },
+                                                    { href: '/favorites', label: 'Favorites', icon: MdFavorite },
+                                                    { href: '/settings', label: 'Settings', icon: MdSettings }
+                                                ].map((item) => (
+                                                    <Link key={item.href} href={item.href} className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border-b border-red-500/20">
+                                                        <item.icon className="text-red-500" />
+                                                        <span className="font-mono text-sm">{item.label}</span>
+                                                    </Link>
+                                                ))}
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300"
+                                                >
+                                                    <FaSignOutAlt className="text-red-500" />
+                                                    <span className="font-mono text-sm">Logout</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="hidden md:flex items-center space-x-3">
+                                    <Link href="/auth/login" className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-gray-900/90 border border-red-500/50 hover:border-red-500 hover:bg-red-500/10 transition-all duration-300">
+                                        <FaSignInAlt className="text-red-500" />
+                                        <span className="text-gray-300 hover:text-red-400 font-mono text-xs md:text-sm">LOGIN</span>
+                                    </Link>
+                                    <Link href="/auth/register" className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 transition-all duration-300">
+                                        <FaUserPlus className="text-black" />
+                                        <span className="text-black font-mono text-xs md:text-sm font-bold">REGISTER</span>
+                                    </Link>
+                                </div>
+                            )}
+
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                className="md:hidden p-2 text-red-500 hover:text-red-400 border border-red-500/50 hover:border-red-500 transition-all duration-300 z-[10]"
                             >
-                                {isOpen ? (
-                                    <FaTimes className='text-gray-300 group-hover:text-red-300 transition-all duration-500 group-hover:rotate-90' />
-                                ) : (
-                                    <FaBars className='text-gray-300 group-hover:text-red-300 transition-all duration-500 group-hover:scale-110' />
-                                )}
+                                {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
                             </button>
                         </div>
                     </div>
-                </div>
-            </header>
 
-            {/* Overlay de búsqueda */}
-            {isSearchOpen && (
-                <div className='fixed inset-0 bg-black/30 backdrop-blur-lg z-50 transition-all duration-500' onClick={handleBackdropClick}>
-                    {/* Animated background pattern */}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.1)_0%,transparent_50%)] animate-pulse"></div>
-                    
-                    <div className='flex justify-center items-start pt-16 px-4'>
-                        <div className='w-full max-w-3xl bg-gradient-to-br from-gray-900/95 to-black/95 rounded-3xl border border-red-500/30 shadow-2xl backdrop-blur-xl transform transition-all duration-500 scale-100' onClick={handleChildClick}>
-                            {/* Glowing border effect */}
-                            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-red-500/20 via-transparent to-red-500/20 blur-xl animate-pulse"></div>
-                            
-                            <div className='p-8 relative z-10'>
-                                <div className='flex justify-between items-center mb-8'>
-                                    <h2 className='text-3xl font-bold bg-gradient-to-r from-white via-red-200 to-red-400 bg-clip-text text-transparent flex items-center'>
-                                        <FaSearch className='mr-4 text-red-500 animate-pulse' />
-                                        Search Underground
-                                    </h2>
-                                    <button 
-                                        onClick={() => setIsSearchOpen(false)}
-                                        className='text-gray-400 hover:text-red-400 transition-all duration-300 hover:rotate-90 hover:scale-110 p-2'
+                    {/* Mobile Search Overlay */}
+                    {isSearchOpen && (
+                        <div className="md:hidden fixed inset-0 bg-black/95 backdrop-blur-md z-[1002]" onClick={handleBackdropClick}>
+                            <div className="p-4" onClick={handleChildClick}>
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-sm group-focus-within:blur-none transition-all"></div>
+                                    <div className="relative bg-gray-900/90 border border-red-500/50 rounded-none backdrop-blur-sm">
+                                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-500"></div>
+                                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-500"></div>
+                                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-500"></div>
+                                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-500"></div>
+                                        
+                                        <input
+                                            type="text"
+                                            placeholder="> search_apps --query"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onKeyPress={handleKeyPress}
+                                            className="w-full px-4 py-4 bg-transparent text-green-400 placeholder-gray-500 font-mono focus:outline-none focus:text-red-400 transition-colors"
+                                            autoFocus
+                                        />
+                                        <button
+                                            onClick={() => handleSearch()}
+                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded"
+                                        >
+                                            <FaSearch />
+                                        </button>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setIsSearchOpen(false)}
+                                    className="mt-4 text-red-500 hover:text-red-400 font-mono text-sm"
+                                >
+                                    Cerrar búsqueda
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mobile Menu */}
+                    {isMobileMenuOpen && (
+                        <div className="md:hidden fixed inset-0 bg-black/95 backdrop-blur-md z-[1001]" onClick={handleBackdropClick}>
+                            <div className="p-4" onClick={handleChildClick}>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-red-500 font-mono text-lg">MENU</h2>
+                                    <button
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-red-500 hover:text-red-400 p-2"
                                     >
-                                        <FaTimes size={24} />
+                                        <FaTimes />
                                     </button>
                                 </div>
                                 
-                                <form onSubmit={handleSearchSubmit} className='mb-8'>
-                                    <div className='relative'>
-                                        <input
-                                            type="text"
-                                            placeholder="Search for cracked apps, games, tools..."
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className='w-full px-6 py-4 bg-gray-800/80 border border-gray-600/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-red-500/70 focus:ring-2 focus:ring-red-500/30 transition-all duration-500 text-lg backdrop-blur-sm shadow-inner'
-                                            autoFocus
-                                        />
-                                        <button 
-                                            type="submit"
-                                            className='absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-400 transition-all duration-300 hover:scale-110 p-2'
-                                            disabled={searchLoading}
+                                <div className="space-y-4">
+                                    {/* Navigation Links */}
+                                    {[
+                                        { href: '/', label: 'HOME', icon: FaTerminal },
+                                        { href: '/categories', label: 'CATEGORIES', icon: FaCode },
+                                        { href: '/latest', label: 'LATEST', icon: FaShieldAlt }
+                                    ].map((item) => (
+                                        <Link 
+                                            key={item.href} 
+                                            href={item.href} 
+                                            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-red-500/20"
+                                            onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            {searchLoading ? (
-                                                <FaSpinner className="animate-spin text-red-500" />
-                                            ) : (
-                                                <FaSearch />
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-
-                                {/* Search Results */}
-                                {showResults && searchQuery && (
-                                    <div className='mb-8'>
-                                        <div className='flex justify-between items-center mb-4'>
-                                            <h3 className='text-white font-semibold text-xl'>Search Results</h3>
-                                            {searchResults.length > 0 && (
-                                                <button
-                                                    onClick={handleSearchSubmit}
-                                                    className='text-red-400 hover:text-red-300 text-sm font-medium hover:underline transition-colors duration-300'
-                                                >
-                                                    View all results →
-                                                </button>
-                                            )}
-                                        </div>
-                                        
-                                        {searchLoading ? (
-                                            <div className='flex justify-center py-12'>
-                                                <FaSpinner className="text-red-500 animate-spin text-3xl" />
-                                            </div>
-                                        ) : searchResults.length > 0 ? (
-                                            <div className='space-y-3 max-h-80 overflow-y-auto custom-scrollbar'>
-                                                {searchResults.map((app) => (
-                                                    <div
-                                                        key={app._id}
-                                                        onClick={() => handleAppClick(app)}
-                                                        className='flex items-center space-x-4 p-4 bg-gray-800/40 hover:bg-gradient-to-r hover:from-gray-700/60 hover:to-red-900/30 rounded-2xl cursor-pointer transition-all duration-300 group border border-gray-700/30 hover:border-red-500/30 backdrop-blur-sm'
-                                                    >
-                                                        {app.images && app.images[0] ? (
-                                                            <img 
-                                                                src={app.images[0]} 
-                                                                alt={app.name}
-                                                                className="w-12 h-12 rounded-xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
-                                                                📱
-                                                            </div>
-                                                        )}
-                                                        <div className='flex-1'>
-                                                            <h4 className='text-white font-semibold group-hover:text-red-300 transition-colors duration-300'>
-                                                                {app.name}
-                                                            </h4>
-                                                            <p className='text-gray-400 text-sm'>
-                                                                {app.category?.name} • {app.developer}
-                                                            </p>
-                                                        </div>
-                                                        <div className='text-yellow-400 text-sm font-medium bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20'>
-                                                            ⭐ {app.rating || '4.5'}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className='text-center py-8 text-gray-400'>
-                                                <div className='text-6xl mb-4'>🔍</div>
-                                                <p className='text-lg mb-2'>No apps found for "{searchQuery}"</p>
-                                                <p className='text-sm'>Try different keywords or check our popular searches below</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                                
-                                <div className='text-gray-400'>
-                                    <p className='mb-3 text-sm font-medium'>🔥 Popular searches:</p>
-                                    <div className='flex flex-wrap gap-3'>
-                                        {['Adobe Photoshop', 'Microsoft Office', 'Spotify Premium', 'Netflix', 'Games'].map((term) => (
-                                            <button
-                                                key={term}
-                                                onClick={() => handleQuickSearch(term)}
-                                                className='px-4 py-2 bg-gray-800/60 hover:bg-gradient-to-r hover:from-red-900/40 hover:to-red-800/40 rounded-full text-sm border border-gray-600/40 hover:border-red-500/50 transition-all duration-300 hover:scale-105 backdrop-blur-sm'
-                                            >
-                                                {term}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Menú de navegación */}
-            {isOpen && (
-                <div className='fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-all duration-500' onClick={handleBackdropClick}>
-                    <div className='fixed top-0 right-0 h-full w-full max-w-md bg-gradient-to-b from-gray-900/98 to-black/98 border-l border-red-500/30 shadow-2xl transform transition-all duration-500 backdrop-blur-xl' onClick={handleChildClick}>
-                        {/* Glowing edge effect */}
-                        
-                        <div className='p-8 h-full overflow-y-auto custom-scrollbar'>
-                            {/* Header del menú */}
-                            <div className='flex justify-between items-center mb-10'>
-                                <div className='flex items-center space-x-4'>
-                                    <div className='relative'>
-                                        <FaSkull className='text-red-500 text-3xl animate-pulse' />
-                                        <div className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping'></div>
-                                    </div>
-                                    <h2 className='text-2xl font-bold bg-gradient-to-r from-white to-red-300 bg-clip-text text-transparent'>Navigation</h2>
-                                </div>
-                                <button 
-                                    onClick={() => setIsOpen(false)}
-                                    className='text-gray-400 hover:text-red-400 transition-all duration-300 hover:rotate-90 hover:scale-110 p-2'
-                                >
-                                    <FaTimes size={24} />
-                                </button>
-                            </div>
-
-                            {/* Navegación principal */}
-                            <div className='mb-10'>
-                                <h3 className='text-gray-400 text-sm font-bold mb-6 uppercase tracking-widest border-b border-gray-800/50 pb-2'>Main Menu</h3>
-                                <ul className='space-y-2'>
-                                    {navigationItems.map((item, index) => (
-                                        <li key={index}>
+                                            <item.icon className="text-red-500" />
+                                            <span className="font-mono text-sm">{item.label}</span>
+                                        </Link>
+                                    ))}
+                                    
+                                    {/* Auth Links for non-logged users */}
+                                    {!user && (
+                                        <div className="border-t border-red-500/20 pt-4 space-y-2">
                                             <Link 
-                                                href={item.href} 
-                                                className='flex items-center space-x-4 p-4 rounded-2xl text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-red-900/30 hover:to-red-800/20 transition-all duration-500 group border border-transparent hover:border-red-500/30 backdrop-blur-sm'
-                                                onClick={() => setIsOpen(false)}
+                                                href="/auth/login" 
+                                                className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-red-500/20"
+                                                onClick={() => setIsMobileMenuOpen(false)}
                                             >
-                                                <span className='text-xl group-hover:scale-125 transition-transform duration-500 w-8 text-center'>
-                                                    {item.icon}
-                                                </span>
-                                                <span className='font-medium text-lg'>{item.name}</span>
-                                                <div className='ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
-                                                    →
-                                                </div>
+                                                <FaSignInAlt className="text-red-500" />
+                                                <span className="font-mono text-sm">LOGIN</span>
                                             </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Sección de usuario */}
-                            <div className='border-t border-gray-800/50 pt-8'>
-                                <div className='flex items-center space-x-4 mb-8 p-4 bg-gradient-to-r from-gray-800/40 to-red-900/20 rounded-2xl border border-gray-700/30'>
-                                    <div className='w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg'>
-                                        <FaUser className='text-white text-lg' />
-                                    </div>
-                                    <div className='flex-1'>
-                                        {isAuthenticated && user ? (
-                                            <>
-                                                <p className='text-white font-semibold text-lg'>{user.name || 'User'}</p>
-                                                <p className='text-gray-400 text-sm'>{user.email || 'user@blackmarket.com'}</p>
-                                                {user.role === 'admin' && (
-                                                    <Link href='/admin' className='text-gray-400 text-sm'>Go to Dashboard Admin</Link>  
-                                                )}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className='text-white font-semibold text-lg'>Guest User</p>
-                                                <p className='text-gray-400 text-sm'>Join the underground</p>
-                                            </>
-                                        )}
-                                    </div>
-                                    <div className='w-3 h-3 bg-green-500 rounded-full animate-pulse'></div>
-                                </div>
-
-                                <div className='space-y-2'>
-                                    {userItems.map((item, index) => (
-                                        item.onClick ? (
-                                            <button
-                                                key={index}
-                                                onClick={item.onClick}
-                                                className='flex items-center space-x-3 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800/40 transition-all duration-300 text-sm w-full text-left group border border-transparent hover:border-gray-600/30'
+                                            <Link 
+                                                href="/auth/register" 
+                                                className="flex items-center space-x-3 px-4 py-3 bg-red-500 hover:bg-red-600 transition-all duration-300"
+                                                onClick={() => setIsMobileMenuOpen(false)}
                                             >
-                                                <span className='group-hover:scale-110 transition-transform duration-300'>{item.icon}</span>
-                                                <span>{item.name}</span>
-                                            </button>
-                                        ) : (
-                                            <Link
-                                                key={index}
-                                                href={item.href}
-                                                className='flex items-center space-x-3 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800/40 transition-all duration-300 text-sm group border border-transparent hover:border-gray-600/30'
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                <span className='group-hover:scale-110 transition-transform duration-300'>{item.icon}</span>
-                                                <span>{item.name}</span>
+                                                <FaUserPlus className="text-black" />
+                                                <span className="text-black font-mono text-sm font-bold">REGISTER</span>
                                             </Link>
-                                        )
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Footer del menú */}
-                            <div className='mt-auto pt-8 border-t border-gray-800/50'>
-                                <div className='text-center text-xs text-gray-500 space-y-2'>
-                                    <div className='bg-gray-800/30 rounded-xl p-4'>
-                                        <p className='font-medium text-red-400'>© 2025 Crack Market Hub</p>
-                                        <p className='mt-1'>Underground Apps Network</p>
-                                        <div className='flex justify-center items-center mt-2 space-x-1'>
-                                            <span className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></span>
-                                            <span className='text-red-400'>Live</span>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
-            )}
+            </header>
 
-
+            <style jsx>{`
+                .matrix-rain {
+                    background: linear-gradient(0deg, transparent 24%, rgba(255, 0, 0, 0.05) 25%, rgba(255, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 0, 0, 0.05) 75%, rgba(255, 0, 0, 0.05) 76%, transparent 77%, transparent);
+                    background-size: 50px 50px;
+                    animation: matrix-fall 20s linear infinite;
+                }
+                
+                @keyframes matrix-fall {
+                    0% { transform: translateY(-100%); }
+                    100% { transform: translateY(100vh); }
+                }
+                
+                .scan-lines {
+                    background: linear-gradient(90deg, transparent 98%, rgba(255, 0, 0, 0.1) 100%);
+                    background-size: 3px 100%;
+                    animation: scan 2s linear infinite;
+                }
+                
+                @keyframes scan {
+                    0% { background-position: 0 0; }
+                    100% { background-position: 100% 0; }
+                }
+                
+                @keyframes float-1 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-10px) rotate(2deg); }
+                }
+                
+                @keyframes float-2 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-15px) rotate(-2deg); }
+                }
+                
+                @keyframes float-3 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-8px) rotate(1deg); }
+                }
+                
+                @keyframes float-4 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-12px) rotate(-1deg); }
+                }
+                
+                .animate-float-1 { animation: float-1 3s ease-in-out infinite; }
+                .animate-float-2 { animation: float-2 4s ease-in-out infinite; }
+                .animate-float-3 { animation: float-3 3.5s ease-in-out infinite; }
+                .animate-float-4 { animation: float-4 4.5s ease-in-out infinite; }
+            `}</style>
         </>
     )
 }

@@ -1,8 +1,43 @@
-import React from 'react'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FaSkull, FaGithub, FaTelegram, FaDiscord, FaTwitter, FaShieldAlt, FaDownload, FaFire, FaHeart, FaStar, FaRocket } from 'react-icons/fa'
+import { 
+  FaGithub, 
+  FaDiscord, 
+  FaTelegram, 
+  FaTwitter, 
+  FaShieldAlt, 
+  FaTerminal, 
+  FaCode, 
+  FaLock, 
+  FaServer, 
+  FaDatabase,
+  FaDownload,
+  FaFire,
+  FaHeart,
+  FaSkull,
+  FaRocket,
+  FaStar
+} from 'react-icons/fa'
+import { api } from '@/lib/api'
 
 export default function Footer() {
+  const [stats, setStats] = useState({
+    totalApps: 0,
+    totalDownloads: 0,
+    totalUsers: 0
+  })
+
+  useEffect(() => {
+    // Fetch stats from API or set default values
+    setStats({
+      totalApps: 50000,
+      totalDownloads: 100000,
+      totalUsers: 1000000
+    })
+  }, [])
+
   const quickLinks = [
     { name: 'Popular Apps', href: '/popular', icon: '🔥' },
     { name: 'New Releases', href: '/new-releases', icon: '🆕' },
@@ -30,7 +65,7 @@ export default function Footer() {
     { name: 'GitHub', href: '#', icon: FaGithub, color: 'hover:text-gray-300 hover:shadow-gray-300/20' },
   ]
 
-  const stats = [
+  const statsDisplay = [
     { label: 'Apps Available', value: '50K+', icon: FaDownload, color: 'from-blue-500 to-cyan-500' },
     { label: 'Daily Downloads', value: '100K+', icon: FaFire, color: 'from-orange-500 to-red-500' },
     { label: 'Active Users', value: '1M+', icon: FaHeart, color: 'from-pink-500 to-rose-500' },
@@ -38,217 +73,233 @@ export default function Footer() {
   ]
 
   return (
-    <footer className='relative bg-gradient-to-t from-black via-gray-900 to-gray-800 border-t border-red-500/20 overflow-hidden'>
-      {/* Animated background elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.03)_1px,transparent_0)] [background-size:30px_30px] opacity-40"></div>
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-red-600/5 to-orange-600/5 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-600/5 to-red-600/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-
-      {/* Stats Section */}
-      <div className='relative border-b border-gray-800/50'>
-        <div className='container mx-auto px-6 py-12'>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-8'>
-            {stats.map((stat, index) => (
-              <div key={index} className='text-center group cursor-pointer'>
-                <div className='relative mb-6'>
-                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-xl group-hover:shadow-2xl`}>
-                    <stat.icon className='text-2xl text-white group-hover:animate-bounce' />
-                  </div>
-                  <div className={`absolute inset-0 w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${stat.color} blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-500`}></div>
-                </div>
-                <div className='text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2 group-hover:scale-105 transition-transform duration-300'>
-                  {stat.value}
-                </div>
-                <div className='text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300 font-medium'>
-                  {stat.label}
-                </div>
-              </div>
+    <>
+      {/* Matrix Background */}
+      <div className="relative bg-black border-t-2 border-red-500 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-red-900/10 to-transparent"></div>
+        
+        {/* Scan Lines */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/5 to-transparent animate-pulse"></div>
+        
+        {/* Floating Code Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="floating-code text-red-500/10 text-xs font-mono">
+            {['0x7C00', 'EOF', 'NULL', 'EXEC', 'ROOT'].map((code, i) => (
+              <span key={i} className={`absolute animate-float-${i + 1}`} style={{
+                left: `${10 + i * 20}%`,
+                top: `${20 + i * 15}%`,
+                animationDelay: `${i * 0.7}s`
+              }}>
+                {code}
+              </span>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Main Footer Content */}
-      <div className='container mx-auto px-6 py-16 relative z-10'>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12'>
-          {/* Brand Section */}
-          <div className='lg:col-span-1'>
-            <div className='flex items-center space-x-4 mb-8'>
-              <div className='relative'>
-                <div className='w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/30'>
-                  <FaSkull className='text-white text-2xl animate-pulse' />
-                </div>
-                <div className='absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-red-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce'>
-                  <span className='text-xs text-white font-bold'>!</span>
-                </div>
-              </div>
+        <div className="relative container mx-auto px-4 py-12">
+          {/* Warning Banner */}
+          <div className="mb-8 p-4 bg-red-900/20 border-2 border-red-500 backdrop-blur-sm relative">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-red-500"></div>
+            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-red-500"></div>
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-red-500"></div>
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-red-500"></div>
+            
+            <div className="flex items-center space-x-3">
+              <FaShieldAlt className="text-red-500 text-xl animate-pulse" />
               <div>
-                <h3 className='text-2xl font-bold bg-gradient-to-r from-red-400 via-red-500 to-orange-500 bg-clip-text text-transparent'>
-                  Crack Market
-                </h3>
-                <p className='text-sm text-gray-400 font-medium'>Underground Apps Hub</p>
-              </div>
-            </div>
-            <p className='text-gray-400 text-sm leading-relaxed mb-8 font-light'>
-              Your ultimate destination for premium applications. Access the digital underground with confidence and cutting-edge security protocols.
-            </p>
-            <div className='flex space-x-4 mb-8'>
-              {socialLinks.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  className={`p-3 bg-gray-800/40 rounded-xl text-gray-400 ${social.color} transition-all duration-300 hover:scale-110 transform hover:shadow-lg backdrop-blur-sm border border-gray-700/30 hover:border-gray-600/50`}
-                  aria-label={social.name}
-                >
-                  <social.icon size={20} />
-                </a>
-              ))}
-            </div>
-            <div className='p-4 bg-gradient-to-r from-red-900/20 to-orange-900/20 rounded-2xl border border-red-500/20'>
-              <div className='flex items-center space-x-2 mb-2'>
-                <div className='w-3 h-3 bg-green-500 rounded-full animate-pulse'></div>
-                <span className='text-green-400 text-sm font-medium'>System Status: Online</span>
-              </div>
-              <div className='text-xs text-gray-400'>
-                Last updated: {new Date().toLocaleString()}
+                <p className="text-red-400 font-mono text-sm font-bold">
+                  [WARNING] SECURITY NOTICE
+                </p>
+                <p className="text-gray-300 text-xs font-mono mt-1">
+                  This site is for educational purposes only. Use responsibly and respect software licenses.
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className='text-white font-bold mb-6 flex items-center text-lg'>
-              <div className='w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center mr-3'>
-                <FaRocket className='text-white text-sm' />
-              </div>
-              Quick Access
-            </h4>
-            <ul className='space-y-3'>
-              {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className='group flex items-center space-x-3 p-3 text-gray-400 hover:text-white transition-all duration-300 rounded-xl hover:bg-gray-800/30 border border-transparent hover:border-red-500/20'
-                  >
-                    <span className='text-lg group-hover:scale-110 transition-transform duration-300'>
-                      {link.icon}
-                    </span>
-                    <span className='text-sm font-medium'>{link.name}</span>
-                    <div className='ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-red-400'>
-                      →
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Quick Links */}
+            <div className="space-y-4">
+              <h3 className="text-red-500 font-mono text-lg font-bold flex items-center space-x-2">
+                <FaTerminal className="text-red-500" />
+                <span>[QUICK_ACCESS]</span>
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { href: '/', label: 'Home' },
+                  { href: '/categories', label: 'Categories' },
+                  { href: '/latest', label: 'Latest Apps' },
+                  { href: '/popular', label: 'Popular' },
+                  { href: '/search', label: 'Search' }
+                ].map((link) => (
+                  <Link key={link.href} href={link.href} className="block group">
+                    <div className="flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors duration-300 font-mono text-sm">
+                      <span className="text-red-500 group-hover:text-red-400">
+                        
+                      </span>
+                      <span>{link.label}</span>
                     </div>
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support Links */}
-          <div>
-            <h4 className='text-white font-bold mb-6 flex items-center text-lg'>
-              <div className='w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3'>
-                <FaShieldAlt className='text-white text-sm' />
+                ))}
               </div>
-              Support Hub
-            </h4>
-            <ul className='space-y-3'>
-              {supportLinks.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className='group flex items-center space-x-3 p-3 text-gray-400 hover:text-white transition-all duration-300 rounded-xl hover:bg-gray-800/30 border border-transparent hover:border-blue-500/20'
-                  >
-                    <span className='text-lg group-hover:scale-110 transition-transform duration-300'>
-                      {link.icon}
-                    </span>
-                    <span className='text-sm font-medium'>{link.name}</span>
-                    <div className='ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-blue-400'>
-                      →
+            </div>
+
+            {/* Support */}
+            <div className="space-y-4">
+              <h3 className="text-red-500 font-mono text-lg font-bold flex items-center space-x-2">
+                <FaCode className="text-red-500" />
+                <span>[SUPPORT]</span>
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { href: '/help', label: 'Help Center' },
+                  { href: '/faq', label: 'FAQ' },
+                  { href: '/contact', label: 'Contact' },
+                  { href: '/report', label: 'Report Issue' },
+                  { href: '/feedback', label: 'Feedback' }
+                ].map((link) => (
+                  <Link key={link.href} href={link.href} className="block group">
+                    <div className="flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors duration-300 font-mono text-sm">
+                      <span className="text-red-500 group-hover:text-red-400"></span>
+                      <span>{link.label}</span>
                     </div>
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h4 className='text-white font-bold mb-6 flex items-center text-lg'>
-              <div className='w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3'>
-                <FaStar className='text-white text-sm' />
-              </div>
-              Underground Updates
-            </h4>
-            <p className='text-gray-400 text-sm mb-6 leading-relaxed font-light'>
-              Get exclusive access to the latest releases, premium tools, and underground software before anyone else.
-            </p>
-            <div className='space-y-4'>
-              <div className='relative'>
-                <input
-                  type="email"
-                  placeholder="Enter your secure email..."
-                  className='w-full px-4 py-3 bg-gray-800/60 border border-gray-600/50 rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 backdrop-blur-sm'
-                />
-                <button className='absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all duration-300 text-xs font-bold hover:scale-105 shadow-lg hover:shadow-purple-500/30'>
-                  JOIN
-                </button>
-              </div>
-              <div className='flex items-center space-x-2 text-xs text-gray-500'>
-                <FaShieldAlt className='text-green-400' />
-                <span>Encrypted • No spam • Underground exclusive</span>
+                ))}
               </div>
             </div>
-            
-            
+
+            {/* Legal */}
+            <div className="space-y-4">
+              <h3 className="text-red-500 font-mono text-lg font-bold flex items-center space-x-2">
+                <FaLock className="text-red-500" />
+                <span>[LEGAL]</span>
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { href: '/privacy', label: 'Privacy Policy' },
+                  { href: '/terms', label: 'Terms of Service' },
+                  { href: '/dmca', label: 'DMCA' },
+                  { href: '/disclaimer', label: 'Disclaimer' },
+                  { href: '/cookies', label: 'Cookie Policy' }
+                ].map((link) => (
+                  <Link key={link.href} href={link.href} className="block group">
+                    <div className="flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors duration-300 font-mono text-sm">
+                      <span className="text-red-500 group-hover:text-red-400"></span>
+                      <span>{link.label}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Social & Stats */}
+            <div className="space-y-4">
+              <h3 className="text-red-500 font-mono text-lg font-bold flex items-center space-x-2">
+                <FaServer className="text-red-500" />
+                <span>[NETWORK]</span>
+              </h3>
+              
+              {/* Social Links */}
+              <div className="flex space-x-3">
+                {[
+                  { icon: FaGithub, href: '#', label: 'GitHub' },
+                  { icon: FaDiscord, href: '#', label: 'Discord' },
+                  { icon: FaTelegram, href: '#', label: 'Telegram' },
+                  { icon: FaTwitter, href: '#', label: 'Twitter' }
+                ].map((social) => (
+                  <a key={social.label} href={social.href} className="group relative">
+                    <div className="w-10 h-10 bg-gray-900 border border-red-500/50 hover:border-red-500 flex items-center justify-center transition-all duration-300 hover:bg-red-500/10">
+                      <social.icon className="text-red-500 hover:text-red-400 transition-colors" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              {/* Stats */}
+              <div className="space-y-3 mt-6">
+                <div className="bg-gray-900/50 border border-red-500/30 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 font-mono text-xs">TOTAL_APPS:</span>
+                    <span className="text-red-400 font-mono text-sm font-bold">
+                      {stats.totalApps?.toLocaleString() || '---'}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-gray-900/50 border border-red-500/30 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 font-mono text-xs">DOWNLOADS:</span>
+                    <span className="text-red-400 font-mono text-sm font-bold">
+                      {stats.totalDownloads?.toLocaleString() || '---'}
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-gray-900/50 border border-red-500/30 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 font-mono text-xs">USERS:</span>
+                    <span className="text-red-400 font-mono text-sm font-bold">
+                      {stats.totalUsers?.toLocaleString() || '---'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section */}
+          <div className="mt-12 pt-8 border-t border-red-500/30">
+            <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <FaDatabase className="text-red-500" />
+                  <span className="text-gray-400 font-mono text-sm">
+                    © 2024 APPS[CRACKED] - All rights reserved
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4 text-gray-500 font-mono text-xs">
+                <span>STATUS: ONLINE</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>UPTIME: 99.9%</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className='relative border-t border-gray-800/50 bg-black/40 backdrop-blur-xl'>
-        <div className='container mx-auto px-6 py-8'>
-          <div className='flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0'>
-            <div className='flex flex-wrap justify-center lg:justify-start gap-6 text-sm'>
-              {legalLinks.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.href}
-                  className='text-gray-500 hover:text-red-400 transition-colors duration-300 hover:underline decoration-red-400/50'
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-            <div className='text-center lg:text-right'>
-              <p className='text-sm text-gray-500 mb-2 font-medium'>
-                © 2025 Crack Market Hub. All rights reserved.
-              </p>
-              <p className='text-xs text-gray-600 flex items-center justify-center lg:justify-end space-x-2'>
-                <FaSkull className='text-red-500 animate-pulse' />
-                <span>Underground Apps Network - Educational & Research Purposes</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced Warning Banner */}
-      <div className='relative bg-gradient-to-r from-red-900/30 via-orange-900/30 to-red-900/30 border-t border-red-500/50 backdrop-blur-xl'>
-        <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-transparent to-red-600/10 animate-pulse"></div>
-        <div className='container mx-auto px-6 py-4 relative z-10'>
-          <div className='flex items-center justify-center space-x-3 text-center'>
-            <div className='flex items-center space-x-2'>
-              <FaShieldAlt className='text-red-400 text-lg animate-bounce' />
-              <div className='w-2 h-2 bg-red-500 rounded-full animate-ping'></div>
-            </div>
-            <p className='text-sm text-gray-300 font-medium'>
-              <span className='text-red-400 font-bold'>⚠️ SECURITY ALERT:</span> 
-              Always verify downloads through our secure channels. Your digital safety is our priority.
-              <span className='text-orange-400 font-semibold ml-2'>Stay Underground, Stay Safe.</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </footer>
+      <style jsx>{`
+        @keyframes float-1 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-20px) rotate(5deg); opacity: 0.7; }
+        }
+        
+        @keyframes float-2 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+          50% { transform: translateY(-25px) rotate(-3deg); opacity: 0.6; }
+        }
+        
+        @keyframes float-3 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.4; }
+          50% { transform: translateY(-15px) rotate(2deg); opacity: 0.8; }
+        }
+        
+        @keyframes float-4 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+          50% { transform: translateY(-30px) rotate(-4deg); opacity: 0.5; }
+        }
+        
+        @keyframes float-5 {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.2; }
+          50% { transform: translateY(-18px) rotate(1deg); opacity: 0.6; }
+        }
+        
+        .animate-float-1 { animation: float-1 6s ease-in-out infinite; }
+        .animate-float-2 { animation: float-2 7s ease-in-out infinite; }
+        .animate-float-3 { animation: float-3 5s ease-in-out infinite; }
+        .animate-float-4 { animation: float-4 8s ease-in-out infinite; }
+        .animate-float-5 { animation: float-5 6.5s ease-in-out infinite; }
+      `}</style>
+    </>
   )
 }
+

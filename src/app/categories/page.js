@@ -2,62 +2,62 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { api } from '@/lib/api'
+import Link from 'next/link'
+import Image from 'next/image'
 import { 
-    FaSpinner,
-    FaSearch,
-    FaTh, // Grid view icon 
-    FaList,
-    FaFilter,
-    FaTimes,
-    FaStar,
-    FaDownload,
+    FaSearch, 
+    FaFilter, 
+    FaTh, // Changed from FaGrid3X3 to FaTh (grid icon)
+    FaList, 
+    FaStar, 
+    FaDownload, 
     FaEye,
-    FaFire,
-    FaCrown,
-    FaArrowRight,
-    FaSort,
-    FaGem,
-    FaTrophy,
-    FaApple
+    FaTerminal,
+    FaCode,
+    FaShieldAlt,
+    FaRocket,
+    FaFire
 } from 'react-icons/fa'
+import { MdApps, MdCategory, MdTrendingUp } from 'react-icons/md'
 
-// SEO Structured Data Generator
+// Generate structured data for categories
 const generateCategoriesStructuredData = (categories, filteredCategories) => {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://appscracked.com'
     
     return {
         "@context": "https://schema.org",
         "@graph": [
             {
                 "@type": "WebPage",
-                "@id": `${baseUrl}/categories#webpage`,
+                "@id": `${baseUrl}/categories`,
                 "url": `${baseUrl}/categories`,
-                "name": "Software Categories - Browse Premium Apps by Category | AppsCracked",
-                "description": `Explore ${filteredCategories.length} categories of premium applications. Find cracked apps organized by type: Games, Utilities, Productivity, Entertainment and more.`,
-                "breadcrumb": {
-                    "@id": `${baseUrl}/categories#breadcrumb`
+                "name": "Software Categories - Browse Premium Apps by Type",
+                "description": "Explore comprehensive software categories including Games, Productivity, Utilities, Entertainment, Graphics, and more. Find premium cracked applications organized by type.",
+                "isPartOf": {
+                    "@type": "WebSite",
+                    "@id": `${baseUrl}/#website`,
+                    "url": baseUrl,
+                    "name": "AppsCracked",
+                    "description": "Premium Cracked Software & Applications"
                 },
-                "inLanguage": "en-US"
-            },
-            {
-                "@type": "BreadcrumbList",
-                "@id": `${baseUrl}/categories#breadcrumb`,
-                "itemListElement": [
-                    {
-                        "@type": "ListItem",
-                        "position": 1,
-                        "name": "Home",
-                        "item": baseUrl
-                    },
-                    {
-                        "@type": "ListItem", 
-                        "position": 2,
-                        "name": "Categories",
-                        "item": `${baseUrl}/categories`
-                    }
-                ]
+                "breadcrumb": {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": 1,
+                            "name": "Home",
+                            "item": baseUrl
+                        },
+                        {
+                            "@type": "ListItem", 
+                            "position": 2,
+                            "name": "Categories",
+                            "item": `${baseUrl}/categories`
+                        }
+                    ]
+                }
             },
             {
                 "@type": "CollectionPage",
@@ -66,8 +66,8 @@ const generateCategoriesStructuredData = (categories, filteredCategories) => {
                 "url": `${baseUrl}/categories`,
                 "mainEntity": {
                     "@type": "ItemList",
-                    "numberOfItems": filteredCategories.length,
-                    "itemListElement": filteredCategories.slice(0, 20).map((category, index) => ({
+                    "numberOfItems": filteredCategories?.length || 0,
+                    "itemListElement": (filteredCategories || []).slice(0, 20).map((category, index) => ({
                         "@type": "Thing",
                         "position": index + 1,
                         "name": category.name,
@@ -85,7 +85,7 @@ const generateCategoriesStructuredData = (categories, filteredCategories) => {
                         "name": "How many app categories are available?",
                         "acceptedAnswer": {
                             "@type": "Answer",
-                            "text": `We have ${categories.length} different categories of premium applications including Games, Productivity, Utilities, Entertainment, and more.`
+                            "text": `We have ${categories?.length || 0} different categories of premium applications including Games, Productivity, Utilities, Entertainment, and more.`
                         }
                     },
                     {
@@ -104,20 +104,44 @@ const generateCategoriesStructuredData = (categories, filteredCategories) => {
 
 function CategoriesContent() {
     const [categories, setCategories] = useState([])
-    const [categoryApps, setCategoryApps] = useState({}) // Store apps per category
+    const [categoryApps, setCategoryApps] = useState({})
     const [loading, setLoading] = useState(true)
-    const [appsLoading, setAppsLoading] = useState({}) // Track loading per category
+    const [appsLoading, setAppsLoading] = useState({})
     const [searchTerm, setSearchTerm] = useState('')
-    const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
-    const [sortBy, setSortBy] = useState('name') // 'name', 'apps', 'featured'
+    const [viewMode, setViewMode] = useState('grid')
+    const [sortBy, setSortBy] = useState('name')
     const [showFeaturedOnly, setShowFeaturedOnly] = useState(false)
     const [selectedCategory, setSelectedCategory] = useState(null)
     const router = useRouter()
     const searchParams = useSearchParams()
 
+    // Filtered and sorted categories - moved before useEffect
+    const filteredCategories = useMemo(() => {
+        let filtered = categories.filter(category => {
+            const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
+            const matchesFeatured = !showFeaturedOnly || category.isFeatured
+            return matchesSearch && matchesFeatured
+        })
+
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'apps':
+                    return (b.appCount || 0) - (a.appCount || 0)
+                case 'featured':
+                    if (a.isFeatured && !b.isFeatured) return -1
+                    if (!a.isFeatured && b.isFeatured) return 1
+                    return a.name.localeCompare(b.name)
+                default:
+                    return a.name.localeCompare(b.name)
+            }
+        })
+
+        return filtered
+    }, [categories, searchTerm, sortBy, showFeaturedOnly])
+
     useEffect(() => {
         fetchCategories()
-        // Read URL params
         const view = searchParams.get('view')
         const sort = searchParams.get('sort')
         const featured = searchParams.get('featured')
@@ -127,18 +151,16 @@ function CategoriesContent() {
         if (featured === 'true') setShowFeaturedOnly(true)
     }, [searchParams])
 
-    // Insert structured data
+    // Insert structured data - now filteredCategories is available
     useEffect(() => {
         if (!loading && filteredCategories.length > 0) {
             const structuredData = generateCategoriesStructuredData(categories, filteredCategories)
             
-            // Remove existing structured data
             const existingScript = document.querySelector('script[data-categories-structured="true"]')
             if (existingScript) {
                 existingScript.remove()
             }
             
-            // Add new structured data
             const script = document.createElement('script')
             script.type = 'application/ld+json'
             script.setAttribute('data-categories-structured', 'true')
@@ -154,8 +176,7 @@ function CategoriesContent() {
             const categoriesData = response.categories || []
             setCategories(categoriesData)
             
-            // Fetch apps for each category (limit to first few apps for preview)
-            await fetchCategoryApps(categoriesData.slice(0, 10)) // Limit to avoid too many requests
+            await fetchCategoryApps(categoriesData.slice(0, 10))
         } catch (error) {
             console.error('Error fetching categories:', error)
         } finally {
@@ -173,7 +194,7 @@ function CategoriesContent() {
                 setAppsLoading(prev => ({ ...prev, [category._id]: true }))
                 
                 const response = await api.getAppsByCategory(category.slug, {
-                    limit: 6, // Show 6 apps per category
+                    limit: 6,
                     sort: 'popularity'
                 })
                 
@@ -189,32 +210,6 @@ function CategoriesContent() {
         setCategoryApps(prev => ({ ...prev, ...appsData }))
         setAppsLoading(prev => ({ ...prev, ...loadingState }))
     }
-
-    // Filtered and sorted categories
-    const filteredCategories = useMemo(() => {
-        let filtered = categories.filter(category => {
-            const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
-            const matchesFeatured = !showFeaturedOnly || category.isFeatured
-            return matchesSearch && matchesFeatured
-        })
-
-        // Sort categories
-        filtered.sort((a, b) => {
-            switch (sortBy) {
-                case 'apps':
-                    return (b.appCount || 0) - (a.appCount || 0)
-                case 'featured':
-                    if (a.isFeatured && !b.isFeatured) return -1
-                    if (!a.isFeatured && b.isFeatured) return 1
-                    return a.name.localeCompare(b.name)
-                default: // 'name'
-                    return a.name.localeCompare(b.name)
-            }
-        })
-
-        return filtered
-    }, [categories, searchTerm, sortBy, showFeaturedOnly])
 
     const handleAppClick = (app) => {
         router.push(`/app/${app.slug || app._id}`)
@@ -236,7 +231,6 @@ function CategoriesContent() {
         router.push(`/categories?${current.toString()}`, { scroll: false })
     }
 
-    // SEO title and description
     const getPageTitle = () => {
         if (searchTerm) {
             return `${searchTerm} Categories - Software Types | AppsCracked`
@@ -266,191 +260,145 @@ function CategoriesContent() {
         return [...baseKeywords, categoryNames, 'games', 'productivity', 'utilities', 'entertainment'].join(', ')
     }
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-purple-900/20">
-                <div className="text-center space-y-4">
-                    <FaSpinner className="text-5xl text-purple-500 animate-spin mx-auto" />
-                    <h2 className="text-2xl text-white font-bold">Loading Categories...</h2>
-                    <p className="text-gray-400">Organizing premium software by type</p>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <>
-            {/* SEO Meta Tags */}
-            <title>{getPageTitle()}</title>
-            <meta name="description" content={getPageDescription()} />
-            <meta name="keywords" content={getKeywords()} />
-            <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-            <meta name="author" content="AppsCracked" />
-            <link rel="canonical" href="https://appscracked.com/categories" />
-            
-            {/* Open Graph */}
-            <meta property="og:title" content={getPageTitle()} />
-            <meta property="og:description" content={getPageDescription()} />
-            <meta property="og:type" content="website" />
-            <meta property="og:url" content="https://appscracked.com/categories" />
-            <meta property="og:image" content="https://appscracked.com/og-categories.jpg" />
-            <meta property="og:site_name" content="AppsCracked" />
-            
-            {/* Twitter Card */}
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" content={getPageTitle()} />
-            <meta name="twitter:description" content={getPageDescription()} />
-            <meta name="twitter:image" content="https://appscracked.com/twitter-categories.jpg" />
+            {/* Matrix Rain Background */}
+            <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[1] overflow-hidden">
+                <div className="matrix-rain opacity-10"></div>
+            </div>
 
-            <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black" itemScope itemType="https://schema.org/CollectionPage">
-                {/* Enhanced Header */}
-                <section className="relative overflow-hidden py-20">
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-purple-600/10 to-blue-600/10"></div>
-                    <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
+            {/* Scan Lines Effect */}
+            <div className="fixed inset-0 pointer-events-none z-[2]">
+                <div className="scan-lines"></div>
+            </div>
+
+            {/* Floating Code Elements */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-[3]">
+                <div className="floating-code text-red-500/10 text-xs font-mono">
+                    {['categories.exe', 'browse.dll', 'filter.sys', 'search.bat'].map((code, i) => (
+                        <span key={i} className={`absolute animate-float-${i + 1}`} style={{
+                            left: `${10 + i * 20}%`,
+                            top: `${15 + i * 20}%`,
+                            animationDelay: `${i * 0.7}s`
+                        }}>
+                            {code}
+                        </span>
+                    ))}
+                </div>
+            </div>
+
+            <div className="min-h-screen bg-black relative z-[4]">
+                {/* Hero Section */}
+                <section className="relative bg-gradient-to-br from-black via-gray-900 to-red-900/20 border-b-2 border-red-500">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-pulse"></div>
                     
-                    <div className="container mx-auto px-4 relative z-10">
+                    <div className="container mx-auto px-4 py-16 relative">
                         <div className="text-center mb-12">
-                            <div className="flex justify-center mb-8">
-                                <div className="relative group">
-                                    <FaTh className="text-7xl text-transparent bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text drop-shadow-2xl group-hover:scale-110 transition-transform duration-300" />
-                                    <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-red-500/20 via-purple-500/20 to-blue-500/20 opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                </div>
+                            <div className="relative inline-block mb-6">
+                                <div className="absolute inset-0 bg-red-500 blur-2xl opacity-30"></div>
+                                <h1 className="relative text-4xl md:text-6xl font-bold bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent">
+                                    <span className="text-red-500">[</span>
+                                    CATEGORIES
+                                    <span className="text-red-500">]</span>
+                                </h1>
+                                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-transparent"></div>
                             </div>
                             
-                            <header className="space-y-6">
-                                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6" itemProp="name">
-                                    <span className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
-                                        SOFTWARE CATEGORIES
-                                    </span>
-                                </h1>
-                                
-                                <h2 className="text-2xl md:text-4xl text-gray-300 font-medium leading-relaxed max-w-4xl mx-auto" itemProp="description">
-                                    Explore our comprehensive collection of applications organized by category. 
-                                    Discover new tools, games, and productivity apps tailored to your needs.
-                                </h2>
-
-                                {/* Enhanced Statistics Bar */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 max-w-4xl mx-auto">
-                                    <div className="text-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                        <div className="text-3xl font-black text-red-400" itemProp="numberOfItems">
-                                            {filteredCategories.length}
-                                        </div>
-                                        <div className="text-gray-300 font-medium">Categories</div>
-                                        <div className="text-gray-500 text-sm">Available</div>
-                                    </div>
-                                    
-                                    <div className="text-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                        <div className="text-3xl font-black text-purple-400">
-                                            {categories.reduce((sum, c) => sum + (c.appCount || 0), 0)}+
-                                        </div>
-                                        <div className="text-gray-300 font-medium">Total Apps</div>
-                                        <div className="text-gray-500 text-sm">Premium Software</div>
-                                    </div>
-                                    
-                                    <div className="text-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                        <div className="text-3xl font-black text-green-400">
-                                            {categories.filter(c => c.isFeatured).length}
-                                        </div>
-                                        <div className="text-gray-300 font-medium">Featured</div>
-                                        <div className="text-gray-500 text-sm">Popular Types</div>
-                                    </div>
-                                    
-                                    <div className="text-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                        <div className="text-3xl font-black text-yellow-400">
-                                            100%
-                                        </div>
-                                        <div className="text-gray-300 font-medium">Free</div>
-                                        <div className="text-gray-500 text-sm">Always</div>
-                                    </div>
-                                </div>
-                            </header>
+                            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-mono">
+                                <span className="text-green-400">root@system:~#</span> browse_categories --type=premium --status=cracked
+                            </p>
+                            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
+                                Explore {categories.length} software categories with thousands of premium applications
+                            </p>
                         </div>
 
-                        {/* Enhanced Search and Filters */}
-                        <div className="max-w-6xl mx-auto">
-                            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/40 rounded-2xl p-6">
-                                <div className="flex flex-col lg:flex-row gap-6 items-center">
-                                    {/* Search Bar */}
-                                    <div className="relative flex-1 w-full lg:max-w-md">
-                                        <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search categories..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full pl-12 pr-12 py-4 bg-gray-700/50 border border-gray-600/50 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm text-lg"
-                                        />
-                                        {searchTerm && (
-                                            <button
-                                                onClick={() => setSearchTerm('')}
-                                                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                                            >
-                                                <FaTimes />
-                                            </button>
-                                        )}
+                        {/* Search and Filters */}
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-gray-900/90 border border-red-500/50 rounded-none backdrop-blur-sm p-6">
+                                {/* Corner Brackets */}
+                                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-red-500"></div>
+                                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-red-500"></div>
+                                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-red-500"></div>
+                                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500"></div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {/* Search */}
+                                    <div className="relative group">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-sm group-focus-within:blur-none transition-all"></div>
+                                        <div className="relative bg-black/80 border border-red-500/30 rounded-none">
+                                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500" />
+                                            <input
+                                                type="text"
+                                                placeholder="> search_categories"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="w-full pl-10 pr-4 py-3 bg-transparent text-green-400 placeholder-gray-500 font-mono focus:outline-none focus:text-red-400 transition-colors text-sm"
+                                            />
+                                        </div>
                                     </div>
 
-                                    {/* Filters Row */}
-                                    <div className="flex flex-wrap items-center gap-4">
-                                        {/* Sort Dropdown */}
+                                    {/* Sort */}
+                                    <div className="relative">
                                         <select
                                             value={sortBy}
                                             onChange={(e) => {
                                                 setSortBy(e.target.value)
                                                 updateURL({ sort: e.target.value })
                                             }}
-                                            className="px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 font-medium"
+                                            className="w-full px-4 py-3 bg-black/80 border border-red-500/30 text-green-400 font-mono focus:outline-none focus:border-red-500 transition-colors text-sm"
                                         >
-                                            <option value="name">📝 Sort by Name</option>
-                                            <option value="apps">📊 Sort by App Count</option>
-                                            <option value="featured">⭐ Featured First</option>
+                                            <option value="name">Sort: Name</option>
+                                            <option value="apps">Sort: App Count</option>
+                                            <option value="featured">Sort: Featured</option>
                                         </select>
+                                    </div>
 
-                                        {/* Featured Toggle */}
+                                    {/* Featured Filter */}
+                                    <div className="flex items-center">
                                         <button
                                             onClick={() => {
                                                 setShowFeaturedOnly(!showFeaturedOnly)
                                                 updateURL({ featured: !showFeaturedOnly ? 'true' : null })
                                             }}
-                                            className={`px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center space-x-2 ${
+                                            className={`flex items-center space-x-2 px-4 py-3 border transition-all font-mono text-sm ${
                                                 showFeaturedOnly
-                                                    ? 'bg-purple-600 text-white shadow-lg'
-                                                    : 'bg-gray-700/50 text-gray-300 hover:text-white border border-gray-600/50 hover:border-purple-500/50'
+                                                    ? 'bg-red-500/20 border-red-500 text-red-400'
+                                                    : 'bg-black/80 border-red-500/30 text-gray-400 hover:border-red-500 hover:text-red-400'
                                             }`}
                                         >
-                                            <FaStar className={showFeaturedOnly ? 'text-yellow-300' : ''} />
+                                            <FaStar />
                                             <span>Featured Only</span>
                                         </button>
+                                    </div>
 
-                                        {/* View Mode Toggle */}
-                                        <div className="flex bg-gray-700/50 rounded-xl border border-gray-600/50 overflow-hidden">
-                                            <button
-                                                onClick={() => {
-                                                    setViewMode('grid')
-                                                    updateURL({ view: 'grid' })
-                                                }}
-                                                className={`px-4 py-3 text-sm transition-colors ${
-                                                    viewMode === 'grid'
-                                                        ? 'bg-purple-600 text-white'
-                                                        : 'text-gray-300 hover:text-white'
-                                                }`}
-                                            >
-                                                <FaTh />
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setViewMode('list')
-                                                    updateURL({ view: 'list' })
-                                                }}
-                                                className={`px-4 py-3 text-sm transition-colors ${
-                                                    viewMode === 'list'
-                                                        ? 'bg-purple-600 text-white'
-                                                        : 'text-gray-300 hover:text-white'
-                                                }`}
-                                            >
-                                                <FaList />
-                                            </button>
-                                        </div>
+                                    {/* View Mode */}
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => {
+                                                setViewMode('grid')
+                                                updateURL({ view: 'grid' })
+                                            }}
+                                            className={`p-3 border transition-all ${
+                                                viewMode === 'grid'
+                                                    ? 'bg-red-500/20 border-red-500 text-red-400'
+                                                    : 'bg-black/80 border-red-500/30 text-gray-400 hover:border-red-500 hover:text-red-400'
+                                            }`}
+                                        >
+                                            <FaTh /> {/* Changed from FaGrid3X3 to FaTh */}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setViewMode('list')
+                                                updateURL({ view: 'list' })
+                                            }}
+                                            className={`p-3 border transition-all ${
+                                                viewMode === 'list'
+                                                    ? 'bg-red-500/20 border-red-500 text-red-400'
+                                                    : 'bg-black/80 border-red-500/30 text-gray-400 hover:border-red-500 hover:text-red-400'
+                                            }`}
+                                        >
+                                            <FaList />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -458,279 +406,233 @@ function CategoriesContent() {
                     </div>
                 </section>
 
-                {/* Categories with Apps */}
-                <section className="container mx-auto px-4 pb-12" itemProp="mainEntity" itemScope itemType="https://schema.org/ItemList">
+                {/* Categories Section */}
+                <section className="container mx-auto px-4 py-12" itemProp="mainEntity" itemScope itemType="https://schema.org/ItemList">
                     <meta itemProp="numberOfItems" content={filteredCategories.length} />
                     
-                    {filteredCategories.length > 0 ? (
-                        <div className="space-y-12">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-red-500 blur-xl opacity-50 animate-pulse"></div>
+                                <div className="relative bg-black border-2 border-red-500 p-8">
+                                    <FaTerminal className="text-red-500 text-4xl animate-pulse" />
+                                    <p className="text-green-400 font-mono mt-4">Loading categories...</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : filteredCategories.length > 0 ? (
+                        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-6'}>
                             {filteredCategories.map((category, index) => {
                                 const apps = categoryApps[category._id] || []
-                                const isLoadingApps = appsLoading[category._id]
-
+                                const isLoading = appsLoading[category._id]
+                                
                                 return (
-                                    <article 
-                                        key={category._id} 
-                                        className="group"
-                                        itemScope itemType="https://schema.org/Thing"
-                                        itemProp="itemListElement"
-                                    >
-                                        <div className="bg-gradient-to-br from-gray-800/40 via-gray-800/30 to-gray-900/50 backdrop-blur-sm border border-gray-700/40 rounded-3xl p-8 hover:border-purple-500/30 transition-all duration-500 overflow-hidden relative shadow-xl hover:shadow-2xl hover:shadow-purple-500/10">
-                                            {/* Background decoration */}
-                                            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-purple-600/5 to-transparent rounded-full blur-2xl"></div>
+                                    <div key={category._id} className="group relative" itemProp="itemListElement" itemScope itemType="https://schema.org/Thing">
+                                        <meta itemProp="position" content={index + 1} />
+                                        <meta itemProp="name" content={category.name} />
+                                        <meta itemProp="url" content={`/category/${category.slug}`} />
+                                        
+                                        {/* Glow Effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                        
+                                        <div className="relative bg-gray-900/90 border border-red-500/30 backdrop-blur-sm hover:border-red-500 transition-all duration-300 group-hover:bg-gray-900/95">
+                                            {/* Corner Brackets */}
+                                            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             
-                                            {/* Category Header */}
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 relative z-10">
-                                                <div className="flex items-center space-x-6 mb-6 md:mb-0">
-                                                    {/* Category Icon */}
-                                                    <div 
-                                                        className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-2xl group-hover:scale-105 transition-transform duration-300 border-2"
-                                                        style={{ 
-                                                            background: `linear-gradient(135deg, ${category.color || '#8b5cf6'}15, ${category.color || '#8b5cf6'}30)`,
-                                                            borderColor: `${category.color || '#8b5cf6'}40`
-                                                        }}
-                                                    >
-                                                        <span style={{ color: category.color || '#8b5cf6' }}>
-                                                            {category.icon || '📱'}
-                                                        </span>
+                                            <div className="p-6">
+                                                {/* Category Header */}
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="relative">
+                                                            <div className="absolute inset-0 bg-red-500 blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                                                            <div className="relative bg-black border border-red-500 p-2 text-xl">
+                                                                {category.icon || '📂'}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xl font-bold text-white group-hover:text-red-400 transition-colors font-mono">
+                                                                {category.name}
+                                                            </h3>
+                                                            <p className="text-gray-400 text-sm">
+                                                                {category.appCount || 0} apps
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                     
-                                                    {/* Category Info */}
-                                                    <div>
-                                                        <div className="flex items-center gap-4 mb-2">
-                                                            <h2 className="text-3xl font-black text-white group-hover:text-purple-300 transition-colors duration-300" itemProp="name">
-                                                                {category.name}
-                                                            </h2>
-                                                            {category.isFeatured && (
-                                                                <span className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 text-xs rounded-full font-bold flex items-center space-x-1">
-                                                                    <FaStar className="text-yellow-300" />
-                                                                    <span>FEATURED</span>
-                                                                </span>
-                                                            )}
-                                                            {index < 3 && (
-                                                                <span className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-300 text-xs rounded-full font-bold flex items-center space-x-1">
-                                                                    <FaTrophy />
-                                                                    <span>TOP</span>
-                                                                </span>
-                                                            )}
+                                                    {category.isFeatured && (
+                                                        <div className="bg-red-500/20 border border-red-500 px-2 py-1">
+                                                            <FaStar className="text-red-500 text-xs" />
                                                         </div>
-                                                        <p className="text-gray-300 text-lg mb-2 font-medium">
-                                                            <span className="text-purple-400 font-bold">{category.appCount || 0}</span> premium applications available
-                                                        </p>
-                                                        {category.description && (
-                                                            <p className="text-gray-500 max-w-3xl leading-relaxed" itemProp="description">
-                                                                {category.description.length > 150 
-                                                                    ? `${category.description.substring(0, 150)}...` 
-                                                                    : category.description
-                                                                }
-                                                            </p>
-                                                        )}
-                                                    </div>
+                                                    )}
                                                 </div>
 
-                                                {/* View All Button */}
-                                                <button
-                                                    onClick={() => handleCategoryClick(category)}
-                                                    className="flex items-center space-x-3 px-6 py-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/30 hover:to-blue-600/30 border border-purple-500/30 hover:border-purple-400/50 text-purple-300 hover:text-purple-200 rounded-xl transition-all duration-300 group/btn shadow-lg hover:shadow-purple-500/20 hover:scale-105"
-                                                    aria-label={`View all ${category.name} applications`}
-                                                >
-                                                    <span className="font-bold">View All {category.appCount || 0}</span>
-                                                    <FaArrowRight className="text-sm group-hover/btn:translate-x-1 transition-transform" />
-                                                </button>
-                                            </div>
+                                                {/* Category Description */}
+                                                {category.description && (
+                                                    <p className="text-gray-300 text-sm mb-4 font-mono">
+                                                        {category.description}
+                                                    </p>
+                                                )}
 
-                                            {/* Apps Grid */}
-                                            <div className="relative">
-                                                {isLoadingApps ? (
-                                                    <div className="flex items-center justify-center py-12">
-                                                        <FaSpinner className="text-purple-500 animate-spin mr-3 text-xl" />
-                                                        <span className="text-gray-400 text-lg">Loading premium apps...</span>
-                                                    </div>
-                                                ) : apps.length > 0 ? (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-                                                        {apps.map((app, appIndex) => (
-                                                            <div 
-                                                                key={app._id}
-                                                                onClick={() => handleAppClick(app)}
-                                                                className="bg-gray-800/40 hover:bg-gray-700/50 border border-gray-600/30 hover:border-purple-500/40 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg group/app"
-                                                                itemScope itemType="https://schema.org/SoftwareApplication"
-                                                            >
-                                                                {/* App Icon */}
-                                                                <div className="w-14 h-14 bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl flex items-center justify-center mb-4 group-hover/app:scale-110 transition-transform duration-300 border border-gray-600/40">
-                                                                    {app.images?.[0] ? (
-                                                                        <img 
-                                                                            src={app.images[0]} 
-                                                                            alt={`${app.name} - Free Download`}
-                                                                            className="w-10 h-10 rounded-lg object-cover" 
-                                                                            loading="lazy"
-                                                                            itemProp="image"
+                                                {/* Apps Preview */}
+                                                <div className="mb-4">
+                                                    <h4 className="text-green-400 font-mono text-sm mb-3 flex items-center">
+                                                        <FaCode className="mr-2" />
+                                                        Featured Apps
+                                                    </h4>
+                                                    
+                                                    {isLoading ? (
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            {[...Array(3)].map((_, i) => (
+                                                                <div key={i} className="bg-gray-800/50 border border-gray-700 p-2 animate-pulse">
+                                                                    <div className="w-full h-12 bg-gray-700 mb-2"></div>
+                                                                    <div className="h-3 bg-gray-700"></div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : apps.length > 0 ? (
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            {apps.slice(0, 3).map((app) => (
+                                                                <button
+                                                                    key={app._id}
+                                                                    onClick={() => handleAppClick(app)}
+                                                                    className="bg-gray-800/50 border border-gray-700 hover:border-red-500 p-2 transition-all group/app"
+                                                                >
+                                                                    {app.icon ? (
+                                                                        <Image
+                                                                            src={app.icon}
+                                                                            alt={app.name}
+                                                                            width={48}
+                                                                            height={48}
+                                                                            className="w-full h-12 object-cover mb-2"
                                                                         />
                                                                     ) : (
-                                                                        <span className="text-purple-400 text-2xl">📱</span>
+                                                                        <div className="w-full h-12 bg-gray-700 flex items-center justify-center mb-2">
+                                                                            <MdApps className="text-gray-500" />
+                                                                        </div>
                                                                     )}
-                                                                </div>
+                                                                    <p className="text-xs text-gray-300 group-hover/app:text-red-400 transition-colors truncate">
+                                                                        {app.name}
+                                                                    </p>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-4">
+                                                            <p className="text-gray-500 text-sm font-mono">No apps available</p>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                                                {/* App Info */}
-                                                                <h3 className="font-bold text-white text-sm mb-3 line-clamp-2 group-hover/app:text-purple-300 transition-colors leading-tight" itemProp="name">
-                                                                    {app.name}
-                                                                </h3>
-
-                                                                {/* App Stats */}
-                                                                <div className="flex items-center justify-between text-xs">
-                                                                    <div className="flex items-center space-x-3">
-                                                                        {app.rating && (
-                                                                            <div className="flex items-center space-x-1" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
-                                                                                <FaStar className="text-yellow-500" />
-                                                                                <span className="text-gray-300 font-medium" itemProp="ratingValue">{app.rating}</span>
-                                                                            </div>
-                                                                        )}
-                                                                        {app.downloadCount && (
-                                                                            <div className="flex items-center space-x-1">
-                                                                                <FaDownload className="text-green-500" />
-                                                                                <span className="text-gray-300 font-medium">
-                                                                                    {app.downloadCount > 1000 ? `${(app.downloadCount/1000).toFixed(1)}k` : app.downloadCount}
-                                                                                </span>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    
-                                                                    {/* App Badges */}
-                                                                    <div className="flex items-center space-x-1">
-                                                                        {app.isHot && <FaFire className="text-red-500" title="Hot App" />}
-                                                                        {app.isPremium && <FaCrown className="text-yellow-500" title="Premium App" />}
-                                                                        {appIndex === 0 && <FaTrophy className="text-green-500" title="Top in Category" />}
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Hidden Schema Data */}
-                                                                <meta itemProp="description" content={app.description || `Download ${app.name} for free - Premium cracked version available`} />
-                                                                <meta itemProp="url" content={`https://appscracked.com/app/${app.slug}`} />
-                                                                <meta itemProp="applicationCategory" content={category.name} />
-                                                                <meta itemProp="operatingSystem" content="Windows, MacOS, Android, iOS" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-center py-12 text-gray-500">
-                                                        <span className="text-3xl mb-3 block">📦</span>
-                                                        <p className="text-lg">No apps available in this category yet</p>
-                                                        <p className="text-sm mt-2">Check back soon for new releases!</p>
-                                                    </div>
-                                                )}
+                                                {/* Action Button */}
+                                                <button
+                                                    onClick={() => handleCategoryClick(category)}
+                                                    className="w-full bg-black/80 border border-red-500/50 hover:border-red-500 hover:bg-red-500/10 text-red-400 py-3 transition-all font-mono text-sm group-hover:bg-red-500/20"
+                                                >
+                                                    <span className="flex items-center justify-center space-x-2">
+                                                        <FaRocket />
+                                                        <span>EXPLORE CATEGORY</span>
+                                                        <span className="text-green-400">→</span>
+                                                    </span>
+                                                </button>
                                             </div>
-
-                                            {/* Hidden Schema Data */}
-                                            <meta itemProp="url" content={`https://appscracked.com/category/${category.slug}`} />
-                                            <meta itemProp="identifier" content={category.slug} />
                                         </div>
-                                    </article>
+                                    </div>
                                 )
                             })}
                         </div>
                     ) : (
                         <div className="text-center py-20">
-                            <div className="text-8xl mb-8">🔍</div>
-                            <h3 className="text-4xl font-bold text-white mb-6">No Categories Found</h3>
-                            <p className="text-gray-400 mb-10 text-xl max-w-2xl mx-auto leading-relaxed">
-                                {searchTerm 
-                                    ? `No categories match your search "${searchTerm}". Try different keywords or browse all categories.`
-                                    : 'No categories are available at the moment. Please check back later.'
-                                }
-                            </p>
-                            {searchTerm && (
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                    <button
-                                        onClick={() => setSearchTerm('')}
-                                        className="px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg"
-                                    >
-                                        Clear Search
-                                    </button>
-                                    <Link href="/apps">
-                                        <button className="px-8 py-4 bg-transparent border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white rounded-xl font-bold transition-all duration-300">
-                                            Browse All Apps
-                                        </button>
-                                    </Link>
+                            <div className="relative inline-block">
+                                <div className="absolute inset-0 bg-red-500 blur-xl opacity-30"></div>
+                                <div className="relative bg-gray-900/90 border border-red-500/50 p-8">
+                                    <FaSearch className="text-red-500 text-4xl mb-4 mx-auto" />
+                                    <h3 className="text-xl font-bold text-white mb-2 font-mono">No Categories Found</h3>
+                                    <p className="text-gray-400 font-mono">Try adjusting your search or filters</p>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     )}
                 </section>
+            </div>
 
-                {/* Enhanced CTA Section */}
-                <section className="bg-gradient-to-r from-gray-900/50 via-purple-900/10 to-gray-900/50 backdrop-blur-sm border-t border-purple-500/20">
-                    <div className="container mx-auto px-4 py-20">
-                        <div className="text-center max-w-5xl mx-auto">
-                            <div className="flex justify-center mb-8">
-                                <div className="relative">
-                                    <FaGem className="text-5xl text-purple-400" />
-                                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-purple-500 rounded-full animate-pulse"></div>
-                                </div>
-                            </div>
-                            
-                            <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-                                Ready to Explore Premium Software?
-                            </h2>
-                            <p className="text-gray-300 mb-10 text-xl leading-relaxed">
-                                Discover thousands of applications across all categories. Find the perfect tools for your workflow, 
-                                entertainment, and productivity needs - all completely free.
-                            </p>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                                <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                    <FaApple className="text-3xl text-blue-400 mx-auto mb-3" />
-                                    <h3 className="text-white font-bold mb-2">All Platforms</h3>
-                                    <p className="text-gray-400 text-sm">Windows, Mac, Android, iOS</p>
-                                </div>
-                                <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                    <FaTrophy className="text-3xl text-yellow-400 mx-auto mb-3" />
-                                    <h3 className="text-white font-bold mb-2">Premium Quality</h3>
-                                    <p className="text-gray-400 text-sm">Tested & virus-free apps</p>
-                                </div>
-                                <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
-                                    <FaDownload className="text-3xl text-green-400 mx-auto mb-3" />
-                                    <h3 className="text-white font-bold mb-2">Instant Access</h3>
-                                    <p className="text-gray-400 text-sm">Direct download links</p>
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                                <Link href="/apps">
-                                    <button className="px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-xl shadow-2xl transition-all duration-300 hover:shadow-red-500/25 hover:scale-105">
-                                        Browse All Apps
-                                    </button>
-                                </Link>
-                                <Link href="/apps?featured=true">
-                                    <button className="px-10 py-4 bg-transparent border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white font-bold rounded-xl transition-all duration-300 hover:scale-105">
-                                        Featured Apps
-                                    </button>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
+            <style jsx>{`
+                .matrix-rain {
+                    background: linear-gradient(0deg, transparent 24%, rgba(255, 0, 0, 0.05) 25%, rgba(255, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 0, 0, 0.05) 75%, rgba(255, 0, 0, 0.05) 76%, transparent 77%, transparent);
+                    background-size: 50px 50px;
+                    animation: matrix-rain 20s linear infinite;
+                }
+                
+                @keyframes matrix-rain {
+                    0% { transform: translateY(-100%); }
+                    100% { transform: translateY(100%); }
+                }
+                
+                .scan-lines {
+                    background: linear-gradient(90deg, transparent 98%, rgba(255, 0, 0, 0.03) 100%);
+                    background-size: 3px 100%;
+                    animation: scan-lines 0.1s linear infinite;
+                }
+                
+                @keyframes scan-lines {
+                    0% { background-position: 0 0; }
+                    100% { background-position: 3px 0; }
+                }
+                
+                .floating-code {
+                    animation: float 6s ease-in-out infinite;
+                }
+                
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-20px); }
+                }
+                
+                @keyframes float-1 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-15px) rotate(1deg); }
+                }
+                
+                @keyframes float-2 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-25px) rotate(-1deg); }
+                }
+                
+                @keyframes float-3 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(0.5deg); }
+                }
+                
+                @keyframes float-4 {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-18px) rotate(-0.5deg); }
+                }
+                
+                .animate-float-1 { animation: float-1 4s ease-in-out infinite; }
+                .animate-float-2 { animation: float-2 5s ease-in-out infinite; }
+                .animate-float-3 { animation: float-3 6s ease-in-out infinite; }
+                .animate-float-4 { animation: float-4 4.5s ease-in-out infinite; }
+            `}</style>
         </>
     )
 }
 
-// Loading component for Suspense fallback
-function CategoriesPageLoading() {
-    return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black flex items-center justify-center">
-            <div className="text-center space-y-4">
-                <FaSpinner className="animate-spin text-5xl text-purple-500 mx-auto" />
-                <h2 className="text-2xl text-white font-bold">Loading Categories...</h2>
-                <p className="text-gray-400">Organizing premium software by type</p>
-            </div>
-        </div>
-    )
-}
-
-// Main page component with Suspense wrapper
 export default function CategoriesPage() {
     return (
-        <Suspense fallback={<CategoriesPageLoading />}>
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-red-500 blur-xl opacity-50 animate-pulse"></div>
+                    <div className="relative bg-black border-2 border-red-500 p-8">
+                        <FaTerminal className="text-red-500 text-4xl animate-pulse" />
+                        <p className="text-green-400 font-mono mt-4">Initializing categories...</p>
+                    </div>
+                </div>
+            </div>
+        }>
             <CategoriesContent />
         </Suspense>
     )
-} 
+}

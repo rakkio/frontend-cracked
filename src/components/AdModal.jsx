@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAdvertising } from '@/contexts/AdvertisingContext'
 import { api } from '@/lib/api'
-import { FaTimes, FaSpinner, FaExclamationTriangle, FaDownload, FaInfoCircle } from 'react-icons/fa'
+import { FaTimes, FaSpinner, FaExclamationTriangle, FaDownload, FaInfoCircle, FaTerminal, FaShieldAlt } from 'react-icons/fa'
 
 export default function AdModal() {
     const {
@@ -499,27 +499,52 @@ export default function AdModal() {
     console.log('✅ Modal is open, rendering modal')
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            {/* Matrix Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="matrix-rain opacity-10"></div>
+                <div className="scan-lines"></div>
+            </div>
+
             <div 
                 ref={modalRef}
-                className="bg-gray-900 border border-gray-700 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+                className="relative bg-black/95 border-2 border-red-500 max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl backdrop-blur-md"
             >
+                {/* Corner Brackets */}
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-red-500"></div>
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-red-500"></div>
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-red-500"></div>
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-red-500"></div>
+
+                {/* Scan Lines Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/5 to-transparent animate-pulse"></div>
+
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <div className="relative flex items-center justify-between p-6 border-b-2 border-red-500 bg-gradient-to-r from-red-900/20 to-transparent">
                     <div className="flex items-center space-x-3">
-                        <FaDownload className="text-red-500" />
-                        <h2 className="text-lg font-semibold text-white">
-                            {loading ? 'Loading...' : 
-                             error ? 'Advertisement Error' :
-                             advertisement ? advertisement.name || 'Advertisement' : 
-                             'Preparing Download'}
-                        </h2>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-red-500 blur-lg opacity-50"></div>
+                            <div className="relative bg-black border border-red-500 p-2">
+                                <FaTerminal className="text-red-500" />
+                            </div>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-red-400 font-mono">
+                                [DOWNLOAD_PROTOCOL]
+                            </h2>
+                            <p className="text-gray-400 font-mono text-sm">
+                                {loading ? 'INITIALIZING...' : 
+                                 error ? 'ERROR_DETECTED' :
+                                 advertisement ? 'AD_LOADED' : 
+                                 'PREPARING_DOWNLOAD'}
+                            </p>
+                        </div>
                     </div>
                     
                     {canClose && (
                         <button
                             onClick={closeAdModal}
-                            className="text-gray-400 hover:text-white text-xl transition-colors"
+                            className="text-gray-400 hover:text-red-400 text-xl transition-colors p-2 border border-red-500/50 hover:border-red-500 hover:bg-red-500/10"
                         >
                             <FaTimes />
                         </button>
@@ -527,113 +552,146 @@ export default function AdModal() {
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="relative p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
                     {loading && (
-                        <div className="text-center py-12">
-                            <FaSpinner className="animate-spin text-4xl text-red-500 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-white mb-3">Loading Advertisement...</h3>
-                            <p className="text-gray-300 mb-4">Please wait while we prepare your download</p>
-                            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 max-w-md mx-auto">
-                                <p className="text-blue-300 text-sm">
-                                    💡 <strong>Note:</strong> If no advertisement is available, your download will start automatically
-                                </p>
+                        <div className="text-center py-16">
+                            <div className="relative inline-block">
+                                <div className="absolute inset-0 bg-red-500 blur-xl opacity-30 animate-pulse"></div>
+                                <FaSpinner className="relative text-6xl text-red-500 animate-spin" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-red-400 mb-4 mt-6 font-mono">
+                                [LOADING_ADVERTISEMENT]
+                            </h3>
+                            <div className="space-y-2 text-gray-400 font-mono text-sm">
+                                <p className="animate-pulse"> Connecting to ad server...</p>
+                                <p className="animate-pulse" style={{animationDelay: '0.5s'}}> Fetching content...</p>
+                                <p className="animate-pulse" style={{animationDelay: '1s'}}>Preparing display...</p>
                             </div>
                         </div>
                     )}
 
                     {error && (
-                        <div className="text-center py-12">
-                            <div className="flex items-center justify-center mb-4">
-                                <FaSpinner className="animate-spin text-3xl text-blue-500 mr-3" />
-                                <FaExclamationTriangle className="text-4xl text-yellow-500" />
+                        <div className="text-center py-16">
+                            <div className="relative inline-block mb-6">
+                                <div className="absolute inset-0 bg-yellow-500 blur-xl opacity-30 animate-pulse"></div>
+                                <FaExclamationTriangle className="relative text-6xl text-yellow-500" />
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-4">Preparing Your Download</h3>
-                            <p className="text-yellow-300 mb-6">{error}</p>
-                            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
-                                <p className="text-blue-300 text-sm mb-2">
-                                    <strong>Don't worry!</strong> Your download will start automatically.
-                                </p>
-                                <p className="text-blue-200 text-xs">
-                                    We're working to show you relevant content, but if none is available, 
-                                    we'll proceed directly to your download.
-                                </p>
+                            <h3 className="text-2xl font-bold text-yellow-400 mb-4 font-mono">
+                                [ERROR_DETECTED]
+                            </h3>
+                            <p className="text-yellow-300 mb-6 font-mono">{error}</p>
+                            <div className="bg-red-900/20 border-2 border-red-500 p-6 mb-6">
+                                <div className="flex items-start space-x-3">
+                                    <FaShieldAlt className="text-red-500 mt-1" />
+                                    <div className="text-left">
+                                        <p className="text-red-300 font-mono text-sm mb-2">
+                                            <strong>[SYSTEM_MESSAGE]</strong> Download will proceed automatically.
+                                        </p>
+                                        <p className="text-gray-300 font-mono text-xs">
+                                            Advertisement system temporarily unavailable. Your download is not affected.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-400 animate-pulse">
-                                🔄 Your download will begin shortly...
+                            <p className="text-gray-400 font-mono text-sm animate-pulse">
+                               Initiating download sequence...
                             </p>
                         </div>
                     )}
 
                     {scriptError && (
-                        <div className="text-center py-12">
-                            <FaExclamationTriangle className="text-4xl text-yellow-500 mx-auto mb-4" />
-                            <p className="text-yellow-300 mb-4">Advertisement could not be loaded</p>
+                        <div className="text-center py-16">
+                            <div className="relative inline-block mb-6">
+                                <div className="absolute inset-0 bg-yellow-500 blur-xl opacity-30 animate-pulse"></div>
+                                <FaExclamationTriangle className="relative text-6xl text-yellow-500" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-yellow-400 mb-4 font-mono">
+                                [SCRIPT_ERROR]
+                            </h3>
+                            <p className="text-yellow-300 mb-6 font-mono">Advertisement could not be loaded</p>
                             <button
                                 onClick={handleProceed}
-                                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-mono font-bold border-2 border-red-500 hover:border-red-400 transition-all duration-300 transform hover:scale-105"
                             >
-                                Continue to Download
+                                [CONTINUE_DOWNLOAD]
                             </button>
                         </div>
                     )}
 
                     {advertisement && !loading && !error && !scriptError && (
-                        <div>
+                        <div className="space-y-6">
                             {/* Advertisement Container */}
-                            <div 
-                                ref={scriptContainerRef}
-                                onClick={handleAdClick}
-                                className="min-h-[300px] bg-gray-800 rounded-lg overflow-hidden mb-6"
-                                style={{ minHeight: '300px' }}
-                            />
+                            <div className="relative">
+                                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-red-500"></div>
+                                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-red-500"></div>
+                                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-red-500"></div>
+                                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500"></div>
+                                
+                                <div 
+                                    ref={scriptContainerRef}
+                                    onClick={handleAdClick}
+                                    className="min-h-[300px] bg-gray-900/50 border border-red-500/30 overflow-hidden backdrop-blur-sm"
+                                    style={{ minHeight: '300px' }}
+                                />
+                            </div>
 
-                            {/* Timer and Proceed Button */}
-                            <div className="space-y-4">
+                            {/* Timer and Proceed Section */}
+                            <div className="space-y-6">
                                 {/* Countdown Display */}
-                                <div className="text-center">
+                                <div className="text-center bg-black/50 border border-red-500/30 p-6">
                                     {!scriptLoaded ? (
-                                        <div className="flex items-center justify-center space-x-2 py-4">
-                                            <FaSpinner className="animate-spin text-blue-500" />
-                                            <span className="text-gray-300">Loading advertisement...</span>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-center space-x-3">
+                                                <FaSpinner className="animate-spin text-red-500 text-2xl" />
+                                                <span className="text-red-400 font-mono text-lg">LOADING_ADVERTISEMENT...</span>
+                                            </div>
+                                            <div className="w-full bg-gray-800 h-2 overflow-hidden">
+                                                <div className="w-full h-full bg-gradient-to-r from-red-500 to-orange-500 animate-pulse"></div>
+                                            </div>
                                         </div>
                                     ) : !verificationPassed ? (
-                                        <div className="flex items-center justify-center space-x-2 py-4">
-                                            <FaSpinner className="animate-spin text-yellow-500" />
-                                            <span className="text-gray-300">Verifying advertisement...</span>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-center space-x-3">
+                                                <FaSpinner className="animate-spin text-yellow-500 text-2xl" />
+                                                <span className="text-yellow-400 font-mono text-lg">VERIFYING_CONTENT...</span>
+                                            </div>
+                                            <div className="w-full bg-gray-800 h-2 overflow-hidden">
+                                                <div className="w-1/3 h-full bg-gradient-to-r from-yellow-500 to-orange-500 animate-pulse"></div>
+                                            </div>
                                         </div>
                                     ) : adTimer > 0 ? (
-                                        <div className="py-6">
-                                            <div className="mb-4">
-                                                <div className="text-6xl font-bold text-red-500 mb-2">
+                                        <div className="space-y-6">
+                                            <div className="relative">
+                                                <div className="text-8xl font-bold text-red-500 mb-4 font-mono">
                                                     {adTimer}
                                                 </div>
-                                                <div className="text-gray-300 text-lg">
-                                                    seconds remaining
+                                                <div className="text-gray-300 text-xl font-mono">
+                                                    SECONDS_REMAINING
                                                 </div>
                                             </div>
-                                            <div className="w-full bg-gray-700 rounded-full h-3 mb-4">
+                                            <div className="w-full bg-gray-800 h-4 overflow-hidden border border-red-500/30">
                                                 <div 
-                                                    className="bg-gradient-to-r from-red-500 to-orange-500 h-3 rounded-full transition-all duration-1000 ease-linear"
+                                                    className="bg-gradient-to-r from-red-500 to-orange-500 h-4 transition-all duration-1000 ease-linear"
                                                     style={{
                                                         width: `${((advertisement.settings?.countdown || 15) - adTimer) / (advertisement.settings?.countdown || 15) * 100}%`
                                                     }}
                                                 />
                                             </div>
-                                            <p className="text-gray-400 text-sm">
+                                            <p className="text-gray-400 font-mono text-sm">
                                                 Please wait while the advertisement loads...
                                             </p>
                                         </div>
                                     ) : (
-                                        <div className="py-6">
-                                            <div className="text-4xl font-bold text-green-500 mb-2">
-                                                ✓ Ready!
+                                        <div className="space-y-6">
+                                            <div className="text-6xl font-bold text-green-500 mb-4 font-mono">
+                                                [READY]
                                             </div>
-                                            <div className="text-gray-300 text-lg mb-4">
-                                                Your download will start automatically
+                                            <div className="text-gray-300 text-xl font-mono mb-4">
+                                                DOWNLOAD_AUTHORIZED
                                             </div>
-                                            <div className="flex items-center justify-center space-x-2">
+                                            <div className="flex items-center justify-center space-x-3">
                                                 <FaSpinner className="animate-spin text-green-500" />
-                                                <span className="text-green-400">Preparing download...</span>
+                                                <span className="text-green-400 font-mono">Preparing download...</span>
                                             </div>
                                         </div>
                                     )}
@@ -644,21 +702,21 @@ export default function AdModal() {
                                     <button
                                         onClick={handleProceed}
                                         disabled={!canProceed || !verificationPassed}
-                                        className={`px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform ${
+                                        className={`px-12 py-6 font-bold text-xl font-mono transition-all duration-300 transform border-2 ${
                                             canProceed && verificationPassed
-                                                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white cursor-pointer hover:scale-105 shadow-lg'
-                                                : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
+                                                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-black border-green-500 hover:border-green-400 cursor-pointer hover:scale-105 shadow-lg'
+                                                : 'bg-gray-800 text-gray-500 border-gray-600 cursor-not-allowed opacity-50'
                                         }`}
                                     >
                                         {canProceed && verificationPassed ? (
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center space-x-3">
                                                 <FaDownload />
-                                                <span>Download {pendingDownload?.name || 'Now'}</span>
+                                                <span>[DOWNLOAD_{pendingDownload?.name?.toUpperCase() || 'NOW'}]</span>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center space-x-3">
                                                 <FaSpinner className="animate-spin" />
-                                                <span>Please Wait...</span>
+                                                <span>[PLEASE_WAIT...]</span>
                                             </div>
                                         )}
                                     </button>
@@ -666,15 +724,24 @@ export default function AdModal() {
                             </div>
 
                             {/* Instructions */}
-                            <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-                                <div className="flex items-start space-x-2">
+                            <div className="bg-blue-900/20 border-2 border-blue-500/30 p-6">
+                                <div className="flex items-start space-x-3">
                                     <FaInfoCircle className="text-blue-400 mt-1 flex-shrink-0" />
-                                    <div className="text-sm">
-                                        <p className="text-blue-300 font-medium mb-1">How it works:</p>
-                                        <ol className="text-blue-200 space-y-1">
-                                            <li>1. Advertisement loads and displays above</li>
-                                            <li>2. Wait for the {advertisement.settings?.countdown || 15}-second countdown to complete</li>
-                                            <li>3. Download starts automatically or click the download button</li>
+                                    <div className="font-mono text-sm">
+                                        <p className="text-blue-300 font-bold mb-3">[DOWNLOAD_PROTOCOL]:</p>
+                                        <ol className="text-blue-200 space-y-2">
+                                            <li className="flex items-center space-x-2">
+                                                <span className="text-blue-400">1.</span>
+                                                <span>Advertisement loads and displays above</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <span className="text-blue-400">2.</span>
+                                                <span>Wait for the {advertisement.settings?.countdown || 15}-second countdown to complete</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <span className="text-blue-400">3.</span>
+                                                <span>Download starts automatically or click the download button</span>
+                                            </li>
                                         </ol>
                                     </div>
                                 </div>
@@ -683,6 +750,30 @@ export default function AdModal() {
                     )}
                 </div>
             </div>
+
+            <style jsx>{`
+                .matrix-rain {
+                    background: linear-gradient(0deg, transparent 24%, rgba(255, 0, 0, 0.05) 25%, rgba(255, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 0, 0, 0.05) 75%, rgba(255, 0, 0, 0.05) 76%, transparent 77%, transparent);
+                    background-size: 30px 30px;
+                    animation: matrix-fall 15s linear infinite;
+                }
+                
+                @keyframes matrix-fall {
+                    0% { transform: translateY(-100%); }
+                    100% { transform: translateY(100vh); }
+                }
+                
+                .scan-lines {
+                    background: linear-gradient(90deg, transparent 98%, rgba(255, 0, 0, 0.1) 100%);
+                    background-size: 4px 100%;
+                    animation: scan 3s linear infinite;
+                }
+                
+                @keyframes scan {
+                    0% { background-position: 0 0; }
+                    100% { background-position: 100% 0; }
+                }
+            `}</style>
         </div>
     )
-} 
+}
