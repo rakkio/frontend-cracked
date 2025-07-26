@@ -174,6 +174,11 @@ class API {
         return this.request(`/apps/search?${queryString}`)
     }
 
+    async quickSearch(query, limit = 8) {
+        const queryString = this.buildQueryString({ q: query, limit })
+        return this.request(`/apps/quick-search?${queryString}`)
+    }
+
     async getFeaturedApps(limit = 10) {
         const queryString = this.buildQueryString({ featured: true, limit })
         return this.request(`/apps?${queryString}`)

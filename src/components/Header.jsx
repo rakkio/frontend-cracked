@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { api } from '@/lib/api'
+import Search from './header/Search.jsx'
+import MobileSearchButton from './header/MobileSearchButton.jsx'
 import Logo from './Logo'
 import { 
     FaTerminal, 
@@ -24,12 +25,7 @@ export default function Header() {
     // Add client-side mounting state
     const [isMounted, setIsMounted] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
-    const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [searchQuery, setSearchQuery] = useState('')
-    const [searchResults, setSearchResults] = useState([])
-    const [searchLoading, setSearchLoading] = useState(false)
-    const [showResults, setShowResults] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     
     const { user, isAuthenticated, logout, loading } = useAuth()
@@ -76,14 +72,13 @@ export default function Header() {
         setIsOpen(!isOpen)
     }
     
-    const toggleSearch = (e) => {
-        e.preventDefault()
-        setIsSearchOpen(!isSearchOpen)
+    const handleSearchClick = () => {
+        // This will be handled by the Search component
     }
 
     // Fixed useEffect with consistent dependency array
     useEffect(() => {
-        if (isOpen || isSearchOpen || isMobileMenuOpen) {
+        if (isOpen || isMobileMenuOpen) {
             document.body.style.overflow = 'hidden'
         } else {
             document.body.style.overflow = 'auto'
@@ -92,7 +87,7 @@ export default function Header() {
         return () => {
             document.body.style.overflow = 'auto'
         }
-    }, [isOpen, isSearchOpen, isMobileMenuOpen])
+    }, [isOpen, isMobileMenuOpen])
 
     const handleChildClick = (event) => {
         event.stopPropagation() 
@@ -100,69 +95,8 @@ export default function Header() {
     
     const handleBackdropClick = () => {
         setIsOpen(false)
-        setIsSearchOpen(false)
         setIsMobileMenuOpen(false)
     }
-
-    // Search functionality
-    const handleSearch = async (query) => {
-        if (!query && !searchQuery.trim()) {
-            setSearchResults([])
-            setShowResults(false)
-            return
-        }
-
-        const searchTerm = query || searchQuery
-        setSearchLoading(true)
-        try {
-            const response = await api.getApps({
-                search: searchTerm.trim(),
-                limit: 8
-            })
-            setSearchResults(response.data.apps || [])
-            setShowResults(true)
-        } catch (error) {
-            console.error('Search error:', error)
-            setSearchResults([])
-        } finally {
-            setSearchLoading(false)
-        }
-    }
-
-    const handleSearchSubmit = (e) => {
-        e.preventDefault()
-        if (searchQuery.trim()) {
-            setIsSearchOpen(false)
-            router.push(`/apps?search=${encodeURIComponent(searchQuery.trim())}`)
-        }
-    }
-
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSearchSubmit(e)
-        }
-    }
-
-    const handleQuickSearch = (term) => {
-        setSearchQuery(term)
-        handleSearch(term)
-    }
-
-    const handleAppClick = (app) => {
-        setIsSearchOpen(false)
-        router.push(`/app/${app.slug}`)
-    }
-
-    // Debounced search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery) {
-                handleSearch(searchQuery)
-            }
-        }, 300)
-
-        return () => clearTimeout(timer)
-    }, [searchQuery])
 
     // Close user menu when clicking outside
     useEffect(() => {
@@ -265,30 +199,7 @@ export default function Header() {
 
                         {/* Search Bar - Hidden on mobile, shown in mobile menu */}
                         <div className="hidden md:flex flex-1 max-w-2xl mx-4 lg:mx-8 relative">
-                            <div className="relative group w-full">
-                                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-sm group-focus-within:blur-none transition-all"></div>
-                                <div className="relative bg-gray-900/90 border border-red-500/50 rounded-none backdrop-blur-sm">
-                                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-500"></div>
-                                    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-500"></div>
-                                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-500"></div>
-                                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-500"></div>
-                                    
-                                    <input
-                                        type="text"
-                                        placeholder="> search_apps --query"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        onKeyPress={handleKeyPress}
-                                        className="w-full px-4 py-2 md:py-3 bg-transparent text-green-400 placeholder-gray-500 font-mono focus:outline-none focus:text-red-400 transition-colors text-sm"
-                                    />
-                                    <button
-                                        onClick={() => handleSearch()}
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded z-[10]"
-                                    >
-                                        <FaSearch />
-                                    </button>
-                                </div>
-                            </div>
+                           <Search onSearchClick={handleSearchClick} />
                         </div>
 
                         {/* Navigation - Hidden on mobile */}
@@ -309,12 +220,7 @@ export default function Header() {
                         {/* User Menu & Mobile Controls */}
                         <div className="flex items-center space-x-2 md:space-x-4">
                             {/* Search Button for Mobile */}
-                            <button
-                                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                                className="md:hidden p-2 text-red-500 hover:text-red-400 border border-red-500/50 hover:border-red-500 transition-all duration-300 z-[10]"
-                            >
-                                <FaSearch />
-                            </button>
+                            <MobileSearchButton />
 
                             {user ? (
                                 <div className="relative" ref={userMenuRef}>
@@ -335,7 +241,7 @@ export default function Header() {
                                             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-500/10 to-transparent"></div>
                                             <div className="relative">
                                                 {[
-                                                    { href: '/dashboard', label: 'Dashboard', icon: MdDashboard },
+                                                    { href: '/admin', label: 'Dashboard', icon: MdDashboard },
                                                     { href: '/favorites', label: 'Favorites', icon: MdFavorite },
                                                     { href: '/settings', label: 'Settings', icon: MdSettings }
                                                 ].map((item) => (
@@ -378,44 +284,7 @@ export default function Header() {
                         </div>
                     </div>
 
-                    {/* Mobile Search Overlay */}
-                    {isSearchOpen && (
-                        <div className="md:hidden fixed inset-0 bg-black/95 backdrop-blur-md z-[1002]" onClick={handleBackdropClick}>
-                            <div className="p-4" onClick={handleChildClick}>
-                                <div className="relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 blur-sm group-focus-within:blur-none transition-all"></div>
-                                    <div className="relative bg-gray-900/90 border border-red-500/50 rounded-none backdrop-blur-sm">
-                                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-500"></div>
-                                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-500"></div>
-                                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-500"></div>
-                                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-500"></div>
-                                        
-                                        <input
-                                            type="text"
-                                            placeholder="> search_apps --query"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            onKeyPress={handleKeyPress}
-                                            className="w-full px-4 py-4 bg-transparent text-green-400 placeholder-gray-500 font-mono focus:outline-none focus:text-red-400 transition-colors"
-                                            autoFocus
-                                        />
-                                        <button
-                                            onClick={() => handleSearch()}
-                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded"
-                                        >
-                                            <FaSearch />
-                                        </button>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setIsSearchOpen(false)}
-                                    className="mt-4 text-red-500 hover:text-red-400 font-mono text-sm"
-                                >
-                                    Cerrar búsqueda
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    {/* Mobile Search - Now handled by Search component */}
 
                     {/* Mobile Menu */}
                     {isMobileMenuOpen && (
