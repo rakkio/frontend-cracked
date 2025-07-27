@@ -34,29 +34,33 @@ export const AppsHeader = ({ searchTerm, appsCount }) => {
                         
                         <h2 className="text-xl md:text-3xl text-gray-300 font-medium" itemProp="description">
                             {searchTerm 
-                                ? `Found ${appsCount} premium apps matching your search`
-                                : `${appsCount}+ Premium Applications • Free Download • Instant Access`
+                                ? `Found ${appsCount} ${appsCount === 1 ? 'app' : 'apps'} matching "${searchTerm}"`
+                                : `${appsCount} Premium Applications • Free Download • Instant Access`
                             }
                         </h2>
                     </div>
 
-                    {/* Trust Signals */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 max-w-2xl mx-auto">
-                        <div className="text-center p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
-                            <FaTrophy className="text-2xl text-yellow-400 mx-auto mb-2" />
-                            <span className="text-white font-semibold text-sm">Top Quality</span>
+                    {/* Enhanced Trust Signals */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8 max-w-3xl mx-auto">
+                        <div className="text-center p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 backdrop-blur-sm border border-yellow-500/20 hover:border-yellow-400/40 transition-all duration-300 group">
+                            <FaTrophy className="text-3xl text-yellow-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                            <span className="text-white font-bold text-sm block">Top Quality</span>
+                            <span className="text-yellow-300/70 text-xs">Verified Apps</span>
                         </div>
-                        <div className="text-center p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
-                            <FaGem className="text-2xl text-purple-400 mx-auto mb-2" />
-                            <span className="text-white font-semibold text-sm">Premium</span>
+                        <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-sm border border-purple-500/20 hover:border-purple-400/40 transition-all duration-300 group">
+                            <FaGem className="text-3xl text-purple-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                            <span className="text-white font-bold text-sm block">Premium</span>
+                            <span className="text-purple-300/70 text-xs">Full Features</span>
                         </div>
-                        <div className="text-center p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
-                            <FaDownload className="text-2xl text-green-400 mx-auto mb-2" />
-                            <span className="text-white font-semibold text-sm">Direct Links</span>
+                        <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-sm border border-green-500/20 hover:border-green-400/40 transition-all duration-300 group">
+                            <FaDownload className="text-3xl text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                            <span className="text-white font-bold text-sm block">Direct Links</span>
+                            <span className="text-green-300/70 text-xs">Fast Download</span>
                         </div>
-                        <div className="text-center p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
-                            <FaFire className="text-2xl text-red-400 mx-auto mb-2" />
-                            <span className="text-white font-semibold text-sm">Always Free</span>
+                        <div className="text-center p-4 rounded-xl bg-gradient-to-br from-red-500/10 to-red-600/10 backdrop-blur-sm border border-red-500/20 hover:border-red-400/40 transition-all duration-300 group">
+                            <FaFire className="text-3xl text-red-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                            <span className="text-white font-bold text-sm block">Always Free</span>
+                            <span className="text-red-300/70 text-xs">No Payments</span>
                         </div>
                     </div>
                 </header>

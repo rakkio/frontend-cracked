@@ -1,5 +1,14 @@
 import Image from 'next/image'
-import { FaDownload, FaStar, FaEye, FaCrown } from 'react-icons/fa'
+import { FaDownload, FaStar, FaEye, FaCrown, FaHeart, FaFire, FaGem, FaClock } from 'react-icons/fa'
+
+// Utility function to format numbers
+const formatNumber = (num) => {
+    if (!num || num === 0) return '0'
+    if (num < 1000) return num.toString()
+    if (num < 1000000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
+    if (num < 1000000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+    return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B'
+}
 
 export const AppsGrid = ({ apps, viewMode, handleAppClick }) => {
     if (apps.length === 0) {
@@ -74,31 +83,83 @@ const AppCard = ({ app, viewMode, onClick }) => {
                     {app.developer}
                 </p>
 
-                {/* Stats */}
-                <div className={`flex items-center justify-center space-x-4 text-sm ${
+                {/* Stats - Only show real data */}
+                <div className={`flex items-center justify-center space-x-3 text-sm mb-3 ${
                     viewMode === 'list' ? 'justify-start' : ''
                 }`}>
-                    <div className="flex items-center space-x-1 text-yellow-400">
-                        <FaStar className="text-xs" />
-                        <span>{app.rating || '4.5'}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-green-400">
-                        <FaDownload className="text-xs" />
-                        <span>{app.downloads || '1K'}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-blue-400">
-                        <FaEye className="text-xs" />
-                        <span>{app.views || '500'}</span>
-                    </div>
+                    {/* Only show rating if it exists and is greater than 0 */}
+                    {app.rating > 0 && (
+                        <div className="flex items-center space-x-1 text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">
+                            <FaStar className="text-xs" />
+                            <span className="font-medium">{app.rating.toFixed(1)}</span>
+                        </div>
+                    )}
+                    
+                    {/* Show downloads if they exist and are greater than 0 */}
+                    {(app.downloads > 0 || app.downloadCount > 0) && (
+                        <div className="flex items-center space-x-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
+                            <FaDownload className="text-xs" />
+                            <span className="font-medium">{formatNumber(app.downloads || app.downloadCount)}</span>
+                        </div>
+                    )}
+                    
+                    {/* Show reviews count if it exists */}
+                    {app.reviewsCount > 0 && (
+                        <div className="flex items-center space-x-1 text-purple-400 bg-purple-400/10 px-2 py-1 rounded-full">
+                            <FaHeart className="text-xs" />
+                            <span className="font-medium">{app.reviewsCount}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Badges for special apps */}
+                <div className={`flex items-center justify-center space-x-2 mb-3 ${
+                    viewMode === 'list' ? 'justify-start' : ''
+                }`}>
+                    {app.isFeatured && (
+                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30">
+                            <FaCrown className="text-xs" />
+                            <span>Featured</span>
+                        </span>
+                    )}
+                    {app.isHot && (
+                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-400 rounded-full text-xs font-medium border border-orange-500/30">
+                            <FaFire className="text-xs" />
+                            <span>Hot</span>
+                        </span>
+                    )}
+                    {app.isNewApp && (
+                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 rounded-full text-xs font-medium border border-blue-500/30">
+                            <FaClock className="text-xs" />
+                            <span>New</span>
+                        </span>
+                    )}
+                    {app.isPremium && (
+                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-400 rounded-full text-xs font-medium border border-yellow-500/30">
+                            <FaGem className="text-xs" />
+                            <span>Premium</span>
+                        </span>
+                    )}
                 </div>
 
                 {/* Category */}
                 {app.category && (
-                    <div className={`mt-3 ${
+                    <div className={`${
                         viewMode === 'list' ? 'text-left' : 'text-center'
                     }`}>
-                        <span className="inline-block px-3 py-1 bg-red-600/20 text-red-400 rounded-full text-xs font-medium">
+                        <span className="inline-block px-3 py-1 bg-gray-700/50 text-gray-300 rounded-lg text-xs font-medium border border-gray-600/50 hover:bg-gray-600/50 transition-colors">
                             {app.category.name}
+                        </span>
+                    </div>
+                )}
+                
+                {/* Version info */}
+                {app.version && (
+                    <div className={`mt-2 ${
+                        viewMode === 'list' ? 'text-left' : 'text-center'
+                    }`}>
+                        <span className="text-xs text-gray-500 font-mono">
+                            v{app.version}
                         </span>
                     </div>
                 )}

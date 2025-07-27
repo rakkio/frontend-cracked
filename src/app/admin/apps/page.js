@@ -10,18 +10,44 @@ export default function AppsManagement() {
     const [apps, setApps] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pages: 1,
+        total: 0,
+        hasNext: false,
+        hasPrev: false
+    })
+    const [appsPerPage] = useState(12)
     
     const router = useRouter()
 
     useEffect(() => {
-        fetchApps()
-    }, [])
+        fetchApps(currentPage)
+    }, [currentPage])
 
-    const fetchApps = async () => {
+    useEffect(() => {
+        setCurrentPage(1)
+        fetchApps(1)
+    }, [searchTerm])
+
+    const fetchApps = async (page = 1) => {
         try {
             setLoading(true)
-            const response = await api.getApps({ limit: 20 })
+            const params = {
+                page,
+                limit: appsPerPage,
+                sortBy: 'createdAt',
+                sortOrder: 'desc'
+            }
+            
+            if (searchTerm.trim()) {
+                params.search = searchTerm.trim()
+            }
+            
+            const response = await api.getApps(params)
             setApps(response.data.apps)
+            setPagination(response.data.pagination)
         } catch (error) {
             console.error('Error fetching apps:', error)
         } finally {
@@ -34,17 +60,36 @@ export default function AppsManagement() {
 
         try {
             await api.deleteApp(appId)
-            fetchApps()
+            // If we're on the last page and it becomes empty, go to previous page
+            if (apps.length === 1 && currentPage > 1) {
+                setCurrentPage(currentPage - 1)
+            } else {
+                fetchApps(currentPage)
+            }
         } catch (error) {
             console.error('Error deleting app:', error)
             alert('Error deleting app: ' + error.message)
         }
     }
 
-    const filteredApps = apps.filter(app =>
-        app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.developer.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const handlePageChange = (page) => {
+        setCurrentPage(page)
+    }
+
+    const handlePrevPage = () => {
+        if (pagination.hasPrev) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+    const handleNextPage = () => {
+        if (pagination.hasNext) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    // Since we're doing server-side filtering, we don't need client-side filtering
+    const filteredApps = apps
 
     return (
         <ProtectedRoute requireAdmin={true}>
@@ -159,6 +204,76 @@ export default function AppsManagement() {
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            {/* Pagination Controls */}
+                            {pagination.pages > 1 && (
+                                <div className="px-6 py-4 bg-gray-700/30 border-t border-gray-700/50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-gray-400">
+                                            Showing {((currentPage - 1) * appsPerPage) + 1} to {Math.min(currentPage * appsPerPage, pagination.total)} of {pagination.total} apps
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <button
+                                                onClick={handlePrevPage}
+                                                disabled={!pagination.hasPrev}
+                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                    pagination.hasPrev
+                                                        ? 'bg-gray-700 text-white hover:bg-gray-600'
+                                                        : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                                }`}
+                                            >
+                                                Previous
+                                            </button>
+                                            
+                                            <div className="flex items-center space-x-1">
+                                                {[...Array(pagination.pages)].map((_, index) => {
+                                                    const page = index + 1
+                                                    const isCurrentPage = page === currentPage
+                                                    const showPage = page === 1 || page === pagination.pages || 
+                                                                   (page >= currentPage - 2 && page <= currentPage + 2)
+                                                    
+                                                    if (!showPage) {
+                                                        if (page === currentPage - 3 || page === currentPage + 3) {
+                                                            return (
+                                                                <span key={page} className="px-2 py-2 text-gray-500">
+                                                                    ...
+                                                                </span>
+                                                            )
+                                                        }
+                                                        return null
+                                                    }
+                                                    
+                                                    return (
+                                                        <button
+                                                            key={page}
+                                                            onClick={() => handlePageChange(page)}
+                                                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                                isCurrentPage
+                                                                    ? 'bg-red-600 text-white'
+                                                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                                            }`}
+                                                        >
+                                                            {page}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                            
+                                            <button
+                                                onClick={handleNextPage}
+                                                disabled={!pagination.hasNext}
+                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                    pagination.hasNext
+                                                        ? 'bg-gray-700 text-white hover:bg-gray-600'
+                                                        : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                                }`}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="text-center py-20">
