@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline'
+import { FaChevronRight, FaHome } from 'react-icons/fa'
 
 const Breadcrumbs = ({ items }) => {
   const jsonLd = {
@@ -23,12 +23,12 @@ const Breadcrumbs = ({ items }) => {
       />
       <nav className="flex items-center space-x-2 text-sm text-gray-400 mb-6" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-white transition-colors flex items-center">
-          <HomeIcon className="w-4 h-4" />
+          <FaHome className="w-4 h-4" />
           <span className="sr-only">Home</span>
         </Link>
         {items.map((item, index) => (
           <div key={index} className="flex items-center space-x-2">
-            <ChevronRightIcon className="w-4 h-4" />
+            <FaChevronRight className="w-3 h-3" />
             {index === items.length - 1 ? (
               <span className="text-white font-medium">{item.name}</span>
             ) : (
