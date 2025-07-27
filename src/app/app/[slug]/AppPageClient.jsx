@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FaDownload, FaHeart, FaShare, FaStar } from 'react-icons/fa'
+import { DownloadService } from '@/services/DownloadService'
 
 export default function AppPageClient({ app, relatedApps }) {
     const [isDownloading, setIsDownloading] = useState(false)
@@ -10,14 +11,11 @@ export default function AppPageClient({ app, relatedApps }) {
     const router = useRouter()
 
     const handleDownload = async () => {
-        if (isDownloading) return
+        if (isDownloading || !app) return
 
         setIsDownloading(true)
         
         try {
-            // Simulate download process
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            
             // Track download analytics
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'download', {
@@ -27,11 +25,12 @@ export default function AppPageClient({ app, relatedApps }) {
                 })
             }
             
-            // You can add actual download logic here
-            console.log(`Downloading ${app.name}...`)
+            // Use the original DownloadService to handle the download flow
+            await DownloadService.handleDownload(app, { slug: app.slug })
             
         } catch (error) {
             console.error('Download error:', error)
+            alert('Download failed. Please try again later.')
         } finally {
             setIsDownloading(false)
         }

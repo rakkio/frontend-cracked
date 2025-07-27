@@ -1,5 +1,9 @@
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
 import { FaStar, FaDownload, FaTrophy, FaGem, FaCrown, FaShieldAlt, FaCheckCircle, FaInfoCircle, FaWindows, FaApple, FaLinux, FaAndroid } from 'react-icons/fa'
+import { DownloadService } from '@/services/DownloadService'
 
 function getPlatformIcon(platform) {
     const iconClass = "text-lg"
@@ -13,7 +17,35 @@ function getPlatformIcon(platform) {
 }
 
 export default function AppHeader({ app }) {
+    const [isDownloading, setIsDownloading] = useState(false)
+    
     if (!app) return null
+    
+    const handleDownload = async () => {
+        if (isDownloading || !app) return
+
+        setIsDownloading(true)
+        
+        try {
+            // Track download analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'download', {
+                    event_category: 'app',
+                    event_label: app.name,
+                    value: 1
+                })
+            }
+            
+            // Use the original DownloadService to handle the download flow
+            await DownloadService.handleDownload(app, { slug: app.slug })
+            
+        } catch (error) {
+            console.error('Download error:', error)
+            alert('Download failed. Please try again later.')
+        } finally {
+            setIsDownloading(false)
+        }
+    }
 
     return (
         <header className="relative bg-gradient-to-br from-gray-900/90 via-black/95 to-red-900/90 backdrop-blur-sm border border-red-500/20 rounded-2xl p-8 mb-12 overflow-hidden shadow-2xl shadow-red-500/10">
@@ -103,12 +135,20 @@ export default function AppHeader({ app }) {
                         </div>
                     </div>
 
-                    {/* Download info - interactive button moved to client component */}
+                    {/* Download info - interactive button */}
                     <div className="space-y-6">
-                        <div className="group flex items-center justify-center space-x-4 w-full px-10 py-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white rounded-xl font-black text-xl relative overflow-hidden border border-red-500/50 font-mono">
-                            <FaDownload className="text-2xl" />
-                            <span>DOWNLOAD_NOW - FREE</span>
-                        </div>
+                        <button 
+                            onClick={handleDownload}
+                            disabled={isDownloading}
+                            className={`group flex items-center justify-center space-x-4 w-full px-10 py-6 bg-gradient-to-r text-white rounded-xl font-black text-xl relative overflow-hidden border font-mono transition-all duration-300 cursor-pointer ${
+                                isDownloading 
+                                    ? 'from-gray-600 via-gray-700 to-gray-800 border-gray-500/50 cursor-not-allowed' 
+                                    : 'from-red-600 via-red-700 to-red-800 hover:from-red-500 hover:via-red-600 hover:to-red-700 border-red-500/50 hover:scale-105 hover:shadow-2xl'
+                            }`}
+                        >
+                            <FaDownload className={`text-2xl ${isDownloading ? 'animate-bounce' : 'group-hover:animate-bounce'}`} />
+                            <span>{isDownloading ? 'INITIALIZING...' : 'DOWNLOAD_NOW - FREE'}</span>
+                        </button>
 
                         {/* Download info */}
                         <div className="flex items-center justify-between text-sm font-mono">

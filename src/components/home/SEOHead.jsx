@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useMemo } from 'react'
 import { 
   generateStructuredData, 
-  generateMetaTags, 
-  generateOpenGraphTags, 
-  generateTwitterCardTags 
+  generateMetaTags,
+  generateOpenGraphTags,
+  generateTwitterCardTags
 } from '@/utils/seoUtils'
 
 const SEOHead = ({ stats, featuredApps, pageData = {} }) => {
@@ -14,23 +14,12 @@ const SEOHead = ({ stats, featuredApps, pageData = {} }) => {
   const ogTags = generateOpenGraphTags('home', pageData.og)
   const twitterTags = generateTwitterCardTags('home', pageData.twitter)
 
-  // Insert structured data
-  useEffect(() => {
+  // Generate structured data for homepage using useMemo to avoid re-computation
+  const structuredData = useMemo(() => {
     if (featuredApps.length > 0 || stats) {
-      const structuredData = generateStructuredData(stats, featuredApps)
-      
-      // Remove existing structured data
-      const existingScript = document.querySelector('script[type="application/ld+json"]')
-      if (existingScript) {
-        existingScript.remove()
-      }
-      
-      // Add new structured data
-      const script = document.createElement('script')
-      script.type = 'application/ld+json'
-      script.textContent = JSON.stringify(structuredData)
-      document.head.appendChild(script)
+      return generateStructuredData(stats, featuredApps)
     }
+    return null
   }, [featuredApps, stats])
 
   return (
@@ -68,6 +57,16 @@ const SEOHead = ({ stats, featuredApps, pageData = {} }) => {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="//appscracked.com" />
+      
+      {/* Structured Data - Using React approach instead of manual DOM manipulation */}
+      {structuredData && (
+        <script 
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData)
+          }}
+        />
+      )}
     </>
   )
 }

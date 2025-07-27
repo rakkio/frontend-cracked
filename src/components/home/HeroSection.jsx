@@ -21,18 +21,46 @@ export default function HeroSection() {
 
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i} 
-            className="absolute w-1 h-1 bg-blue-400 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`
-            }}
-          />
-        ))}
+        {[...Array(20)].map((_, i) => {
+          // Fixed predefined values to prevent hydration mismatch
+          const positions = [
+            { left: 10, top: 20, delay: 0.5, duration: 3 },
+            { left: 85, top: 15, delay: 1.2, duration: 4 },
+            { left: 30, top: 80, delay: 2.1, duration: 2.5 },
+            { left: 70, top: 60, delay: 0.8, duration: 3.5 },
+            { left: 15, top: 45, delay: 1.8, duration: 2.8 },
+            { left: 90, top: 25, delay: 0.3, duration: 4.2 },
+            { left: 45, top: 70, delay: 2.5, duration: 3.2 },
+            { left: 25, top: 35, delay: 1.1, duration: 2.7 },
+            { left: 75, top: 85, delay: 0.9, duration: 3.8 },
+            { left: 55, top: 10, delay: 2.2, duration: 2.3 },
+            { left: 5, top: 55, delay: 1.5, duration: 4.1 },
+            { left: 95, top: 40, delay: 0.7, duration: 3.1 },
+            { left: 35, top: 90, delay: 2.8, duration: 2.6 },
+            { left: 65, top: 30, delay: 1.3, duration: 3.7 },
+            { left: 20, top: 65, delay: 0.4, duration: 2.9 },
+            { left: 80, top: 50, delay: 2.0, duration: 3.4 },
+            { left: 40, top: 5, delay: 1.7, duration: 2.4 },
+            { left: 60, top: 75, delay: 0.6, duration: 3.9 },
+            { left: 12, top: 95, delay: 2.4, duration: 2.2 },
+            { left: 88, top: 18, delay: 1.0, duration: 3.6 }
+          ]
+          
+          const pos = positions[i] || positions[i % positions.length]
+          
+          return (
+            <div
+              key={i} 
+              className="absolute w-1 h-1 bg-blue-400 rounded-full animate-pulse"
+              style={{
+                left: `${pos.left}%`,
+                top: `${pos.top}%`,
+                animationDelay: `${pos.delay}s`,
+                animationDuration: `${pos.duration}s`
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* Glowing Border Lines */}
