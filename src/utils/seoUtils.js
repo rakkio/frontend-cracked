@@ -7,8 +7,11 @@ export const generateStructuredData = (stats, featuredApps) => {
         "@type": "WebSite",
         "@id": "https://crackmarket.xyz/#website",
         "url": "https://crackmarket.xyz/",
-        "name": "AppsCracked",
-        "description": "Download free cracked apps, premium software, and games. Safe, tested, and virus-free applications with direct download links.",
+        "name": "CrackMarket",
+        "alternateName": "Crack Market - Free Software Downloads",
+        "description": "Download free cracked apps, premium software, and games. Over 50,000+ tested applications with direct download links. Safe, virus-free, and updated daily.",
+        "keywords": "cracked apps download, free premium software, crack software download, modded apps free, premium apps cracked",
+        "inLanguage": ["en-US", "it-IT", "es-ES"],
         "publisher": {
           "@id": "https://crackmarket.xyz/#organization"
         },
@@ -21,37 +24,35 @@ export const generateStructuredData = (stats, featuredApps) => {
             },
             "query-input": "required name=search_term_string"
           }
-        ],
-        "inLanguage": "en-US"
+        ]
       },
       {
         "@type": "Organization",
         "@id": "https://crackmarket.xyz/#organization",
-        "name": "AppsCracked",
+        "name": "CrackMarket",
         "url": "https://crackmarket.xyz/",
+        "description": "Leading platform for downloading free cracked applications and premium software. Trusted by millions of users worldwide.",
+        "foundingDate": "2024",
+        "knowsAbout": [
+          "Software Cracking",
+          "Application Distribution",
+          "Digital Downloads",
+          "Software Testing",
+          "Cybersecurity"
+        ],
+        "areaServed": "Worldwide",
         "logo": {
           "@type": "ImageObject",
-          "inLanguage": "en-US",
-          "@id": "https://crackmarket.xyz/#/schema/logo/image/",
           "url": "https://crackmarket.xyz/logo.png",
-          "contentUrl": "https://crackmarket.xyz/logo.png",
           "width": 512,
-          "height": 512,
-          "caption": "AppsCracked"
-        },
-        "image": {
-          "@id": "https://crackmarket.xyz/#/schema/logo/image/"
-        },
-        "sameAs": [
-          "https://twitter.com/appscracked",
-          "https://facebook.com/appscracked"
-        ]
+          "height": 512
+        }
       },
       {
         "@type": "WebPage",
         "@id": "https://crackmarket.xyz/#webpage",
         "url": "https://crackmarket.xyz/",
-        "name": "AppsCracked - Download Free Cracked Apps & Premium Software 2024",
+        "name": "AppsCracked - Download Free Cracked Apps & Premium Software 2025",
         "isPartOf": {
           "@id": "https://crackmarket.xyz/#website"
         },
@@ -108,10 +109,50 @@ export const generateStructuredData = (stats, featuredApps) => {
   }
 }
 
-// Additional SEO utilities
+// Nuove funzioni SEO
+export const generateKeywordMetadata = (keyword, pageType = 'keyword') => {
+  const keywordData = {
+    'cracked-apps-download': {
+      title: 'Download Cracked Apps Free - Latest Premium Applications 2024 | CrackMarket',
+      description: 'Download the latest cracked apps for free. Premium applications, games, and software with direct download links. Safe, tested, and virus-free.',
+      keywords: 'cracked apps download, free premium apps, crack apps, modded applications, premium software free'
+    },
+    'free-premium-software': {
+      title: 'Free Premium Software Download - Cracked Programs 2024 | CrackMarket',
+      description: 'Download premium software for free. Professional programs, design tools, and productivity software with full features unlocked.',
+      keywords: 'free premium software, cracked software download, premium programs free, professional software crack'
+    },
+    'app-craccate-gratis': {
+      title: 'App Craccate Gratis - Scarica Software Premium Gratuito 2024 | CrackMarket',
+      description: 'Scarica le ultime app craccate gratis. Applicazioni premium, giochi e software con link di download diretto. Sicuro, testato e senza virus.',
+      keywords: 'app craccate gratis, software premium gratuito, programmi craccati, applicazioni premium gratis'
+    }
+  }
+  
+  return keywordData[keyword] || {
+    title: `${keyword.replace(/-/g, ' ')} | CrackMarket`,
+    description: `Find the best ${keyword.replace(/-/g, ' ')} on CrackMarket. Download premium software and applications for free.`,
+    keywords: keyword.replace(/-/g, ' ')
+  }
+}
+
+export const generateCategoryMetadata = (categorySlug, categoryName) => {
+  return {
+    title: `${categoryName} - Free Cracked Apps & Software | CrackMarket`,
+    description: `Download free ${categoryName.toLowerCase()} apps and software. Premium cracked applications with direct download links. Safe, tested, and virus-free.`,
+    keywords: `${categoryName.toLowerCase()} cracked apps, free ${categoryName.toLowerCase()} software, ${categoryName.toLowerCase()} crack download, premium ${categoryName.toLowerCase()} apps`,
+    openGraph: {
+      title: `${categoryName} - Free Cracked Apps | CrackMarket`,
+      description: `Download free ${categoryName.toLowerCase()} apps and software. Premium cracked applications with direct download links.`,
+      url: `https://crackmarket.xyz/category/${categorySlug}`,
+      type: 'website'
+    }
+  }
+}
+
 export const generateMetaTags = (page, data = {}) => {
   const defaultMeta = {
-    title: "AppsCracked - Download Free Cracked Apps & Premium Software 2024",
+    title: "AppsCracked - Download Free Cracked Apps & Premium Software 2025",
     description: "Download the latest cracked apps, premium software, and games for free. Safe, tested, and virus-free applications with direct download links.",
     keywords: "cracked apps, free software download, premium apps free, cracked software, free apps download, crack apps, modded apps",
     author: "AppsCracked",

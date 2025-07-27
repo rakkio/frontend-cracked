@@ -1,11 +1,11 @@
 export const siteConfig = {
-    name: 'Apps Cracked',
-    description: 'Download premium applications for free. Access thousands of cracked apps, games, and software with direct download links.',
+    name: 'CrackMarket',
+    description: 'Download premium applications for free. Access thousands of cracked apps, games, and software with direct download links. Over 50,000+ tested applications.',
     url: 'https://crackmarket.xyz',
     ogImage: '/og-image.jpg',
     links: {
-        twitter: 'https://twitter.com/appscracked',
-        github: 'https://github.com/appscracked'
+        twitter: 'https://twitter.com/crackmarket',
+        github: 'https://github.com/crackmarket'
     }
 }
 
@@ -95,21 +95,35 @@ export const organizationJsonLd = {
 }
 
 export const metadata = {
-  title: 'AppsCracked - Download Free Cracked Apps & Premium Software 2024',
-  description: 'Download the latest cracked apps, premium software, and games for free. Safe, tested, and virus-free applications with direct download links. Over 10,000+ apps available.',
+  title: 'CrackMarket - Download Free Cracked Apps & Premium Software 2024',
+  description: 'Download the latest cracked apps, premium software, and games for free. Over 50,000+ tested applications with direct download links. Safe, virus-free, and updated daily.',
   keywords: [
-    'cracked apps',
-    'free software download',
-    'premium apps free',
-    'cracked software',
-    'free apps download',
-    'crack apps',
-    'modded apps',
-    'premium software free',
-    'apps cracked',
-    'free crack software',
-    'download cracked apps',
-    'full version software free'
+    // Primary Keywords
+    'cracked apps download',
+    'free premium software',
+    'crack software download',
+    'modded apps free',
+    'premium apps cracked',
+    'software crack download',
+    
+    // Long Tail Keywords
+    'download cracked photoshop free',
+    'free premium antivirus crack',
+    'cracked games download site',
+    'safe cracked apps no virus',
+    'latest software cracks 2024',
+    
+    // Italian Keywords
+    'app craccate gratis',
+    'software premium gratuito',
+    'programmi craccati download',
+    'giochi craccati gratis',
+    
+    // Category Specific
+    'cracked productivity software',
+    'free design software crack',
+    'cracked antivirus programs',
+    'premium games free download'
   ].join(', '),
   authors: [{ name: 'AppsCracked' }],
   creator: 'AppsCracked',
@@ -123,8 +137,9 @@ export const metadata = {
   alternates: {
     canonical: '/',
     languages: {
-      'en-US': '/en-US',
-      'es-ES': '/es-ES',
+      'en-US': '/en',
+      'it-IT': '/it',
+      'es-ES': '/es'
     },
   },
   openGraph: {
@@ -178,4 +193,4 @@ export const metadata = {
     'theme-color': '#dc2626',
     'msapplication-TileColor': '#dc2626',
   },
-} 
+}
