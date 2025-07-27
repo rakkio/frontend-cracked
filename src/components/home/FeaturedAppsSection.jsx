@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiDownload, FiStar, FiMonitor, FiHardDrive, FiShield, FiZap } from 'react-icons/fi'

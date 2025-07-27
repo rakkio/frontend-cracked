@@ -12,7 +12,7 @@ function getPlatformIcon(platform) {
     }
 }
 
-export default function AppHeader({ app, onDownload }) {
+export default function AppHeader({ app }) {
     if (!app) return null
 
     return (
@@ -103,28 +103,12 @@ export default function AppHeader({ app, onDownload }) {
                         </div>
                     </div>
 
-                    {/* Enhanced Download Button */}
+                    {/* Download info - interactive button moved to client component */}
                     <div className="space-y-6">
-                        <button
-                            onClick={onDownload}
-                            className="group flex items-center justify-center space-x-4 w-full px-10 py-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 hover:from-red-500 hover:via-red-600 hover:to-red-700 text-white rounded-xl font-black text-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/40 relative overflow-hidden border border-red-500/50 font-mono"
-                            aria-label={`Download ${app.name} for free`}
-                        >
-                            {/* Animated background effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                            
-                            <FaDownload className="text-2xl group-hover:animate-bounce" />
+                        <div className="group flex items-center justify-center space-x-4 w-full px-10 py-6 bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white rounded-xl font-black text-xl relative overflow-hidden border border-red-500/50 font-mono">
+                            <FaDownload className="text-2xl" />
                             <span>DOWNLOAD_NOW - FREE</span>
-                            
-                            {/* Download icon animation */}
-                            <div className="absolute right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="flex space-x-1">
-                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0ms'}} />
-                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '100ms'}} />
-                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '200ms'}} />
-                                </div>
-                            </div>
-                        </button>
+                        </div>
 
                         {/* Download info */}
                         <div className="flex items-center justify-between text-sm font-mono">

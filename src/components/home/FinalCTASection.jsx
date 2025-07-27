@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { FiDownload, FiArrowRight, FiShield } from 'react-icons/fi'
 import { useState, useEffect } from 'react'

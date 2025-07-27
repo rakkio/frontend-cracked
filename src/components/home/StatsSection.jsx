@@ -1,3 +1,5 @@
+'use client'
+
 import { FiDownload, FiUsers, FiShield, FiHeadphones } from 'react-icons/fi'
 import { useEffect, useState } from 'react'
 

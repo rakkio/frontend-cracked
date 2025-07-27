@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { CategoryService } from '@/services/CategoryService'
-import { SEOService } from '@/services/SEOService'
+import SEOService from '@/services/SEOService'
 
 export const useCategoryData = () => {
     const [category, setCategory] = useState(null)
@@ -32,7 +32,31 @@ export const useCategoryData = () => {
     // SEO structured data effect
     useEffect(() => {
         if (!loading && category && apps.length > 0) {
-            SEOService.insertCategoryStructuredData(category, apps)
+            // Generate structured data
+            const structuredData = SEOService.generateCategoryStructuredData(category, apps)
+            
+            // Insert structured data into DOM
+            const script = document.createElement('script')
+            script.type = 'application/ld+json'
+            script.textContent = JSON.stringify(structuredData)
+            script.id = 'category-structured-data'
+            
+            // Remove existing structured data if present
+            const existingScript = document.getElementById('category-structured-data')
+            if (existingScript) {
+                existingScript.remove()
+            }
+            
+            // Add new structured data
+            document.head.appendChild(script)
+            
+            // Cleanup function
+            return () => {
+                const scriptToRemove = document.getElementById('category-structured-data')
+                if (scriptToRemove) {
+                    scriptToRemove.remove()
+                }
+            }
         }
     }, [loading, category, apps])
 

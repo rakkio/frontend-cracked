@@ -1,5 +1,9 @@
 import { siteConfig } from './metadata'
 
+// Configure for static generation
+export const dynamic = 'force-static'
+export const revalidate = 3600 // Revalidate every hour
+
 export default async function sitemap() {
     const baseUrl = siteConfig.url.replace(/\/$/, '') // Remove trailing slash
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
@@ -86,16 +90,21 @@ export default async function sitemap() {
         }
     ]
 
-    // Direct API call without authentication for server-side rendering
+    // Direct API call with static-friendly caching for build time
     const makeAPICall = async (endpoint) => {
         try {
+            // Use different caching strategy based on environment
+            const cacheStrategy = process.env.NODE_ENV === 'production' 
+                ? { next: { revalidate: 3600 } } // Cache for 1 hour in production
+                : { cache: 'force-cache' } // Cache during build
+                
             const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     // No authentication headers for public endpoints
                 },
-                cache: 'no-store' // Ensure fresh data for sitemap
+                ...cacheStrategy
             })
 
             if (!response.ok) {
@@ -150,7 +159,7 @@ export default async function sitemap() {
             return allApps
         }
 
-        // Fetch categories and apps with better error handling
+        // Fetch categories and apps with better error handling and fallbacks
         const [categoriesResult, appsResult] = await Promise.allSettled([
             makeAPICall('/categories').then(response => {
                 console.log('📂 Categories API response:', {
@@ -158,6 +167,10 @@ export default async function sitemap() {
                     categoriesCount: response?.categories?.length || 0
                 })
                 return response
+            }).catch(() => {
+                // Fallback categories for build time
+                console.log('📂 Using fallback categories for build')
+                return { success: true, categories: [] }
             }),
             
             fetchAllApps().then(apps => {
@@ -165,6 +178,10 @@ export default async function sitemap() {
                     totalApps: apps.length
                 })
                 return { data: { apps } }
+            }).catch(() => {
+                // Fallback apps for build time
+                console.log('📱 Using fallback apps for build')
+                return { data: { apps: [] } }
             })
         ])
 

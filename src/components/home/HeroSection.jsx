@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import { FaRocket, FaGem, FaTerminal, FaCode, FaShieldAlt, FaDownload, FaStar, FaUsers, FaCheckCircle, FaCrown, FaBolt } from 'react-icons/fa'
