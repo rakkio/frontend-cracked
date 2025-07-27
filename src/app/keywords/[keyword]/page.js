@@ -1,10 +1,7 @@
-'use client'
-
 import { notFound } from 'next/navigation'
 import { generateKeywordMetadata } from '@/utils/seoUtils'
 import Breadcrumbs from '@/components/seo/Breadcrumbs'
-import { useApps } from '@/hooks/useApps'
-import AppsGrid from '@/components/apps/AppsGrid'
+import KeywordPageClient from './KeywordPageClient'
 
 const keywordPages = {
   'cracked-apps-download': {
@@ -67,12 +64,6 @@ export default function KeywordPage({ params }) {
     notFound()
   }
   
-  const { apps, loading } = useApps({ 
-    search: pageData.searchQuery,
-    limit: 20,
-    isActive: true 
-  })
-  
   const breadcrumbItems = [
     { name: 'Keywords', href: '/keywords' },
     { name: keyword.replace(/-/g, ' ').toUpperCase(), href: `/keywords/${keyword}` }
@@ -102,17 +93,11 @@ export default function KeywordPage({ params }) {
           </div>
         </section>
         
-        {/* Apps Grid */}
-        <section className="py-16">
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">
-            Featured {keyword.replace(/-/g, ' ').toUpperCase()}
-          </h2>
-          {loading ? (
-            <div className="text-center text-white">Loading apps...</div>
-          ) : (
-            <AppsGrid apps={apps} />
-          )}
-        </section>
+        {/* Client Component for Apps */}
+        <KeywordPageClient 
+          keyword={keyword}
+          searchQuery={pageData.searchQuery}
+        />
       </div>
     </div>
   )
