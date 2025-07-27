@@ -1,168 +1,41 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import Logo from './header/Logo'
+import Navigation from './header/Navigation'
+import UserMenu from './header/UserMenu'
+import MobileMenu from './header/MobileMenu'
 import Search from './header/Search.jsx'
 import MobileSearchButton from './header/MobileSearchButton.jsx'
-import Logo from './Logo'
-import { 
-    FaTerminal, 
-    FaSearch, 
-    FaUser, 
-    FaSignOutAlt, 
-    FaSignInAlt, 
-    FaUserPlus, 
-    FaBars, 
-    FaTimes, 
-    FaCode, 
-    FaShieldAlt 
-} from 'react-icons/fa'
-import { MdDashboard, MdSettings, MdFavorite } from 'react-icons/md'
 
 export default function Header() {
-    // Add client-side mounting state
     const [isMounted, setIsMounted] = useState(false)
-    const [isOpen, setIsOpen] = useState(false)
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const { loading } = useAuth()
     
-    const { user, isAuthenticated, logout, loading } = useAuth()
-    const router = useRouter()
-    const userMenuRef = useRef(null)
-    
-    // Client-side mounting effect
     useEffect(() => {
         setIsMounted(true)
     }, [])
 
-    const navigationItems = [
-        { name: 'Home', href: '/', icon: '🏠' },
-        { name: 'Apps', href: '/apps', icon: '📱' },
-        { name: 'Categories', href: '/categories', icon: '📂' },
-        { name: 'Top Rated', href: '/top-rated', icon: '⭐' },
-        { name: 'New Releases', href: '/new-releases', icon: '🆕' },
-        { name: 'Contact', href: '/contact', icon: '📞' },
-    ]
-
-    const handleLogout = async () => {
-        try {
-            logout()
-            setIsOpen(false)
-            setIsUserMenuOpen(false)
-        } catch (error) {
-            console.error('Logout error:', error)
-        }
-    }
-
-    const userItems = isAuthenticated ? [
-        { name: 'Profile', href: '/profile', icon: '👤' },
-        { name: 'Downloads', href: '/downloads', icon: '⬇️' },
-        { name: 'Favorites', href: '/favorites', icon: '❤️' },
-        { name: 'Settings', href: '/settings', icon: '⚙️' },
-        { name: 'Logout', href: '#', icon: '🚪', onClick: handleLogout },
-    ] : [
-        { name: 'Login', href: '/auth/login', icon: '🔑' },
-        { name: 'Register', href: '/auth/register', icon: '📝' },
-    ]
-
-    const toggleNavigation = (e) => {
-        e.preventDefault()
-        setIsOpen(!isOpen)
-    }
-    
     const handleSearchClick = () => {
-        // This will be handled by the Search component
-    }
-
-    // Fixed useEffect with consistent dependency array
-    useEffect(() => {
-        if (isOpen || isMobileMenuOpen) {
-            document.body.style.overflow = 'hidden'
-        } else {
-            document.body.style.overflow = 'auto'
-        }
-        
-        return () => {
-            document.body.style.overflow = 'auto'
-        }
-    }, [isOpen, isMobileMenuOpen])
-
-    const handleChildClick = (event) => {
-        event.stopPropagation() 
-    }   
-    
-    const handleBackdropClick = () => {
-        setIsOpen(false)
-        setIsMobileMenuOpen(false)
-    }
-
-    // Close user menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-                setIsUserMenuOpen(false)
-            }
-        }
-
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-    }, [])
-
-    // Prevent hydration mismatch by not rendering responsive elements until mounted
-    if (!isMounted) {
-        return (
-            <>
-                <div className="fixed top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
-                    <div className="matrix-rain opacity-20"></div>
-                </div>
-
-                <header className="relative bg-black/95 backdrop-blur-md border-b-2 border-red-500 shadow-2xl z-50">
-                    <div className="container mx-auto px-4">
-                        <div className="flex items-center justify-between h-16">
-                            {/* Simple logo for SSR */}
-                            <Link href="/" className="flex items-center space-x-3 group relative">
-                                <div className="relative">
-                                    <div className="relative bg-black border-2 border-red-500 p-2">
-                                        <FaTerminal className="text-red-500 text-xl" />
-                                    </div>
-                                </div>
-                                <div className="relative">
-                                    <h1 className="text-2xl font-bold bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent">
-                                        CRACK<span className="text-red-500">[</span>MARKET<span className="text-red-500">]</span>
-                                    </h1>
-                                </div>
-                            </Link>
-                            
-                            {/* Placeholder for other elements */}
-                            <div className="flex items-center space-x-4">
-                                <div className="w-8 h-8"></div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-            </>
-        )
+        // Manejado por el componente Search
     }
 
     return (
         <>
             {/* Matrix Rain Background */}
-            <div className="fixed z-[-1] top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
+            <div className="fixed top-0 left-0 w-full h-32 pointer-events-none z-0 overflow-hidden">
                 <div className="matrix-rain opacity-20"></div>
             </div>
 
             <header className="sticky top-0 bg-black/45 backdrop-blur-md border-b-2 border-red-500 shadow-2xl z-50">
-                {/* Scan Lines Effect */}
+                {/* Efectos visuales */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/5 to-transparent animate-pulse"></div>
                 <div className="scan-lines"></div>
                 
-                {/* Floating Code Elements - Hidden on mobile */}
+                {/* Elementos flotantes de código - Ocultos en móvil */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="floating-code text-red-500/20 text-xs font-mono hidden md:block">
+                    <div className="floating-code text-red-500/20 text-xs font-mono hidden lg:block">
                         {['sudo access granted', 'root@system:~#', 'exploit.exe', 'bypass.dll'].map((code, i) => (
                             <span key={i} className={`absolute animate-float-${i + 1}`} style={{
                                 left: `${20 + i * 25}%`,
@@ -175,174 +48,32 @@ export default function Header() {
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4">
-                    <div className="flex items-center justify-between h-16">
-                        {/* Logo Section - Fixed responsive classes */}
-                        <Link href="/" className="flex items-center group relative flex-shrink-0" style={{ gap: isMounted ? (window.innerWidth >= 768 ? '0.75rem' : '0.5rem') : '0.75rem' }}>
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-red-500 blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                                <div className="relative bg-black border-2 border-red-500 transform group-hover:scale-110 transition-transform" style={{ padding: isMounted ? (window.innerWidth >= 768 ? '0.5rem' : '0.375rem') : '0.5rem' }}>
-                                    <FaTerminal className="text-red-500" style={{ fontSize: isMounted ? (window.innerWidth >= 768 ? '1.25rem' : '1.125rem') : '1.25rem' }} />
-                                </div>
-                            </div>
-                            <div className="relative">
-                                <h1 className="font-bold bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent" style={{ fontSize: isMounted ? (window.innerWidth >= 768 ? '1.5rem' : '1.125rem') : '1.5rem' }}>
-                                    {isMounted && window.innerWidth < 640 ? (
-                                        <>AC<span className="text-red-500">[</span>C<span className="text-red-500">]</span></>
-                                    ) : (
-                                        <>CRACK<span className="text-red-500">[</span>MARKET<span className="text-red-500">]</span></>
-                                    )}
-                                </h1>
-                                <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-transparent"></div>
-                            </div>
-                        </Link>
+                <div className="container mx-auto px-2 sm:px-4">
+                    <div className="flex items-center justify-between h-14 sm:h-16">
+                        {/* Logo - Completamente responsivo */}
+                        <Logo />
 
-                        {/* Search Bar - Hidden on mobile, shown in mobile menu */}
-                        <div className="hidden md:flex flex-1 max-w-2xl mx-4 lg:mx-8 relative">
+                        {/* Barra de búsqueda - Oculta en móvil */}
+                        <div className="hidden md:flex flex-1 max-w-xl lg:max-w-2xl mx-4 lg:mx-8 relative">
                            <Search onSearchClick={handleSearchClick} />
                         </div>
 
-                        {/* Navigation - Hidden on mobile */}
-                        <nav className="hidden xl:flex items-center space-x-4">
-                            {navigationItems.map((item, index) => (    
-                                <Link key={item.href} href={item.href} className="group relative">
-                                    <div className="flex items-center space-x-2 px-3 py-2 border border-transparent hover:border-red-500 transition-all duration-300 bg-black/50 hover:bg-red-500/10">
-                                        <span className="text-red-500 group-hover:text-red-400">{item.icon}</span>
-                                        <span className="text-gray-300 group-hover:text-red-400 font-mono text-xs tracking-wider">
-                                            {item.name}
-                                        </span>
-                                    </div>
-                                    <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300"></div>
-                                </Link>
-                            ))}
-                        </nav>
+                        {/* Navegación - Oculta en móvil y tablet */}
+                        <Navigation />
 
-                        {/* User Menu & Mobile Controls */}
-                        <div className="flex items-center space-x-2 md:space-x-4">
-                            {/* Search Button for Mobile */}
-                            <MobileSearchButton />
+                        {/* Menú de usuario y controles móviles */}
+                        <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
+                            {/* Botón de búsqueda para móvil */}
+                            <div className="md:hidden">
+                                <MobileSearchButton />
+                            </div>
 
-                            {user ? (
-                                <div className="relative" ref={userMenuRef}>
-                                    <button
-                                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                        className="flex items-center space-x-2 px-2 md:px-4 py-2 bg-gray-900/90 border border-red-500/50 hover:border-red-500 transition-all duration-300 group z-[10]"
-                                    >
-                                        <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-none flex items-center justify-center">
-                                            <FaUser className="text-black text-xs md:text-sm" />
-                                        </div>
-                                        <span className="hidden md:inline text-green-400 font-mono text-sm group-hover:text-red-400 transition-colors">
-                                            {user.username}
-                                        </span>
-                                    </button>
-
-                                    {isUserMenuOpen && (
-                                        <div className="absolute right-0 mt-2 w-48 md:w-64 bg-black/95 border-2 border-red-500 backdrop-blur-md z-[1001]">
-                                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-500/10 to-transparent"></div>
-                                            <div className="relative">
-                                                {[
-                                                    { href: '/admin', label: 'Dashboard', icon: MdDashboard },
-                                                    { href: '/favorites', label: 'Favorites', icon: MdFavorite },
-                                                    { href: '/settings', label: 'Settings', icon: MdSettings }
-                                                ].map((item) => (
-                                                    <Link key={item.href} href={item.href} className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border-b border-red-500/20">
-                                                        <item.icon className="text-red-500" />
-                                                        <span className="font-mono text-sm">{item.label}</span>
-                                                    </Link>
-                                                ))}
-                                                <button
-                                                    onClick={handleLogout}
-                                                    className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300"
-                                                >
-                                                    <FaSignOutAlt className="text-red-500" />
-                                                    <span className="font-mono text-sm">Logout</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="hidden md:flex items-center space-x-3">
-                                    <Link href="/auth/login" className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-gray-900/90 border border-red-500/50 hover:border-red-500 hover:bg-red-500/10 transition-all duration-300">
-                                        <FaSignInAlt className="text-red-500" />
-                                        <span className="text-gray-300 hover:text-red-400 font-mono text-xs md:text-sm">LOGIN</span>
-                                    </Link>
-                                    <Link href="/auth/register" className="flex items-center space-x-2 px-3 md:px-4 py-2 bg-red-500 hover:bg-red-600 transition-all duration-300">
-                                        <FaUserPlus className="text-black" />
-                                        <span className="text-black font-mono text-xs md:text-sm font-bold">REGISTER</span>
-                                    </Link>
-                                </div>
-                            )}
-
-                            {/* Mobile Menu Button */}
-                            <button
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="md:hidden p-2 text-red-500 hover:text-red-400 border border-red-500/50 hover:border-red-500 transition-all duration-300 z-[10]"
-                            >
-                                {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
-                            </button>
+                            {/* Menú de usuario */}
+                            <UserMenu />
+                            {/* Menú móvil */}
+                            <MobileMenu />
                         </div>
                     </div>
-
-                    {/* Mobile Search - Now handled by Search component */}
-
-                    {/* Mobile Menu */}
-                    {isMobileMenuOpen && (
-                        <div className="md:hidden fixed inset-0 bg-black/95 backdrop-blur-md z-[1001]" onClick={handleBackdropClick}>
-                            <div className="p-4" onClick={handleChildClick}>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-red-500 font-mono text-lg">MENU</h2>
-                                    <button
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="text-red-500 hover:text-red-400 p-2"
-                                    >
-                                        <FaTimes />
-                                    </button>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    {/* Navigation Links */}
-                                    {[
-                                        { href: '/', label: 'HOME', icon: FaTerminal },
-                                        { href: '/categories', label: 'CATEGORIES', icon: FaCode },
-                                        { href: '/latest', label: 'LATEST', icon: FaShieldAlt }
-                                    ].map((item) => (
-                                        <Link 
-                                            key={item.href} 
-                                            href={item.href} 
-                                            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-red-500/20"
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                        >
-                                            <item.icon className="text-red-500" />
-                                            <span className="font-mono text-sm">{item.label}</span>
-                                        </Link>
-                                    ))}
-                                    
-                                    {/* Auth Links for non-logged users */}
-                                    {!user && (
-                                        <div className="border-t border-red-500/20 pt-4 space-y-2">
-                                            <Link 
-                                                href="/auth/login" 
-                                                className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-red-500/20"
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                            >
-                                                <FaSignInAlt className="text-red-500" />
-                                                <span className="font-mono text-sm">LOGIN</span>
-                                            </Link>
-                                            <Link 
-                                                href="/auth/register" 
-                                                className="flex items-center space-x-3 px-4 py-3 bg-red-500 hover:bg-red-600 transition-all duration-300"
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                            >
-                                                <FaUserPlus className="text-black" />
-                                                <span className="text-black font-mono text-sm font-bold">REGISTER</span>
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </header>
 

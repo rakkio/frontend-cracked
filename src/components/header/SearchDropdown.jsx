@@ -2,7 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { FaSearch, FaTimes, FaFire, FaStar, FaDownload, FaClock, FaGamepad, FaLaptop, FaMobile, FaDesktop, FaTools, FaMusic, FaVideo, FaBook, FaShieldAlt } from 'react-icons/fa'
-import { MdSecurity, MdBusiness, MdEducation, MdSportsEsports } from 'react-icons/md'
+import { MdSecurity, MdBusiness, MdSchool, MdSportsEsports } from 'react-icons/md'
 import SearchStats from './SearchStats'
 import CategoryList from './CategoryList'
 import RecentSearches from './RecentSearches'
@@ -33,13 +33,43 @@ export default function SearchDropdown({
         { term: 'Music', icon: FaMusic, color: 'text-yellow-400' }
     ]
 
-    // Categories will be passed as props from the hook
+    // Handle backdrop click to close
+    const handleBackdropClick = (e) => {
+        if (e.target === e.currentTarget) {
+            onClose()
+        }
+    }
 
-    // Recent searches are now passed as props
+    // Handle escape key to close
+    React.useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                onClose()
+            }
+        }
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape)
+            // Prevent body scroll when search is open
+            document.body.style.overflow = 'hidden'
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape)
+            document.body.style.overflow = 'auto'
+        }
+    }, [isOpen, onClose])
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000]" onClick={onClose}>
-            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 w-full max-w-4xl bg-gray-900/95 border-2 border-red-500 backdrop-blur-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <>
+            {/* Backdrop - Fixed positioning to cover entire viewport */}
+            <div 
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000]" 
+                onClick={handleBackdropClick}
+            />
+            
+            {/* Search Dropdown - Fixed positioning relative to viewport */}
+            <div className="fixed top-16 left-1/2 transform -translate-x-1/2 w-full max-w-4xl bg-gray-900/95 border-2 border-red-500 backdrop-blur-md shadow-2xl z-[1001]" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-red-500/30">
                     <h3 className="text-red-500 font-mono text-lg">SEARCH RESULTS</h3>
@@ -188,6 +218,6 @@ export default function SearchDropdown({
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 } 
