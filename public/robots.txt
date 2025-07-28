@@ -22,8 +22,10 @@ Disallow: /*?*utm*
 Crawl-delay: 1
 
 # Sitemap locations
-Sitemap: https://crackmarket.xyz/sitemap.xml
+# Primary dynamic sitemap with real-time data
 Sitemap: https://crackmarket.xyz/api/sitemap
+# Static sitemap as backup
+Sitemap: https://crackmarket.xyz/sitemap.xml
 
 # Host
-Host: https://crackmarket.xyz 
+Host: https://crackmarket.xyz
