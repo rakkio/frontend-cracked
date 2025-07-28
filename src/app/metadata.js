@@ -1,7 +1,7 @@
 export const siteConfig = {
     name: 'CrackMarket',
     description: 'Download premium applications for free. Access thousands of cracked apps, games, and software with direct download links. Over 50,000+ tested applications.',
-    url: 'https://crackmarket.xyz',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz',
     ogImage: '/og-image.jpg',
     links: {
         twitter: 'https://twitter.com/crackmarket',
@@ -38,6 +38,9 @@ export const generatePageMetadata = ({
         creator: 'Apps Cracked',
         publisher: 'Apps Cracked',
         robots: noIndex ? 'noindex,nofollow' : 'index,follow',
+        alternates: {
+            canonical: fullUrl
+        },
         openGraph: {
             type: 'website',
             locale: 'en_US',
@@ -56,11 +59,10 @@ export const generatePageMetadata = ({
             card: 'summary_large_image',
             title: fullTitle,
             description: description || siteConfig.description,
-            images: images,
+            images: images.map(image => 
+                image.startsWith('http') ? image : `${siteConfig.url}${image}`
+            ),
             creator: '@appscracked'
-        },
-        alternates: {
-            canonical: fullUrl
         }
     }
 }
@@ -133,7 +135,7 @@ export const metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://crackmarket.xyz'),
+  metadataBase: new URL(siteConfig.url),
   alternates: {
     canonical: '/',
     languages: {

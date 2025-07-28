@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { api } from '@/lib/api'
+import { siteConfig } from './metadata'
 import CategoriesWithApps from '@/components/CategoriesWithApps'
 
 // Componentes SOLID
@@ -15,35 +16,35 @@ import HomePageClient from './HomePageClient'
 // Generate metadata for SEO
 export async function generateMetadata() {
     try {
-        // Fetch data for metadata
-        const [appsResponse, categoriesResponse, featuredAppsResponse] = await Promise.all([
-            api.getApps({ limit: 1 }),
-            api.getCategories(),
-            api.getFeaturedApps(6)
+        // Fetch initial data for metadata
+        const [appsResponse, categoriesResponse] = await Promise.all([
+            api.getFeaturedApps(12),
+            api.getCategories()
         ])
         
-        const totalApps = appsResponse.data?.pagination?.total || 0
-        const categoriesCount = categoriesResponse.categories?.length || 0
-        const featuredApps = featuredAppsResponse.data?.apps || featuredAppsResponse.apps || []
+        const featuredApps = appsResponse.apps || []
+        const totalApps = appsResponse.pagination?.total || 50000
+        const categoriesCount = categoriesResponse.categories?.length || 20
         
         return {
-            title: 'AppsCracked - Free Premium Software Downloads | Cracked Apps',
-            description: `Download ${totalApps}+ premium cracked applications for free. Browse ${categoriesCount} categories including productivity, games, design tools, and more. All software with full features unlocked.`,
+            title: 'AppsCracked - Free Premium Software Downloads',
+            description: `Download ${totalApps}+ premium cracked apps and software for free. All categories available including productivity, games, design tools and more. Latest versions with full features unlocked.`,
             keywords: [
                 'cracked apps',
-                'free software download',
-                'premium apps free',
+                'free software',
+                'premium apps download',
                 'software crack',
+                'free premium software',
                 'apps download',
-                'free applications',
                 'cracked software',
+                'free apps',
                 'premium software free'
             ].join(', '),
             openGraph: {
                 title: 'AppsCracked - Free Premium Software Downloads',
                 description: `Access ${totalApps}+ premium cracked apps across ${categoriesCount} categories. All free to download with full features unlocked.`,
                 type: 'website',
-                url: 'https://appscracked.com',
+                url: siteConfig.url,
                 images: featuredApps.slice(0, 3).map(app => ({
                     url: app.icon || app.images?.[0] || '/default-app-icon.png',
                     width: 512,
@@ -57,14 +58,17 @@ export async function generateMetadata() {
                 description: `Download ${totalApps}+ premium cracked apps for free`
             },
             alternates: {
-                canonical: 'https://appscracked.com'
+                canonical: siteConfig.url
             }
         }
     } catch (error) {
         console.error('Error generating homepage metadata:', error)
         return {
             title: 'AppsCracked - Free Premium Software Downloads',
-            description: 'Download premium cracked applications for free. All software with full features unlocked and direct download links.'
+            description: 'Download premium cracked applications for free. All software with full features unlocked and direct download links.',
+            alternates: {
+                canonical: siteConfig.url
+            }
         }
     }
 }

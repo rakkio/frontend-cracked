@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { api } from '@/lib/api'
+import { siteConfig } from '../metadata'
 import { AppsSEO } from '@/components/seo/AppsSEO'
 import { AppsHeader } from '@/components/apps/AppsHeader'
 import { AppsLoading } from '@/components/apps/AppsLoading'
@@ -31,7 +32,7 @@ export async function generateMetadata() {
                 title: 'Free Cracked Apps - Premium Software Downloads',
                 description: `Discover ${totalApps}+ premium cracked applications across ${categoriesCount} categories. All free to download with full features unlocked.`,
                 type: 'website',
-                url: 'https://appscracked.com/apps'
+                url: `${siteConfig.url}/apps`
             },
             twitter: {
                 card: 'summary_large_image',
@@ -39,14 +40,17 @@ export async function generateMetadata() {
                 description: `Browse ${totalApps}+ premium cracked apps for free download`
             },
             alternates: {
-                canonical: 'https://appscracked.com/apps'
+                canonical: `${siteConfig.url}/apps`
             }
         }
     } catch (error) {
         console.error('Error generating apps metadata:', error)
         return {
             title: 'Free Cracked Apps - AppsCracked',
-            description: 'Browse and download premium cracked apps for free. All categories available with latest versions and full features unlocked.'
+            description: 'Browse and download premium cracked apps for free. All categories available with latest versions and full features unlocked.',
+            alternates: {
+                canonical: `${siteConfig.url}/apps`
+            }
         }
     }
 }
@@ -123,7 +127,7 @@ async function AppsContent() {
                         "@type": "CollectionPage",
                         "name": "Free Cracked Apps Collection",
                         "description": "Browse and download premium cracked applications for free",
-                        "url": "https://appscracked.com/apps",
+                        "url": `${siteConfig.url}/apps`,
                         "mainEntity": {
                             "@type": "ItemList",
                             "numberOfItems": pagination.total,
@@ -134,7 +138,7 @@ async function AppsContent() {
                                     "@type": "SoftwareApplication",
                                     "name": app.name,
                                     "description": app.description || `Download ${app.name} for free`,
-                                    "url": `https://appscracked.com/app/${app.slug}`,
+                                    "url": `${siteConfig.url}/app/${app.slug}`,
                                     "applicationCategory": app.category?.name || "Software"
                                 }
                             }))
