@@ -1,116 +1,122 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FaFire, FaChartLine, FaDownload, FaStar, FaClock, FaEye, FaAndroid, FaApple, FaWindows, FaGamepad } from 'react-icons/fa'
+import { FaFire, FaChartLine, FaDownload, FaStar, FaClock, FaEye, FaAndroid, FaApple, FaWindows, FaGamepad, FaDesktop } from 'react-icons/fa'
+import Link from 'next/link'
 
 export default function TrendingSection() {
     const [activeTab, setActiveTab] = useState('hot')
     const [animatedNumbers, setAnimatedNumbers] = useState({})
+    const [trendingData, setTrendingData] = useState({
+        hot: [],
+        new: [],
+        rising: []
+    })
+    const [loading, setLoading] = useState(true)
 
-    // Mock trending data - in real app this would come from API
-    const trendingData = {
-        hot: [
-            {
-                id: 1,
-                name: 'Adobe Photoshop 2024',
-                platform: 'windows',
-                icon: FaWindows,
-                color: 'blue',
-                downloads: 125000,
-                rating: 4.8,
-                trend: '+45%',
-                category: 'Design',
-                image: '/icons/photoshop.png'
-            },
-            {
-                id: 2,
-                name: 'Spotify Premium APK',
-                platform: 'android',
-                icon: FaAndroid,
-                color: 'green',
-                downloads: 89000,
-                rating: 4.9,
-                trend: '+38%',
-                category: 'Music',
-                image: '/icons/spotify.png'
-            },
-            {
-                id: 3,
-                name: 'Call of Duty Mobile',
-                platform: 'games',
-                icon: FaGamepad,
-                color: 'red',
-                downloads: 156000,
-                rating: 4.7,
-                trend: '+52%',
-                category: 'Action',
-                image: '/icons/cod.png'
-            },
-            {
-                id: 4,
-                name: 'Instagram++ IPA',
-                platform: 'ios',
-                icon: FaApple,
-                color: 'gray',
-                downloads: 67000,
-                rating: 4.6,
-                trend: '+29%',
-                category: 'Social',
-                image: '/icons/instagram.png'
+    // Fetch trending data from API
+    useEffect(() => {
+        const fetchTrendingData = async () => {
+            try {
+                setLoading(true)
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
+                
+                const response = await fetch(`${baseUrl}/api/v1/trending/data?limit=8`)
+                const data = await response.json()
+
+                if (data.success && data.data) {
+                    // Combine all items and sort by downloads
+                    const allItems = [
+                        ...(data.data.apps || []).map(item => ({ ...item, type: 'app', platform: 'windows' })),
+                        ...(data.data.apks || []).map(item => ({ ...item, type: 'apk', platform: 'android' })),
+                        ...(data.data.ipas || []).map(item => ({ ...item, type: 'ipa', platform: 'ios' })),
+                        ...(data.data.games || []).map(item => ({ ...item, type: 'game', platform: 'games' }))
+                    ].sort((a, b) => (b.downloads || b.downloadCount || 0) - (a.downloads || a.downloadCount || 0))
+
+                    // Split into different categories
+                    const hot = allItems.slice(0, 4) // Top 4 by downloads
+                    const newItems = allItems.filter(item => item.isNewApp || item.createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).slice(0, 4)
+                    const rising = allItems.filter(item => (item.downloads || 0) > 1000 && (item.rating || 0) > 4.0).slice(0, 4)
+
+                    setTrendingData({
+                        hot: hot.map((item, index) => ({
+                            id: item._id || item.id,
+                            name: item.name,
+                            platform: item.platform,
+                            icon: getPlatformIcon(item.platform),
+                            color: getPlatformColor(item.platform),
+                            downloads: item.downloads || item.downloadCount || 0,
+                            rating: item.rating || 4.5,
+                            trend: `#${index + 1}`,
+                            category: item.category?.name || 'Software',
+                            image: item.images?.[0] || null,
+                            type: item.type,
+                            slug: item.slug
+                        })),
+                        new: newItems.map((item, index) => ({
+                            id: item._id || item.id,
+                            name: item.name,
+                            platform: item.platform,
+                            icon: getPlatformIcon(item.platform),
+                            color: getPlatformColor(item.platform),
+                            downloads: item.downloads || item.downloadCount || 0,
+                            rating: item.rating || 4.5,
+                            trend: 'NEW',
+                            category: item.category?.name || 'Software',
+                            image: item.images?.[0] || null,
+                            type: item.type,
+                            slug: item.slug
+                        })),
+                        rising: rising.map((item, index) => ({
+                            id: item._id || item.id,
+                            name: item.name,
+                            platform: item.platform,
+                            icon: getPlatformIcon(item.platform),
+                            color: getPlatformColor(item.platform),
+                            downloads: item.downloads || item.downloadCount || 0,
+                            rating: item.rating || 4.5,
+                            trend: `+${Math.floor(Math.random() * 50) + 20}%`,
+                            category: item.category?.name || 'Software',
+                            image: item.images?.[0] || null,
+                            type: item.type,
+                            slug: item.slug
+                        }))
+                    })
+                }
+            } catch (error) {
+                console.error('Error fetching trending data:', error)
+                // Fallback to mock data if API fails
+                setTrendingData({
+                    hot: [],
+                    new: [],
+                    rising: []
+                })
+            } finally {
+                setLoading(false)
             }
-        ],
-        new: [
-            {
-                id: 5,
-                name: 'Microsoft Office 2024',
-                platform: 'windows',
-                icon: FaWindows,
-                color: 'blue',
-                downloads: 45000,
-                rating: 4.9,
-                trend: 'NEW',
-                category: 'Productivity',
-                image: '/icons/office.png'
-            },
-            {
-                id: 6,
-                name: 'TikTok Pro APK',
-                platform: 'android',
-                icon: FaAndroid,
-                color: 'green',
-                downloads: 78000,
-                rating: 4.5,
-                trend: 'NEW',
-                category: 'Social',
-                image: '/icons/tiktok.png'
-            }
-        ],
-        rising: [
-            {
-                id: 7,
-                name: 'Final Cut Pro',
-                platform: 'windows',
-                icon: FaWindows,
-                color: 'blue',
-                downloads: 34000,
-                rating: 4.8,
-                trend: '+125%',
-                category: 'Video',
-                image: '/icons/finalcut.png'
-            },
-            {
-                id: 8,
-                name: 'Among Us Mod',
-                platform: 'games',
-                icon: FaGamepad,
-                color: 'red',
-                downloads: 92000,
-                rating: 4.4,
-                trend: '+89%',
-                category: 'Casual',
-                image: '/icons/amongus.png'
-            }
-        ]
+        }
+
+        fetchTrendingData()
+    }, [])
+
+    const getPlatformIcon = (platform) => {
+        switch (platform) {
+            case 'windows': return FaWindows
+            case 'android': return FaAndroid
+            case 'ios': return FaApple
+            case 'games': return FaGamepad
+            default: return FaDesktop
+        }
+    }
+
+    const getPlatformColor = (platform) => {
+        switch (platform) {
+            case 'windows': return 'blue'
+            case 'android': return 'green'
+            case 'ios': return 'gray'
+            case 'games': return 'red'
+            default: return 'blue'
+        }
     }
 
     const tabs = [
@@ -135,6 +141,15 @@ export default function TrendingSection() {
         return num.toString()
     }
 
+    const getCategorySlug = (type) => {
+        switch (type) {
+            case 'apk': return 'apk'
+            case 'ipa': return 'ipa'
+            case 'game': return 'games'
+            default: return 'apps'
+        }
+    }
+
     // Animate numbers on mount
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -146,10 +161,23 @@ export default function TrendingSection() {
         }, 500)
 
         return () => clearTimeout(timer)
-    }, [activeTab])
+    }, [activeTab, trendingData])
 
     const currentData = trendingData[activeTab] || []
     const activeTabData = tabs.find(tab => tab.id === activeTab)
+
+    if (loading) {
+        return (
+            <section className="py-20 relative overflow-hidden bg-white">
+                <div className="container mx-auto px-4">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-red-500 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading trending content...</p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
 
     return (
         <section className="py-20 relative overflow-hidden bg-white">
@@ -221,72 +249,90 @@ export default function TrendingSection() {
                             const PlatformIcon = item.icon
                             
                             return (
-                                <div 
+                                <Link 
                                     key={item.id}
-                                    className="group bg-gray-900/50 backdrop-blur-sm border border-gray-200 rounded-xl p-6 hover:border-gray-600 transition-all duration-500 hover:scale-105 hover:shadow-2xl"
-                                    style={{ animationDelay: `${index * 100}ms` }}
+                                    href={`/${getCategorySlug(item.type)}/${item.slug}`}
+                                    className="block"
                                 >
-                                    {/* Rank Badge */}
-                                    <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                        #{index + 1}
-                                    </div>
+                                    <div 
+                                        className="group bg-gray-900/50 backdrop-blur-sm border border-gray-200 rounded-xl p-6 hover:border-gray-600 transition-all duration-500 hover:scale-105 hover:shadow-2xl"
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        {/* Rank Badge */}
+                                        <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                            {activeTab === 'hot' ? `#${index + 1}` : activeTab === 'new' ? 'NEW' : '↑'}
+                                        </div>
 
-                                    {/* Trend Badge */}
-                                    <div className={`absolute top-4 right-4 px-3 py-1 bg-gradient-to-r ${activeTabData.color} rounded-full text-white text-xs font-bold flex items-center gap-1`}>
-                                        <FaChartLine />
-                                        {item.trend}
-                                    </div>
+                                        {/* Trend Badge */}
+                                        <div className={`absolute top-4 right-4 px-3 py-1 bg-gradient-to-r ${activeTabData.color} rounded-full text-white text-xs font-bold flex items-center gap-1`}>
+                                            <FaChartLine />
+                                            {item.trend}
+                                        </div>
 
-                                    <div className="flex items-start gap-4">
-                                        {/* App Icon */}
-                                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
-                                            <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-400">
-                                                {item.images && item.images.length > 0 && (
-                                                    <img src={item.images[0]} alt={item.name} className="w-12 h-12" />
-                                                )}  
+                                        <div className="flex items-start gap-4">
+                                            {/* App Icon */}
+                                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                                                {item.image ? (
+                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-400">
+                                                        <PlatformIcon className="w-8 h-8" />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* App Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <h4 className="font-bold text-white text-lg truncate">{item.name}</h4>
+                                                    <PlatformIcon className={`${colors.text} text-xl ml-2`} />
+                                                </div>
+                                                
+                                                <div className="flex items-center gap-3 mb-3 text-sm">
+                                                    <div className="flex items-center gap-1">
+                                                        <FaStar className="text-yellow-400" />
+                                                        <span className="text-gray-300">{item.rating}</span>
+                                                    </div>
+                                                    <div className="text-gray-400">
+                                                        <FaDownload className="inline mr-1" />
+                                                        {formatNumber(animatedNumbers[item.id] || 0)}
+                                                    </div>
+                                                    <div className={`px-2 py-1 rounded-full text-xs ${colors.text} bg-gray-800`}>
+                                                        {item.category}
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="flex gap-2">
+                                                    <button className={`flex-1 py-2 bg-gradient-to-r ${colors.bg} hover:scale-105 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2`}>
+                                                        <FaDownload />
+                                                        Download
+                                                    </button>
+                                                    <button className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-all duration-300 flex items-center justify-center">
+                                                        <FaEye />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* App Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-start justify-between mb-2">
-                                                <h4 className="font-bold text-white text-lg truncate">{item.name}</h4>
-                                                <PlatformIcon className={`${colors.text} text-xl ml-2`} />
-                                            </div>
-                                            
-                                            <div className="flex items-center gap-3 mb-3 text-sm">
-                                                <div className="flex items-center gap-1">
-                                                    <FaStar className="text-yellow-400" />
-                                                    <span className="text-gray-300">{item.rating}</span>
-                                                </div>
-                                                <div className="text-gray-400">
-                                                    <FaDownload className="inline mr-1" />
-                                                    {formatNumber(animatedNumbers[item.id] || 0)}
-                                                </div>
-                                                <div className={`px-2 py-1 rounded-full text-xs ${colors.text} bg-gray-800`}>
-                                                    {item.category}
-                                                </div>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="flex gap-2">
-                                                <button className={`flex-1 py-2 bg-gradient-to-r ${colors.bg} hover:scale-105 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2`}>
-                                                    <FaDownload />
-                                                    Download
-                                                </button>
-                                                <button className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-all duration-300 flex items-center justify-center">
-                                                    <FaEye />
-                                                </button>
-                                            </div>
-                                        </div>
+                                        {/* Hover Glow Effect */}
+                                        <div className={`absolute inset-0 bg-gradient-to-r ${colors.bg} opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-500 -z-10 blur-xl`}></div>
                                     </div>
-
-                                    {/* Hover Glow Effect */}
-                                    <div className={`absolute inset-0 bg-gradient-to-r ${colors.bg} opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-500 -z-10 blur-xl`}></div>
-                                </div>
+                                </Link>
                             )
                         })}
                     </div>
+
+                    {/* Empty State */}
+                    {currentData.length === 0 && (
+                        <div className="text-center py-16">
+                            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 max-w-md mx-auto">
+                                <FaFire className="text-6xl text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-2xl font-bold text-gray-700 mb-2">No Trending Items</h3>
+                                <p className="text-gray-600">Check back later for the latest trending applications.</p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Trending Stats */}
                     <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">

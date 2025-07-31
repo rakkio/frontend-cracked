@@ -14,10 +14,10 @@ export default function ApkGrid({ apks, viewMode, handleApkClick }) {
     if (apks.length === 0) {
         return (
             <div className="container mx-auto px-4 py-16 text-center">
-                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/40 rounded-2xl p-12">
-                    <div className="text-6xl text-gray-600 mb-4">📱</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">No APKs Found</h3>
-                    <p className="text-gray-400">Try adjusting your search criteria or filters</p>
+                <div className="bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-3xl p-12 shadow-xl">
+                    <div className="text-6xl mb-4">📱</div>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">No APKs Found</h3>
+                    <p className="text-gray-600">Try adjusting your search criteria or filters</p>
                 </div>
             </div>
         )
@@ -50,9 +50,13 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
 
     return (
         <div 
-            className={`bg-gradient-to-br from-green-800/20 to-blue-800/20 backdrop-blur-sm border border-green-500/30 rounded-2xl hover:border-green-400/50 transition-all duration-300 cursor-pointer group hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20 ${cardClasses}`}
+            className={`group relative cursor-pointer transition-all duration-300 hover:scale-105 ${cardClasses}`}
             onClick={onClick}
         >
+            {/* Luxury Glow Effect */}
+            
+            {/* Light Card */}
+            <div className="relative bg-white/90 backdrop-blur-xl border border-gray-200/60 rounded-3xl hover:border-emerald-300/80 transition-all duration-500 shadow-xl hover:shadow-2xl">
             {/* APK Icon */}
             <div className={`relative ${viewMode === 'list' ? 'w-16 h-16' : 'w-20 h-20 mx-auto mb-4'} flex-shrink-0`}>
                 <Image
@@ -77,31 +81,31 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
             </div>
 
             {/* APK Info */}
-            <div className={`${viewMode === 'list' ? 'flex-1' : 'text-center'}`}>
-                <h3 className={`font-bold text-white group-hover:text-green-400 transition-colors ${
+            <div className={`${viewMode === 'list' ? 'flex-1 p-4' : 'text-center p-6'}`}>
+                <h3 className={`font-bold text-gray-800 group-hover:text-emerald-600 transition-colors ${
                     viewMode === 'list' ? 'text-lg' : 'text-xl mb-2'
                 }`}>
                     {apk.name}
                 </h3>
                 
-                <p className={`text-gray-400 mb-3 ${
+                <p className={`text-gray-600 mb-3 ${
                     viewMode === 'list' ? 'text-sm' : 'text-sm'
                 }`}>
                     {apk.developer}
                 </p>
 
                 {/* Version and Size */}
-                <div className={`flex items-center justify-center space-x-2 text-xs text-gray-500 mb-3 ${
+                <div className={`flex items-center justify-center space-x-2 text-xs mb-3 ${
                     viewMode === 'list' ? 'justify-start' : ''
                 }`}>
-                    <span className="bg-gray-700/50 px-2 py-1 rounded-full">
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-medium">
                         v{apk.version}
                     </span>
-                    <span className="bg-gray-700/50 px-2 py-1 rounded-full">
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-medium">
                         {apk.size}
                     </span>
                     {apk.minAndroidVersion && (
-                        <span className="bg-green-700/50 text-green-400 px-2 py-1 rounded-full">
+                        <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">
                             Android {apk.minAndroidVersion}+
                         </span>
                     )}
@@ -113,7 +117,7 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                 }`}>
                     {/* Only show rating if it exists and is greater than 0 */}
                     {apk.rating > 0 && (
-                        <div className="flex items-center space-x-1 text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">
+                        <div className="flex items-center space-x-1 text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">
                             <FaStar className="text-xs" />
                             <span className="font-medium">{apk.rating.toFixed(1)}</span>
                         </div>
@@ -121,7 +125,7 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                     
                     {/* Show downloads if they exist and are greater than 0 */}
                     {apk.downloads > 0 && (
-                        <div className="flex items-center space-x-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
+                        <div className="flex items-center space-x-1 text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full">
                             <FaDownload className="text-xs" />
                             <span className="font-medium">{formatNumber(apk.downloads)}</span>
                         </div>
@@ -129,7 +133,7 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                     
                     {/* Show views if they exist and are greater than 0 */}
                     {apk.views > 0 && (
-                        <div className="flex items-center space-x-1 text-blue-400 bg-blue-400/10 px-2 py-1 rounded-full">
+                        <div className="flex items-center space-x-1 text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
                             <FaEye className="text-xs" />
                             <span className="font-medium">{formatNumber(apk.views)}</span>
                         </div>
@@ -143,13 +147,13 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                             {apk.modFeatures.slice(0, 2).map((feature, index) => (
                                 <span 
                                     key={index}
-                                    className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full"
+                                    className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium"
                                 >
                                     {feature}
                                 </span>
                             ))}
                             {apk.modFeatures.length > 2 && (
-                                <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded-full">
+                                <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-medium">
                                     +{apk.modFeatures.length - 2} more
                                 </span>
                             )}
@@ -162,23 +166,23 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                     viewMode === 'list' ? 'justify-start' : ''
                 }`}>
                     {apk.featured && (
-                        <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 text-yellow-400 px-2 py-1 rounded-full text-xs">
+                        <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-medium">
                             <span>⭐</span>
-                            <span className="font-medium">Featured</span>
+                            <span>Featured</span>
                         </div>
                     )}
                     
                     {apk.isModded && (
-                        <div className="flex items-center space-x-1 bg-gradient-to-r from-purple-400/20 to-pink-400/20 text-purple-400 px-2 py-1 rounded-full text-xs">
+                        <div className="flex items-center space-x-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium">
                             <FaRocket className="text-xs" />
-                            <span className="font-medium">Modded</span>
+                            <span>Modded</span>
                         </div>
                     )}
                     
                     {apk.virusTotalScan?.isClean && (
-                        <div className="flex items-center space-x-1 bg-gradient-to-r from-green-400/20 to-emerald-400/20 text-green-400 px-2 py-1 rounded-full text-xs">
+                        <div className="flex items-center space-x-1 bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">
                             <FaShieldAlt className="text-xs" />
-                            <span className="font-medium">Safe</span>
+                            <span>Safe</span>
                         </div>
                     )}
                 </div>
@@ -186,7 +190,7 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                 {/* Category */}
                 {apk.category && (
                     <div className={`mt-3 ${viewMode === 'list' ? 'text-left' : 'text-center'}`}>
-                        <span className="text-xs text-gray-500 bg-gray-700/30 px-2 py-1 rounded-full">
+                        <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
                             {apk.category.name}
                         </span>
                     </div>
@@ -203,6 +207,7 @@ const ApkCard = ({ apk, viewMode, onClick }) => {
                         </span>
                     </div>
                 )}
+            </div>
             </div>
         </div>
     )
