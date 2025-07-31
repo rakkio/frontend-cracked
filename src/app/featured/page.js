@@ -22,18 +22,42 @@ async function getFeaturedData() {
     try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
         
+        // Helper function to safely extract array from API response
+        const extractArray = (response) => {
+            if (!response) return []
+            if (Array.isArray(response)) return response
+            if (response.data && Array.isArray(response.data)) return response.data
+            if (response.apps && Array.isArray(response.apps)) return response.apps
+            if (response.apks && Array.isArray(response.apks)) return response.apks
+            if (response.ipas && Array.isArray(response.ipas)) return response.ipas
+            if (response.games && Array.isArray(response.games)) return response.games
+            return []
+        }
+        
         const [appsRes, apksRes, ipasRes, gamesRes] = await Promise.all([
-            fetch(`${baseUrl}/api/v1/apps/featured?limit=12`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/api/v1/apk/featured?limit=12`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/api/v1/ipa/featured?limit=12`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/api/v1/games/featured?limit=12`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] }))
+            fetch(`${baseUrl}/api/v1/apps?isFeatured=true&limit=12`, {
+                next: { revalidate: 3600 },
+                headers: { 'Content-Type': 'application/json' }
+            }).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${baseUrl}/api/v1/apk?isFeatured=true&limit=12`, {
+                next: { revalidate: 3600 },
+                headers: { 'Content-Type': 'application/json' }
+            }).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${baseUrl}/api/v1/ipa?isFeatured=true&limit=12`, {
+                next: { revalidate: 3600 },
+                headers: { 'Content-Type': 'application/json' }
+            }).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${baseUrl}/api/v1/games?isFeatured=true&limit=12`, {
+                next: { revalidate: 3600 },
+                headers: { 'Content-Type': 'application/json' }
+            }).then(r => r.ok ? r.json() : null).catch(() => null)
         ])
 
         return {
-            apps: appsRes.data || appsRes.apps || [],
-            apks: apksRes.data || apksRes.apks || [],
-            ipas: ipasRes.data || ipasRes.ipas || [],
-            games: gamesRes.data || gamesRes.games || []
+            apps: extractArray(appsRes),
+            apks: extractArray(apksRes),
+            ipas: extractArray(ipasRes),
+            games: extractArray(gamesRes)
         }
     } catch (error) {
         console.error('Error fetching featured data:', error)
