@@ -64,23 +64,14 @@ async function getMarketplaceData() {
             fetch(`${baseUrl}/api/v1/games/featured?limit=6`).then(r => r.ok ? r.json() : { success: false, data: [] }).catch(() => ({ success: false, data: [] }))
         ])
         
-        console.log('API Responses:')
-        console.log('Apps:', appsResponse)
-        console.log('APKs:', apksResponse)
-        console.log('IPAs:', ipasResponse)
-        console.log('Games:', gamesResponse)
-        
+  
         // Handle different response structures
         const featuredApps = appsResponse.success ? (appsResponse.data || appsResponse.apps || []) : []
         const featuredApks = apksResponse.success ? (apksResponse.data || apksResponse.apks || []) : []
         const featuredIpas = ipasResponse.success ? (ipasResponse.data || ipasResponse.ipas || []) : []
         const featuredGames = gamesResponse.success ? (gamesResponse.data || gamesResponse.games || []) : []
         
-        console.log('Processed data:')
-        console.log('Featured Apps:', featuredApps.length)
-        console.log('Featured APKs:', featuredApks.length)
-        console.log('Featured IPAs:', featuredIpas.length)
-        console.log('Featured Games:', featuredGames.length)
+
         
         return {
             featuredApps,

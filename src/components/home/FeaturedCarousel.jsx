@@ -14,36 +14,37 @@ import 'swiper/css/effect-coverflow'
 export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], games = [] }) {
     const swiperRef = useRef(null)
 
-    // Sample data for when no real data is available
-    const sampleApks = [
-        { name: 'Spotify Premium', slug: 'spotify-premium', image: 'https://via.placeholder.com/200x200/10B981/FFFFFF?text=Spotify', rating: 4.8, downloads: 15000, category: { name: 'Music' } },
-        { name: 'YouTube Vanced', slug: 'youtube-vanced', image: 'https://via.placeholder.com/200x200/EF4444/FFFFFF?text=YouTube', rating: 4.9, downloads: 25000, category: { name: 'Video' } }
-    ]
-
-    const sampleIpas = [
-        { name: 'TikTok++', slug: 'tiktok-plus', image: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=TikTok', rating: 4.6, downloads: 12000, category: { name: 'Social' } },
-        { name: 'WhatsApp Plus', slug: 'whatsapp-plus', image: 'https://via.placeholder.com/200x200/25D366/FFFFFF?text=WhatsApp', rating: 4.8, downloads: 20000, category: { name: 'Communication' } }
-    ]
-
-    const sampleGames = [
-        { name: 'GTA V Mobile', slug: 'gta-v-mobile', image: 'https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=GTA+V', rating: 4.9, downloads: 30000, category: { name: 'Action' } },
-        { name: 'Minecraft PE', slug: 'minecraft-pe', image: 'https://via.placeholder.com/200x200/8B4513/FFFFFF?text=Minecraft', rating: 4.7, downloads: 22000, category: { name: 'Adventure' } }
-    ]
-
     // Combine all featured items with platform info
     const allFeatured = [
-        ...(Array.isArray(apps) ? apps : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'apps', icon: FaWindows, color: 'blue' })),
-        ...(Array.isArray(apks) ? apks : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'apk', icon: FaAndroid, color: 'green' })),
-        ...(Array.isArray(ipas) ? ipas : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'ipa', icon: FaApple, color: 'gray' })),
-        ...(Array.isArray(games) ? games : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'games', icon: FaGamepad, color: 'red' }))
+        ...(Array.isArray(apps) ? apps : []).filter(item => item && typeof item === 'object').map(item => ({ 
+            ...item, 
+            platform: 'app', 
+            icon: FaWindows, 
+            color: 'blue',
+            type: item.type || 'app' // Usar el tipo del backend o default
+        })),
+        ...(Array.isArray(apks) ? apks : []).filter(item => item && typeof item === 'object').map(item => ({ 
+            ...item, 
+            platform: 'apk', 
+            icon: FaAndroid, 
+            color: 'green',
+            type: item.type || 'apk' // Usar el tipo del backend o default
+        })),
+        ...(Array.isArray(ipas) ? ipas : []).filter(item => item && typeof item === 'object').map(item => ({ 
+            ...item, 
+            platform: 'ipa', 
+            icon: FaApple, 
+            color: 'gray',
+            type: item.type || 'ipa' // Usar el tipo del backend o default
+        })),
+        ...(Array.isArray(games) ? games : []).filter(item => item && typeof item === 'object').map(item => ({ 
+            ...item, 
+            platform: 'game', 
+            icon: FaGamepad, 
+            color: 'red',
+            type: item.type || 'game' // Usar el tipo del backend o default
+        }))
     ]
-
-    // If no real data, use sample data
-    const finalFeatured = allFeatured.length > 0 ? allFeatured : [
-        ...sampleApks.map(item => ({ ...item, platform: 'apk', icon: FaAndroid, color: 'green' })),
-        ...sampleIpas.map(item => ({ ...item, platform: 'ipa', icon: FaApple, color: 'gray' })),
-        ...sampleGames.map(item => ({ ...item, platform: 'games', icon: FaGamepad, color: 'red' }))
-    ].slice(0, 12) // Limit to 12 items
 
     const formatNumber = (num) => {
         if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
@@ -61,7 +62,29 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
         return colors[color] || colors.blue
     }
 
-    if (finalFeatured.length === 0) {
+    const getCategorySlug = (type) => {
+        console.log('getCategorySlug called with type:', type)
+        switch (type) {
+            case 'app':
+            case 'apps':
+            case 'application':
+                return 'app'
+            case 'apk':
+            case 'android':
+                return 'apk'
+            case 'ipa':
+            case 'ios':
+                return 'ipa'
+            case 'game':
+            case 'games':
+                return 'game'
+            default:
+                console.log('Unknown type, defaulting to app:', type)
+                return 'app'
+        }
+    }
+
+    if (allFeatured.length === 0) {
         return null
     }
 
@@ -108,18 +131,18 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
                         delay: 4000,
                         disableOnInteraction: false,
                     }}
-                    effect="coverflow"
-                    coverflowEffect={{
-                        rotate: 20,
-                        stretch: 0,
-                        depth: 200,
-                        modifier: 1,
-                        slideShadows: true,
-                    }}
                     pagination={{
                         clickable: true,
                         bulletClass: 'swiper-pagination-bullet !bg-green-500',
                         bulletActiveClass: 'swiper-pagination-bullet-active !bg-green-400'
+                    }}
+                    effect="coverflow"
+                    coverflowEffect={{
+                        rotate: 50,
+                        stretch: 0,
+                        depth: 100,
+                        modifier: 1,
+                        slideShadows: true,
                     }}
                     breakpoints={{
                         640: {
@@ -137,10 +160,10 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
                     }}
                     className="featured-swiper"
                 >
-                    {finalFeatured.filter(item => item && item.name && typeof item.name === 'string').map((item, index) => {
-                        const colors = getPlatformColors(item.color)
+                    {allFeatured.filter(item => item && item.name && typeof item.name === 'string').map((item, index) => {
+                                                const colors = getPlatformColors(item.color)
                         const PlatformIcon = item.icon
-
+                        const categorySlug = getCategorySlug(item.type)
                         return (
                             <SwiperSlide key={`${item.platform}-${item._id || item.id || index}`}>
                                 <div className="group relative">
@@ -154,20 +177,18 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
                                         {/* App Icon */}
                                         <div className="relative mb-4">
                                             <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden bg-gray-800 flex items-center justify-center">
-                                                {item.image && typeof item.image === 'string' && item.image.trim() !== '' && item.image !== 'null' && item.image !== 'undefined' ? (
-                                                    <img 
-                                                        src={item.image} 
-                                                        alt={item.name || 'App icon'}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                            e.target.style.display = 'none'
-                                                            e.target.nextSibling.style.display = 'flex'
-                                                        }}
-                                                    />
-                                                ) : null}
-                                                <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-400">
-                                                    <PlatformIcon className="text-2xl" />
-                                                </div>
+                                        {item.images && item.images.length > 0 ? (   
+                                        <img 
+                                            src={item.images[0]} 
+                                            alt={item.name || 'App icon'}
+                                            className="w-full h-full object-cover"
+                                        />  
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-400">
+                                            <PlatformIcon className="text-2xl" />
+                                        </div>  
+                                    )   }               
+                                                
                                             </div>
                                         </div>
 
@@ -203,8 +224,13 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
 
                                             {/* Download Button */}
                                             <button
-                                                onClick={() => window.open(`/${item.platform}/${item.slug}`, '_blank')}
-                                                className={`w-full py-3 bg-gradient-to-r ${colors.bg} hover:scale-105 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg`}
+                                                onClick={() => {
+                                                    const url = `/${categorySlug}/${item.slug}`
+                                                    console.log('Download clicked:', { item: item.name, type: item.type, categorySlug, url })
+                                                    window.open(url, '_blank')
+                                                }}
+                                                className={`w-full py-3 bg-gradient-to-r ${colors.bg} hover:scale-105 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg relative z-50 cursor-pointer`}
+                                                style={{ pointerEvents: 'auto', transform: 'translateZ(0)' }}
                                             >
                                                 <FaDownload />
                                                 Download
@@ -245,6 +271,34 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
                 .featured-swiper .swiper-pagination-bullet-active {
                     opacity: 1 !important;
                     transform: scale(1.3) !important;
+                }
+                
+                /* Completely override Swiper's pointer-events */
+                .featured-swiper .swiper-slide,
+                .featured-swiper .swiper-slide *,
+                .featured-swiper .swiper-slide-active,
+                .featured-swiper .swiper-slide-prev,
+                .featured-swiper .swiper-slide-next {
+                    pointer-events: auto !important;
+                }
+                
+                /* Force buttons to be clickable */
+                .featured-swiper button {
+                    pointer-events: auto !important;
+                    z-index: 9999 !important;
+                    position: relative !important;
+                    cursor: pointer !important;
+                }
+                
+                /* Override any transform that might interfere */
+                .featured-swiper .swiper-slide {
+                    transform-style: preserve-3d !important;
+                }
+                
+                .featured-swiper .swiper-slide button {
+                    transform: translateZ(200px) !important;
+                    pointer-events: auto !important;
+                    z-index: 9999 !important;
                 }
                 
                 .line-clamp-1 {

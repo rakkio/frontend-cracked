@@ -8,7 +8,7 @@ import {
     FaNewspaper, FaQuestionCircle, FaChevronDown, 
     FaChevronRight, FaTimes, FaShieldAlt, FaLock, FaCode,
     FaPalette, FaMusic, FaVideo, FaCamera, FaBug, FaTerminal,
-    FaFolder, FaTag
+    FaFolder, FaTag, FaGem, FaRocket, FaHeart
 } from 'react-icons/fa'
 import { MdVerified, MdSecurity } from 'react-icons/md'
 import { api } from '@/lib/api'
@@ -55,18 +55,18 @@ export default function Sidebar({ isOpen, onClose }) {
     // Map category names to appropriate icons and colors
     const getCategoryIcon = (categoryName) => {
         const name = categoryName.toLowerCase()
-        if (name.includes('productivity') || name.includes('office')) return { icon: FaCode, color: 'text-blue-500' }
-        if (name.includes('design') || name.includes('graphics')) return { icon: FaPalette, color: 'text-pink-500' }
-        if (name.includes('development') || name.includes('programming')) return { icon: FaBug, color: 'text-green-500' }
-        if (name.includes('multimedia') || name.includes('media')) return { icon: FaMusic, color: 'text-purple-500' }
-        if (name.includes('photo') || name.includes('camera')) return { icon: FaCamera, color: 'text-indigo-500' }
-        if (name.includes('security') || name.includes('privacy')) return { icon: FaShieldAlt, color: 'text-red-500' }
-        if (name.includes('game') || name.includes('entertainment')) return { icon: FaGamepad, color: 'text-orange-500' }
-        if (name.includes('music') || name.includes('audio')) return { icon: FaMusic, color: 'text-purple-500' }
-        if (name.includes('video')) return { icon: FaVideo, color: 'text-blue-600' }
-        if (name.includes('utility') || name.includes('tool')) return { icon: FaTerminal, color: 'text-gray-500' }
+        if (name.includes('productivity') || name.includes('office')) return { icon: FaCode, color: 'text-blue-400', bgColor: 'bg-blue-500/10' }
+        if (name.includes('design') || name.includes('graphics')) return { icon: FaPalette, color: 'text-pink-400', bgColor: 'bg-pink-500/10' }
+        if (name.includes('development') || name.includes('programming')) return { icon: FaBug, color: 'text-green-400', bgColor: 'bg-green-500/10' }
+        if (name.includes('multimedia') || name.includes('media')) return { icon: FaMusic, color: 'text-purple-400', bgColor: 'bg-purple-500/10' }
+        if (name.includes('photo') || name.includes('camera')) return { icon: FaCamera, color: 'text-indigo-400', bgColor: 'bg-indigo-500/10' }
+        if (name.includes('security') || name.includes('privacy')) return { icon: FaShieldAlt, color: 'text-red-400', bgColor: 'bg-red-500/10' }
+        if (name.includes('game') || name.includes('entertainment')) return { icon: FaGamepad, color: 'text-orange-400', bgColor: 'bg-orange-500/10' }
+        if (name.includes('music') || name.includes('audio')) return { icon: FaMusic, color: 'text-purple-400', bgColor: 'bg-purple-500/10' }
+        if (name.includes('video')) return { icon: FaVideo, color: 'text-blue-400', bgColor: 'bg-blue-500/10' }
+        if (name.includes('utility') || name.includes('tool')) return { icon: FaTerminal, color: 'text-gray-400', bgColor: 'bg-gray-500/10' }
         // Default icon for unknown categories
-        return { icon: FaFolder, color: 'text-gray-400' }
+        return { icon: FaFolder, color: 'text-gray-400', bgColor: 'bg-gray-500/10' }
     }
 
     const navigationSections = [
@@ -78,14 +78,16 @@ export default function Sidebar({ isOpen, onClose }) {
                     name: 'Home', 
                     href: '/', 
                     icon: FaHome, 
-                    color: 'text-red-500',
+                    color: 'text-red-400',
+                    bgColor: 'bg-red-500/10',
                     description: 'Home page'
                 },
                 { 
                     name: 'Trending', 
                     href: '/trending', 
                     icon: FaFire, 
-                    color: 'text-orange-500',
+                    color: 'text-orange-400',
+                    bgColor: 'bg-orange-500/10',
                     description: 'Trending apps and games',
                     badge: 'Hot'
                 },
@@ -93,14 +95,16 @@ export default function Sidebar({ isOpen, onClose }) {
                     name: 'Featured', 
                     href: '/featured', 
                     icon: FaStar, 
-                    color: 'text-yellow-500',
+                    color: 'text-yellow-400',
+                    bgColor: 'bg-yellow-500/10',
                     description: 'Featured apps and games'
                 },
                 { 
                     name: 'Premium', 
                     href: '/premium', 
                     icon: FaCrown, 
-                    color: 'text-purple-500',
+                    color: 'text-purple-400',
+                    bgColor: 'bg-purple-500/10',
                     description: 'Premium apps and games',
                     badge: 'Pro'
                 }
@@ -115,14 +119,16 @@ export default function Sidebar({ isOpen, onClose }) {
                     name: 'PC Apps', 
                     href: '/apps', 
                     icon: FaWindows, 
-                    color: 'text-blue-500',
+                    color: 'text-blue-400',
+                    bgColor: 'bg-blue-500/10',
                     description: 'Software for Windows'
                 },
                 { 
                     name: 'Android APK', 
                     href: '/apk', 
                     icon: FaAndroid, 
-                    color: 'text-green-500',
+                    color: 'text-green-400',
+                    bgColor: 'bg-green-500/10',
                     description: 'Apps for Android'
                 },
                 { 
@@ -130,13 +136,15 @@ export default function Sidebar({ isOpen, onClose }) {
                     href: '/ipa', 
                     icon: FaApple, 
                     color: 'text-gray-300',
+                    bgColor: 'bg-gray-500/10',
                     description: 'Apps for iPhone/iPad'
                 },
                 { 
                     name: 'Games', 
                     href: '/games', 
                     icon: FaGamepad, 
-                    color: 'text-purple-500',
+                    color: 'text-purple-400',
+                    bgColor: 'bg-purple-500/10',
                     description: 'Games for PC and console',
                     badge: 'Hot'
                 }
@@ -148,12 +156,13 @@ export default function Sidebar({ isOpen, onClose }) {
             expandable: true,
             loading: loadingCategories,
             items: categories.map(category => {
-                const { icon, color } = getCategoryIcon(category.name)
+                const { icon, color, bgColor } = getCategoryIcon(category.name)
                 return {
                     name: category.name,
                     href: `/category/${category.slug}`,
                     icon: icon,
                     color: color,
+                    bgColor: bgColor,
                     description: category.description || `Browse ${category.name.toLowerCase()} applications`,
                     count: category.appsCount || 0
                 }
@@ -168,14 +177,16 @@ export default function Sidebar({ isOpen, onClose }) {
                     name: 'Forum', 
                     href: '/community', 
                     icon: FaUsers, 
-                    color: 'text-blue-500',
+                    color: 'text-blue-400',
+                    bgColor: 'bg-blue-500/10',
                     description: 'Community discussions'
                 },
                 { 
                     name: 'Discussions', 
                     href: '/community/discussions', 
                     icon: FaComments, 
-                    color: 'text-green-500',
+                    color: 'text-green-400',
+                    bgColor: 'bg-green-500/10',
                     description: 'Active discussions',
                     badge: '24'
                 },
@@ -183,14 +194,16 @@ export default function Sidebar({ isOpen, onClose }) {
                     name: 'News & Updates', 
                     href: '/news', 
                     icon: FaNewspaper, 
-                    color: 'text-yellow-500',
+                    color: 'text-yellow-400',
+                    bgColor: 'bg-yellow-500/10',
                     description: 'Latest news and updates'
                 },
                 { 
                     name: 'Help & Support', 
                     href: '/help', 
                     icon: FaQuestionCircle, 
-                    color: 'text-purple-500',
+                    color: 'text-purple-400',
+                    bgColor: 'bg-purple-500/10',
                     description: 'Get help and support'
                 }
             ]
@@ -201,36 +214,46 @@ export default function Sidebar({ isOpen, onClose }) {
 
     const getBadgeColor = (badge) => {
         switch (badge) {
-            case 'Popular': return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-            case 'New': return 'bg-green-500/20 text-green-400 border-green-500/30'
-            case 'Premium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-            case 'Pro': return 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-            case 'Hot': return 'bg-red-500/20 text-red-400 border-red-500/30'
-            default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+            case 'Popular': return 'bg-blue-500/20 text-blue-300 border-blue-400/30'
+            case 'New': return 'bg-green-500/20 text-green-300 border-green-400/30'
+            case 'Premium': return 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30'
+            case 'Pro': return 'bg-purple-500/20 text-purple-300 border-purple-400/30'
+            case 'Hot': return 'bg-red-500/20 text-red-300 border-red-400/30'
+            default: return 'bg-gray-500/20 text-gray-300 border-gray-400/30'
         }
     }
 
     return (
         <>
+            {/* Backdrop for mobile */}
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={onClose}
+                />
+            )}
+
             {/* Sidebar */}
             <aside className={`
-                fixed lg:static inset-y-0 left-0 z-50 w-64 
-                transform transition-transform duration-300 ease-in-out
+                fixed lg:static inset-y-0 left-0 z-50 w-72 
+                transform transition-all duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                bg-black/95 backdrop-blur-xl border-r-2 border-red-500/30
-                flex flex-col
+                bg-black/80 backdrop-blur-xl border-r border-white/10
+                flex flex-col shadow-2xl
             `}>
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-red-500/20">
-                    <div className="flex items-center space-x-2">
-                    <div className="relative">
-                            <FaTerminal className="text-red-500 text-sm" />
-                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        </div>
+                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-black/50 to-gray-900/50">
+                    <div className="flex items-center space-x-3">
                         <div className="relative">
-                        <Link href="/" className="text-gray-400 text-2xl font-mono">CrackMarket</Link>
+                            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                                <FaTerminal className="text-white text-lg" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
                         </div>
-                        <div>
+                        <div className="flex flex-col">
+                            <Link href="/" className="text-white text-xl font-bold hover:text-red-400 transition-colors">
+                                CrackMarket
+                            </Link>
                             <p className="text-gray-400 text-xs font-mono">v2.0.1</p>
                         </div>
                     </div>
@@ -238,46 +261,48 @@ export default function Sidebar({ isOpen, onClose }) {
                     {/* Close button for mobile */}
                     <button
                         onClick={onClose}
-                        className="lg:hidden text-gray-400 hover:text-red-400 transition-colors"
+                        className="lg:hidden w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300"
                     >
-                        <FaTimes className="text-xl" />
+                        <FaTimes className="text-lg" />
                     </button>
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto p-4 space-y-6 sticky top-0">
+                <nav className="flex-1 overflow-y-auto p-6 space-y-8">
                     {navigationSections.map((section) => (
-                        <div key={section.id} className="space-y-2">
+                        <div key={section.id} className="space-y-3">
                             {/* Section Header */}
                             {section.expandable ? (
                                 <button
                                     onClick={() => toggleSection(section.id)}
-                                    className="flex items-center justify-between w-full text-left text-gray-400 hover:text-red-400 transition-colors font-mono text-sm uppercase tracking-wider"
+                                    className="flex items-center justify-between w-full text-left text-gray-300 hover:text-white transition-all duration-300 font-semibold text-sm uppercase tracking-wider group"
                                 >
-                                    <span>{section.title}</span>
-                                    {expandedSections[section.id] ? 
-                                        <FaChevronDown className="text-xs" /> : 
-                                        <FaChevronRight className="text-xs" />
-                                    }
+                                    <span className="group-hover:text-red-400 transition-colors">{section.title}</span>
+                                    <div className="w-6 h-6 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-all duration-300">
+                                        {expandedSections[section.id] ? 
+                                            <FaChevronDown className="text-xs text-gray-400 group-hover:text-white transition-colors" /> : 
+                                            <FaChevronRight className="text-xs text-gray-400 group-hover:text-white transition-colors" />
+                                        }
+                                    </div>
                                 </button>
                             ) : (
-                                <h3 className="text-gray-400 font-mono text-sm uppercase tracking-wider">
+                                <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wider">
                                     {section.title}
                                 </h3>
                             )}
 
                             {/* Section Items */}
                             {(!section.expandable || expandedSections[section.id]) && (
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                     {/* Loading state for categories */}
                                     {section.loading && (
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {[...Array(3)].map((_, i) => (
-                                                <div key={i} className="flex items-center space-x-3 p-3 rounded-lg bg-gray-800/30 animate-pulse">
-                                                    <div className="w-5 h-5 bg-gray-700 rounded"></div>
+                                                <div key={i} className="flex items-center space-x-3 p-4 rounded-xl bg-white/5 animate-pulse">
+                                                    <div className="w-8 h-8 bg-white/10 rounded-lg"></div>
                                                     <div className="flex-1">
-                                                        <div className="h-4 bg-gray-700 rounded w-3/4 mb-1"></div>
-                                                        <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                                                        <div className="h-4 bg-white/10 rounded w-3/4 mb-2"></div>
+                                                        <div className="h-3 bg-white/10 rounded w-1/2"></div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -291,44 +316,53 @@ export default function Sidebar({ isOpen, onClose }) {
                                             href={item.href}
                                             onClick={onClose}
                                             className={`
-                                                group flex items-center space-x-3 p-3 rounded-lg
-                                                transition-all duration-200 relative overflow-hidden
+                                                group flex items-center space-x-4 p-4 rounded-xl
+                                                transition-all duration-300 relative overflow-hidden
                                                 ${isActive(item.href) 
-                                                    ? 'bg-red-500/20 border border-red-500/40 text-red-400' 
-                                                    : 'hover:bg-red-500/10 border border-transparent hover:border-red-500/20 text-gray-300 hover:text-red-400'
+                                                    ? 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-400/30 text-white shadow-lg' 
+                                                    : 'hover:bg-white/5 border border-transparent hover:border-white/10 text-gray-300 hover:text-white'
                                                 }
                                             `}
                                         >
                                             {/* Active indicator */}
                                             {isActive(item.href) && (
-                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-500 to-pink-500 rounded-r"></div>
                                             )}
 
                                             {/* Icon */}
-                                            <item.icon className={`${item.color} text-lg flex-shrink-0`} />
+                                            <div className={`
+                                                w-10 h-10 rounded-xl flex items-center justify-center
+                                                ${isActive(item.href) ? 'bg-white/20' : item.bgColor}
+                                                group-hover:scale-110 transition-all duration-300
+                                            `}>
+                                                <item.icon className={`${item.color} text-lg`} />
+                                            </div>
                                             
                                             {/* Content */}
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium truncate">{item.name}</span>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="font-semibold truncate">{item.name}</span>
                                                     {item.badge && (
                                                         <span className={`
-                                                            px-2 py-0.5 text-xs font-mono rounded border
+                                                            px-2 py-1 text-xs font-medium rounded-full border
                                                             ${getBadgeColor(item.badge)}
                                                         `}>
                                                             {item.badge}
                                                         </span>
                                                     )}
                                                     {item.count !== undefined && (
-                                                        <span className="px-2 py-0.5 text-xs font-mono rounded bg-gray-700/50 text-gray-400 border border-gray-600">
+                                                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-white/10 text-gray-300 border border-white/20">
                                                             {item.count}
                                                         </span>
                                                     )}
                                                 </div>
                                                 {item.description && (
-                                                    <p className="text-xs text-gray-500 truncate">{item.description}</p>
+                                                    <p className="text-xs text-gray-400 truncate">{item.description}</p>
                                                 )}
                                             </div>
+
+                                            {/* Hover effect */}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
                                         </Link>
                                     ))}
                                 </div>
@@ -338,14 +372,19 @@ export default function Sidebar({ isOpen, onClose }) {
                 </nav>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-red-500/20">
-                    <div className="bg-black/50 border border-red-500/20 rounded-lg p-3">
-                        <div className="flex items-center space-x-2 mb-2">
-                            <MdSecurity className="text-green-400" />
-                            <span className="text-green-400 font-mono text-sm">Seguro</span>
+                <div className="p-6 border-t border-white/10">
+                    <div className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
+                        <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                <MdSecurity className="text-green-400 text-lg" />
+                            </div>
+                            <div>
+                                <div className="text-green-400 font-semibold text-sm">Secure & Verified</div>
+                                <div className="text-gray-400 text-xs">All files scanned</div>
+                            </div>
                         </div>
-                        <p className="text-gray-400 text-xs">
-                            Todos los archivos son escaneados y verificados
+                        <p className="text-gray-400 text-xs leading-relaxed">
+                            All software is scanned for malware and tested for functionality. Download with confidence from our secure servers.
                         </p>
                     </div>
                 </div>
