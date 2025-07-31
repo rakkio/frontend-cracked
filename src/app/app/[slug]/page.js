@@ -188,11 +188,11 @@ async function AppContent({ slug }) {
                             {/* App Icon */}
                             <div className="flex-shrink-0">
                                 <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl">
-                                    {app.icon ? (
+                                    {app.images ? (
                                         <img 
-                                            src={app.icon} 
+                                            src={app.images[0]} 
                                             alt={app.name}
-                                            className="w-28 h-28 rounded-2xl object-cover"
+                                            className="w-28 h-28 rounded-2xl object-cover "
                                         />
                                     ) : (
                                         <span className="text-4xl font-bold text-white">

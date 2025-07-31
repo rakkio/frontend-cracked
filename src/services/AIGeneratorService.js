@@ -6,7 +6,7 @@
 class AIGeneratorService {
     constructor() {
         // Forzar localhost temporalmente para debug
-        this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+        this.baseURL = `${process.env.NEXT_PUBLIC_API_URL}/api/v1 || 'http://localhost:5000/api/v1'`
         this.aiEndpoint = `${this.baseURL}/ai`
         
         // Debug logging
