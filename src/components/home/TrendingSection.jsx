@@ -143,6 +143,7 @@ export default function TrendingSection() {
 
     const getCategorySlug = (type) => {
         switch (type) {
+            case 'app': return 'app'
             case 'apk': return 'apk'
             case 'ipa': return 'ipa'
             case 'game': return 'games'
@@ -252,7 +253,7 @@ export default function TrendingSection() {
                                 <Link 
                                     key={item.id}
                                     href={`/${getCategorySlug(item.type)}/${item.slug}`}
-                                    className="block"
+                                    className="block"   
                                 >
                                     <div 
                                         className="group bg-gray-900/50 backdrop-blur-sm border border-gray-200 rounded-xl p-6 hover:border-gray-600 transition-all duration-500 hover:scale-105 hover:shadow-2xl"
