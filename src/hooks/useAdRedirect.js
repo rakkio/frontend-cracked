@@ -676,12 +676,12 @@ export function useAdRedirect() {
                                          const response = await api.post('/advertisements/verify-view', verificationData)
                      console.log('📊 Backend verification response:', response)
                      
-                     if (response.success) {
+                     if (response.data?.success || response.success) {
                          console.log('✅ Backend verification successful')
                          await initiateDownload()
                          return
                      } else {
-                         console.log('⚠️ Backend verification failed:', response.message)
+                         console.log('⚠️ Backend verification failed:', response.message || response.data?.message)
                          console.log('🔄 Falling back to client-side verification')
                      }
                 } catch (backendError) {
