@@ -72,7 +72,6 @@ async function getAppData(slug) {
     try {
         console.log('Fetching app data for slug:', slug)
         const response = await api.getAppBySlug(slug)
-        console.log('App response:', response)
         
         // Extract app data from response (handle different response structures)
         const appData = response.data?.app || response.app || response.data || response

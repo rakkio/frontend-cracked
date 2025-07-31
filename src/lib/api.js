@@ -422,6 +422,12 @@ class API {
         return this.request(`/advertisements/active${queryString ? '?' + queryString : ''}`)
     }
 
+    async getRandomAdvertisement(params = {}) {
+        const cleanedParams = cleanParams(params)
+        const queryString = this.buildQueryString(cleanedParams)
+        return this.request(`/advertisements/random${queryString ? '?' + queryString : ''}`)
+    }
+
     async createAdvertisement(advertisementData) {
         return this.request('/advertisements', {
             method: 'POST',
@@ -474,6 +480,13 @@ class API {
     // Debug advertisements
     async debugAdvertisements() {
         return this.request('/advertisements/debug')
+    }
+
+    // Create test advertisement
+    async createTestAdvertisement() {
+        return this.request('/advertisements/create-test', {
+            method: 'POST',
+        })
     }
 }
 

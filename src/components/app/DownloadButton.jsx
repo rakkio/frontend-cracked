@@ -26,7 +26,7 @@ export default function DownloadButton({
             version: app.version
         }
         
-        console.log('Triggering download for:', downloadData)
+        console.log('📦 Triggering download for:', downloadData)
         triggerDownload(downloadData)
     }
 
