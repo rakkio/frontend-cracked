@@ -1,12 +1,12 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { api } from '@/lib/api'
-import { FaDownload, FaStar, FaEye, FaHeart, FaShare, FaShieldAlt, FaWindows, FaApple, FaLinux } from 'react-icons/fa'
-import { HiOutlineDownload } from 'react-icons/hi'
+import { FaDownload, FaStar, FaEye, FaShieldAlt, FaWindows, FaApple, FaLinux } from 'react-icons/fa'
 import { BiCategory } from 'react-icons/bi'
 import AppLoading from '@/components/app/AppLoading'
+import DownloadButton from '@/components/app/DownloadButton'
 import AppPageClient from './AppPageClient'
-
+    
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
     try {
@@ -68,6 +68,7 @@ export async function generateMetadata({ params }) {
 
 // Server-side data fetching
 async function getAppData(slug) {
+    
     try {
         console.log('Fetching app data for slug:', slug)
         const response = await api.getAppBySlug(slug)
@@ -163,6 +164,7 @@ async function AppContent({ slug }) {
         return <FaWindows className="text-blue-500" />
     }
 
+
     return (
         <>
             <main className="w-full min-h-screen bg-white relative overflow-x-hidden">
@@ -249,21 +251,7 @@ async function AppContent({ slug }) {
                             </div>
 
                             {/* Download Button */}
-                            <div className="flex-shrink-0">
-                                <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-3">
-                                    <HiOutlineDownload className="w-6 h-6" />
-                                    Get Latest Version
-                                </button>
-                                
-                                <div className="flex items-center justify-center gap-4 mt-4">
-                                    <button className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-                                        <FaHeart className="w-5 h-5 text-gray-600" />
-                                    </button>
-                                    <button className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-                                        <FaShare className="w-5 h-5 text-gray-600" />
-                                    </button>
-                                </div>
-                            </div>
+                            <DownloadButton app={app} />
                         </div>
                     </div>
 
