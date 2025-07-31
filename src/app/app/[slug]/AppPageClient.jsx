@@ -116,69 +116,7 @@ export default function AppPageClient({ app, relatedApps }) {
                 </div>
             </div>
 
-            {/* Interactive Rating Section */}
-            {app.rating && (
-                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4">Rate this App</h3>
-                    <div className="flex items-center gap-4">
-                        <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                    key={star}
-                                    className={`
-                                        text-2xl transition-colors duration-200
-                                        ${star <= Math.floor(app.rating) 
-                                            ? 'text-yellow-400' 
-                                            : 'text-gray-600 hover:text-yellow-400'
-                                        }
-                                    `}
-                                    onClick={() => {
-                                        // Add rating logic here
-                                        console.log(`Rated ${star} stars`)
-                                    }}
-                                >
-                                    <FaStar />
-                                </button>
-                            ))}
-                        </div>
-                        <span className="text-gray-300">
-                            {app.rating.toFixed(1)} ({app.reviewsCount || 0} reviews)
-                        </span>
-                    </div>
-                </div>
-            )}
 
-            {/* Related Apps Interactive Section */}
-            {relatedApps && relatedApps.length > 0 && (
-                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4">You Might Also Like</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {relatedApps.slice(0, 3).map((relatedApp) => (
-                            <button
-                                key={relatedApp._id}
-                                onClick={() => handleRelatedAppClick(relatedApp)}
-                                className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-all duration-300 text-left group"
-                            >
-                                {relatedApp.icon && (
-                                    <img 
-                                        src={relatedApp.icon} 
-                                        alt={relatedApp.name}
-                                        className="w-12 h-12 rounded-lg object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                )}
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="font-semibold text-white truncate group-hover:text-blue-400 transition-colors duration-300">
-                                        {relatedApp.name}
-                                    </h4>
-                                    <p className="text-sm text-gray-400 truncate">
-                                        {relatedApp.category?.name}
-                                    </p>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

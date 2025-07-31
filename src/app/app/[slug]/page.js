@@ -1,12 +1,11 @@
 import { Suspense } from 'react'
-import { useRouter } from 'next/navigation'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import { FaDownload, FaStar, FaEye, FaShieldAlt, FaWindows, FaApple, FaLinux } from 'react-icons/fa'
 import { BiCategory } from 'react-icons/bi'
 import AppLoading from '@/components/app/AppLoading'
 import AppPageClient from './AppPageClient' 
-import { useRouter } from 'next/navigation'
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
 
@@ -167,12 +166,6 @@ async function AppContent({ slug }) {
         if (platform.includes('linux')) return <FaLinux className="text-orange-500" />
         return <FaWindows className="text-blue-500" />
     }
-
-    const handleRedirect = (relatedApps) => {
-        router.push(`/app/${relatedApps.slug}`)
-    }
-
-    const router = useRouter()  
 
     return (
         <>
@@ -396,53 +389,51 @@ async function AppContent({ slug }) {
                             <h3 className="text-2xl font-bold text-gray-900 mb-6">Similar Apps</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {relatedApps.slice(0, 6).map((relatedApp) => (
-                                    <div key={relatedApp._id} className="group cursor-pointer " onClick={() => router.push(`/app/${relatedApp.slug}`)}>
-                                        <div className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-gray-200">
-                                            <div className="flex items-center gap-4 mb-4">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                    {relatedApp.images ? (
-                                                        <img 
-                                                            src={relatedApp.images[0]} 
-                                                            alt={relatedApp.name}
-                                                            className="w-10 h-10 rounded-lg object-cover"
-                                                        />
-                                                    ) : (
-                                                        <span className="text-lg font-bold text-white">
-                                                            {relatedApp.name.charAt(0)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <h4 className="font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-                                                        {relatedApp.name}
-                                                    </h4>
-                                                    <p className="text-sm text-gray-500">
-                                                        {relatedApp.category?.name || 'Software'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-1">
-                                                    <FaStar className="w-4 h-4 text-yellow-400" />
-                                                    <span className="text-sm font-medium text-gray-700">
-                                                        {relatedApp.rating || '4.5'}
+                                <Link key={relatedApp._id} href={`/app/${relatedApp.slug}`} className="group cursor-pointer block">
+                                    <div className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-gray-200">
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                {relatedApp.images ? (
+                                                    <img 
+                                                        src={relatedApp.images[0]} 
+                                                        alt={relatedApp.name}
+                                                        className="w-10 h-10 rounded-lg object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="text-lg font-bold text-white">
+                                                        {relatedApp.name.charAt(0)}
                                                     </span>
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {formatNumber(relatedApp.downloads || relatedApp.downloadCount || 1200)} downloads
-                                                </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <h4 className="font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                                                    {relatedApp.name}
+                                                </h4>
+                                                <p className="text-sm text-gray-500">
+                                                    {relatedApp.category?.name || 'Software'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1">
+                                                <FaStar className="w-4 h-4 text-yellow-400" />
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    {relatedApp.rating || '4.5'}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                {formatNumber(relatedApp.downloads || relatedApp.downloadCount || 1200)} downloads
                                             </div>
                                         </div>
                                     </div>
+                                </Link>
                                 ))}
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Client-side interactive components */}
-                <AppPageClient app={app} relatedApps={relatedApps} />
             </main>
                 
             {/* Structured Data for SEO */}
