@@ -11,15 +11,15 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/effect-coverflow'
 
-export default function FeaturedCarousel({ apps, apks, ipas, games }) {
+export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], games = [] }) {
     const swiperRef = useRef(null)
 
     // Combine all featured items with platform info
     const allFeatured = [
-        ...apps.map(item => ({ ...item, platform: 'apps', icon: FaWindows, color: 'blue' })),
-        ...apks.map(item => ({ ...item, platform: 'apk', icon: FaAndroid, color: 'green' })),
-        ...ipas.map(item => ({ ...item, platform: 'ipa', icon: FaApple, color: 'gray' })),
-        ...games.map(item => ({ ...item, platform: 'games', icon: FaGamepad, color: 'red' }))
+        ...(Array.isArray(apps) ? apps : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'apps', icon: FaWindows, color: 'blue' })),
+        ...(Array.isArray(apks) ? apks : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'apk', icon: FaAndroid, color: 'green' })),
+        ...(Array.isArray(ipas) ? ipas : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'ipa', icon: FaApple, color: 'gray' })),
+        ...(Array.isArray(games) ? games : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'games', icon: FaGamepad, color: 'red' }))
     ].slice(0, 12) // Limit to 12 items
 
     const formatNumber = (num) => {
@@ -114,7 +114,7 @@ export default function FeaturedCarousel({ apps, apks, ipas, games }) {
                     }}
                     className="featured-swiper"
                 >
-                    {allFeatured.map((item, index) => {
+                    {allFeatured.filter(item => item && item.name && typeof item.name === 'string').map((item, index) => {
                         const colors = getPlatformColors(item.color)
                         const PlatformIcon = item.icon
 
@@ -131,10 +131,10 @@ export default function FeaturedCarousel({ apps, apks, ipas, games }) {
                                         {/* App Icon */}
                                         <div className="relative mb-4">
                                             <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden bg-gray-800 flex items-center justify-center">
-                                                {item.icon || item.image ? (
+                                                {item.image && typeof item.image === 'string' && item.image.trim() !== '' && item.image !== 'null' && item.image !== 'undefined' ? (
                                                     <img 
-                                                        src={item.icon || item.image} 
-                                                        alt={item.name}
+                                                        src={item.image} 
+                                                        alt={item.name || 'App icon'}
                                                         className="w-full h-full object-cover"
                                                         onError={(e) => {
                                                             e.target.style.display = 'none'
