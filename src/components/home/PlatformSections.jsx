@@ -12,13 +12,24 @@ import 'swiper/css/pagination'
 export default function PlatformSections({ apps, apks, ipas, games }) {
     const [activeSection, setActiveSection] = useState('android')
 
-    // Debug logging
-    console.log('PlatformSections received data:', { 
-        apps: apps?.length || 0, 
-        apks: apks?.length || 0, 
-        ipas: ipas?.length || 0, 
-        games: games?.length || 0 
-    })
+    // Sample data for when no real data is available
+    const sampleApks = [
+        { name: 'Spotify Premium', slug: 'spotify-premium', image: 'https://via.placeholder.com/200x200/10B981/FFFFFF?text=Spotify', rating: 4.8, downloads: 15000, category: { name: 'Music' } },
+        { name: 'YouTube Vanced', slug: 'youtube-vanced', image: 'https://via.placeholder.com/200x200/EF4444/FFFFFF?text=YouTube', rating: 4.9, downloads: 25000, category: { name: 'Video' } },
+        { name: 'Instagram Pro', slug: 'instagram-pro', image: 'https://via.placeholder.com/200x200/8B5CF6/FFFFFF?text=Instagram', rating: 4.7, downloads: 18000, category: { name: 'Social' } }
+    ]
+
+    const sampleIpas = [
+        { name: 'TikTok++', slug: 'tiktok-plus', image: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=TikTok', rating: 4.6, downloads: 12000, category: { name: 'Social' } },
+        { name: 'WhatsApp Plus', slug: 'whatsapp-plus', image: 'https://via.placeholder.com/200x200/25D366/FFFFFF?text=WhatsApp', rating: 4.8, downloads: 20000, category: { name: 'Communication' } },
+        { name: 'Snapchat++', slug: 'snapchat-plus', image: 'https://via.placeholder.com/200x200/FFFC00/000000?text=Snapchat', rating: 4.5, downloads: 15000, category: { name: 'Social' } }
+    ]
+
+    const sampleGames = [
+        { name: 'GTA V Mobile', slug: 'gta-v-mobile', image: 'https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=GTA+V', rating: 4.9, downloads: 30000, category: { name: 'Action' } },
+        { name: 'Minecraft PE', slug: 'minecraft-pe', image: 'https://via.placeholder.com/200x200/8B4513/FFFFFF?text=Minecraft', rating: 4.7, downloads: 22000, category: { name: 'Adventure' } },
+        { name: 'PUBG Mobile', slug: 'pubg-mobile', image: 'https://via.placeholder.com/200x200/FFD700/000000?text=PUBG', rating: 4.8, downloads: 35000, category: { name: 'Battle Royale' } }
+    ]
 
     const sections = [
         {
@@ -27,7 +38,7 @@ export default function PlatformSections({ apps, apks, ipas, games }) {
             subtitle: 'Modded & Premium Apps',
             icon: FaAndroid,
             color: 'green',
-            data: apks || [],
+            data: apks && apks.length > 0 ? apks : sampleApks,
             path: '/apk',
             description: 'Premium Android applications with unlocked features, ad-free experience, and full functionality.'
         },
@@ -37,7 +48,7 @@ export default function PlatformSections({ apps, apks, ipas, games }) {
             subtitle: 'Sideload & Tweaked',
             icon: FaApple,
             color: 'gray',
-            data: ipas || [],
+            data: ipas && ipas.length > 0 ? ipas : sampleIpas,
             path: '/ipa',
             description: 'Sideloadable iOS applications with enhanced features and premium unlocks for iPhone and iPad.'
         },
@@ -47,7 +58,7 @@ export default function PlatformSections({ apps, apks, ipas, games }) {
             subtitle: 'Full Software Suite',
             icon: FaDesktop,
             color: 'blue',
-            data: apps || [],
+            data: apps && apps.length > 0 ? apps : [],
             path: '/apps',
             description: 'Complete Windows software collection including productivity tools, creative suites, and utilities.'
         },
@@ -57,7 +68,7 @@ export default function PlatformSections({ apps, apks, ipas, games }) {
             subtitle: 'All Platforms',
             icon: FaGamepad,
             color: 'red',
-            data: games || [],
+            data: games && games.length > 0 ? games : sampleGames,
             path: '/games',
             description: 'Latest games across all platforms with DLCs, mods, and premium content unlocked.'
         }

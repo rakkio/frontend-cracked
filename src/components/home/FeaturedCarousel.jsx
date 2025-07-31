@@ -14,12 +14,35 @@ import 'swiper/css/effect-coverflow'
 export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], games = [] }) {
     const swiperRef = useRef(null)
 
+    // Sample data for when no real data is available
+    const sampleApks = [
+        { name: 'Spotify Premium', slug: 'spotify-premium', image: 'https://via.placeholder.com/200x200/10B981/FFFFFF?text=Spotify', rating: 4.8, downloads: 15000, category: { name: 'Music' } },
+        { name: 'YouTube Vanced', slug: 'youtube-vanced', image: 'https://via.placeholder.com/200x200/EF4444/FFFFFF?text=YouTube', rating: 4.9, downloads: 25000, category: { name: 'Video' } }
+    ]
+
+    const sampleIpas = [
+        { name: 'TikTok++', slug: 'tiktok-plus', image: 'https://via.placeholder.com/200x200/000000/FFFFFF?text=TikTok', rating: 4.6, downloads: 12000, category: { name: 'Social' } },
+        { name: 'WhatsApp Plus', slug: 'whatsapp-plus', image: 'https://via.placeholder.com/200x200/25D366/FFFFFF?text=WhatsApp', rating: 4.8, downloads: 20000, category: { name: 'Communication' } }
+    ]
+
+    const sampleGames = [
+        { name: 'GTA V Mobile', slug: 'gta-v-mobile', image: 'https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=GTA+V', rating: 4.9, downloads: 30000, category: { name: 'Action' } },
+        { name: 'Minecraft PE', slug: 'minecraft-pe', image: 'https://via.placeholder.com/200x200/8B4513/FFFFFF?text=Minecraft', rating: 4.7, downloads: 22000, category: { name: 'Adventure' } }
+    ]
+
     // Combine all featured items with platform info
     const allFeatured = [
         ...(Array.isArray(apps) ? apps : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'apps', icon: FaWindows, color: 'blue' })),
         ...(Array.isArray(apks) ? apks : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'apk', icon: FaAndroid, color: 'green' })),
         ...(Array.isArray(ipas) ? ipas : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'ipa', icon: FaApple, color: 'gray' })),
         ...(Array.isArray(games) ? games : []).filter(item => item && typeof item === 'object').map(item => ({ ...item, platform: 'games', icon: FaGamepad, color: 'red' }))
+    ]
+
+    // If no real data, use sample data
+    const finalFeatured = allFeatured.length > 0 ? allFeatured : [
+        ...sampleApks.map(item => ({ ...item, platform: 'apk', icon: FaAndroid, color: 'green' })),
+        ...sampleIpas.map(item => ({ ...item, platform: 'ipa', icon: FaApple, color: 'gray' })),
+        ...sampleGames.map(item => ({ ...item, platform: 'games', icon: FaGamepad, color: 'red' }))
     ].slice(0, 12) // Limit to 12 items
 
     const formatNumber = (num) => {
@@ -38,7 +61,7 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
         return colors[color] || colors.blue
     }
 
-    if (allFeatured.length === 0) {
+    if (finalFeatured.length === 0) {
         return null
     }
 
@@ -114,7 +137,7 @@ export default function FeaturedCarousel({ apps = [], apks = [], ipas = [], game
                     }}
                     className="featured-swiper"
                 >
-                    {allFeatured.filter(item => item && item.name && typeof item.name === 'string').map((item, index) => {
+                    {finalFeatured.filter(item => item && item.name && typeof item.name === 'string').map((item, index) => {
                         const colors = getPlatformColors(item.color)
                         const PlatformIcon = item.icon
 
