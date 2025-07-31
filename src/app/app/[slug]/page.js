@@ -1,13 +1,15 @@
 import { Suspense } from 'react'
+import { useRouter } from 'next/navigation'
 import { notFound } from 'next/navigation'
 import { api } from '@/lib/api'
 import { FaDownload, FaStar, FaEye, FaShieldAlt, FaWindows, FaApple, FaLinux } from 'react-icons/fa'
 import { BiCategory } from 'react-icons/bi'
 import AppLoading from '@/components/app/AppLoading'
-import AppPageClient from './AppPageClient'
-    
+import AppPageClient from './AppPageClient' 
+import { useRouter } from 'next/navigation'
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
+
     try {
         const resolvedParams = await params
         const response = await api.getAppBySlug(resolvedParams.slug)
@@ -16,7 +18,7 @@ export async function generateMetadata({ params }) {
         const app = response.data?.app || response.app || response.data || response
         
         if (!app) {
-            return {
+            return {    
                 title: 'App Not Found - AppsCracked',
                 description: 'The requested app could not be found.'
             }
@@ -110,6 +112,7 @@ async function getAppData(slug) {
     }
 }
 
+
 // Error boundary component
 function AppError({ error, retry }) {
     return (
@@ -134,6 +137,8 @@ function AppError({ error, retry }) {
         </div>
     )
 }
+
+
 
 // Server-side app content component
 async function AppContent({ slug }) {
@@ -163,6 +168,11 @@ async function AppContent({ slug }) {
         return <FaWindows className="text-blue-500" />
     }
 
+    const handleRedirect = (relatedApps) => {
+        router.push(`/app/${relatedApps.slug}`)
+    }
+
+    const router = useRouter()  
 
     return (
         <>
@@ -386,7 +396,7 @@ async function AppContent({ slug }) {
                             <h3 className="text-2xl font-bold text-gray-900 mb-6">Similar Apps</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {relatedApps.slice(0, 6).map((relatedApp) => (
-                                    <div key={relatedApp._id} className="group cursor-pointer">
+                                    <div key={relatedApp._id} className="group cursor-pointer " onClick={() => router.push(`/app/${relatedApp.slug}`)}>
                                         <div className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-gray-200">
                                             <div className="flex items-center gap-4 mb-4">
                                                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
