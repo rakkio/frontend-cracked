@@ -112,11 +112,11 @@ export function useAdRedirect() {
         }
     }, [])
 
-    const proceedWithDownload = useCallback(() => {
+    const proceedWithDownload = useCallback(async () => {
         try {
-            console.log('📦 Proceeding with download...')
+            console.log('📦 Proceeding with download verification...')
             const downloadData = pendingDownload || JSON.parse(sessionStorage.getItem('pendingDownload') || '{}')
-            console.log('📋 Download data:', downloadData)
+            console.log('📝 Download data:', downloadData)
             
             if (!downloadData?.url) {
                 console.error('❌ No download URL found')
@@ -139,65 +139,154 @@ export function useAdRedirect() {
                 return
             }
             
-            console.log('✅ Download data validated, starting download...')
-            
-            // Clear the pending download
-            sessionStorage.removeItem('pendingDownload')
-            
-            // Create a temporary link and trigger download
-            const link = document.createElement('a')
-            link.href = downloadData.url
-            link.download = downloadData.appName || 'download'
-            link.target = '_blank' // Open in new tab as fallback
-            link.rel = 'noopener noreferrer'
-            
-            // Add to DOM, click, and remove
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            
-            console.log('✅ Download initiated for:', downloadData.appName)
-            
-            // Show success message briefly before redirect
-            setError(null) // Clear any previous errors
-            
-            // Redirect back to the app page or home after a delay
-            setTimeout(() => {
-                try {
+            // MANDATORY: Verify advertisement was viewed - NO BYPASS ALLOWED
+            if (!advertisement?._id) {
+                console.error('❌ CRITICAL: No advertisement ID - download blocked!')
+                setError('Advertisement verification failed. Please refresh the page and try again.')
+                
+                // Force redirect back to try again
+                setTimeout(() => {
                     if (downloadData.appSlug) {
-                        console.log('🔄 Redirecting to app page:', downloadData.appSlug)
                         router.push(`/app/${downloadData.appSlug}`)
                     } else {
-                        console.log('🔄 Redirecting to home page')
                         router.push('/')
                     }
-                } catch (redirectError) {
-                    console.error('❌ Redirect error:', redirectError)
-                    // Fallback to window.location
-                    window.location.href = downloadData.appSlug ? `/app/${downloadData.appSlug}` : '/'
+                }, 3000)
+                return
+            }
+            
+            console.log('🔐 Verifying advertisement view...')
+            console.log('📝 Advertisement ID:', advertisement._id)
+            
+            try {
+                console.log('📡 Sending verification request...')
+                const requestData = {
+                    adId: advertisement._id,
+                    downloadToken: `download_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    downloadUrl: downloadData.url,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent
                 }
-            }, 3000) // Increased delay to show success message
+                console.log('📝 Request data:', requestData)
+                
+                // Try to verify with backend first
+                const response = await api.post('/advertisements/verify-view', requestData)
+                console.log('📊 Verification response:', response)
+                
+                if (response.data?.success) {
+                    console.log('✅ Download unlocked via backend verification')
+                    
+                    // Clear the pending download
+                    sessionStorage.removeItem('pendingDownload')
+                    
+                    // Create a temporary link and trigger download
+                    const link = document.createElement('a')
+                    link.href = downloadData.url
+                    link.download = downloadData.appName || 'download'
+                    link.target = '_blank'
+                    link.rel = 'noopener noreferrer'
+                    
+                    // Add to DOM, click, and remove
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    
+                    console.log('✅ Download initiated for:', downloadData.appName)
+                    
+                    // Show success message briefly before redirect
+                    setError(null)
+                    
+                    // Redirect back to the app page or home after a delay
+                    setTimeout(() => {
+                        try {
+                            if (downloadData.appSlug) {
+                                console.log('🔄 Redirecting to app page:', downloadData.appSlug)
+                                router.push(`/app/${downloadData.appSlug}`)
+                            } else {
+                                console.log('🔄 Redirecting to home page')
+                                router.push('/')
+                            }
+                        } catch (redirectError) {
+                            console.error('❌ Redirect error:', redirectError)
+                            window.location.href = downloadData.appSlug ? `/app/${downloadData.appSlug}` : '/'
+                        }
+                    }, 3000)
+                    
+                } else {
+                    console.error('❌ Backend verification failed - trying client-side verification')
+                    
+                    // Fallback: Client-side verification with stricter checks
+                    const adViewTime = Date.now() - (advertisement.loadTime || Date.now())
+                    const minimumViewTime = (advertisement.settings?.countdown || 5) * 1000 // Convert to milliseconds
+                    
+                    console.log('🕰️ Ad view time:', adViewTime, 'ms')
+                    console.log('🕰️ Minimum required time:', minimumViewTime, 'ms')
+                    
+                    if (adViewTime >= minimumViewTime && canSkip) {
+                        console.log('✅ Client-side verification passed - download unlocked')
+                        
+                        // Track the impression locally
+                        try {
+                            await api.post('/advertisements/track-impression', {
+                                adId: advertisement._id,
+                                viewTime: adViewTime,
+                                timestamp: new Date().toISOString()
+                            })
+                        } catch (trackError) {
+                            console.warn('⚠️ Failed to track impression:', trackError)
+                        }
+                        
+                        // Clear the pending download
+                        sessionStorage.removeItem('pendingDownload')
+                        
+                        // Create a temporary link and trigger download
+                        const link = document.createElement('a')
+                        link.href = downloadData.url
+                        link.download = downloadData.appName || 'download'
+                        link.target = '_blank'
+                        link.rel = 'noopener noreferrer'
+                        
+                        // Add to DOM, click, and remove
+                        document.body.appendChild(link)
+                        link.click()
+                        document.body.removeChild(link)
+                        
+                        console.log('✅ Download initiated for:', downloadData.appName)
+                        
+                        // Redirect back to the app page or home after a delay
+                        setTimeout(() => {
+                            try {
+                                if (downloadData.appSlug) {
+                                    console.log('🔄 Redirecting to app page:', downloadData.appSlug)
+                                    router.push(`/app/${downloadData.appSlug}`)
+                                } else {
+                                    console.log('🔄 Redirecting to home page')
+                                    router.push('/')
+                                }
+                            } catch (redirectError) {
+                                console.error('❌ Redirect error:', redirectError)
+                                window.location.href = downloadData.appSlug ? `/app/${downloadData.appSlug}` : '/'
+                            }
+                        }, 3000)
+                        
+                    } else {
+                        console.error('❌ Client-side verification failed - insufficient view time or countdown not finished')
+                        setError('Please wait for the advertisement to complete before downloading.')
+                        return
+                    }
+                }
+                
+            } catch (verifyError) {
+                console.error('❌ Verification error:', verifyError)
+                setError('Unable to verify advertisement view. Please wait for the countdown to finish.')
+                return
+            }
             
         } catch (error) {
             console.error('❌ Download error:', error)
             setError('Unable to process your download. Please try again.')
-            
-            // Fallback: try to redirect anyway
-            setTimeout(() => {
-                try {
-                    const downloadData = JSON.parse(sessionStorage.getItem('pendingDownload') || '{}')
-                    if (downloadData.appSlug) {
-                        router.push(`/app/${downloadData.appSlug}`)
-                    } else {
-                        router.push('/')
-                    }
-                } catch (fallbackError) {
-                    console.error('❌ Fallback redirect error:', fallbackError)
-                    window.location.href = '/'
-                }
-            }, 5000)
         }
-    }, []) // Remove dependencies to prevent re-renders
+    }, [advertisement, pendingDownload, canSkip, router])
 
     const startCountdown = useCallback(() => {
         console.log('⏰ Starting countdown with current value:', countdown)
@@ -221,25 +310,56 @@ export function useAdRedirect() {
 
     const loadAdScript = useCallback(async (scriptUrl) => {
         return new Promise((resolve, reject) => {
+            console.log('📜 Attempting to load script:', scriptUrl)
+            
             if (scriptLoadedRef.current) {
+                console.log('✅ Script already loaded')
                 resolve()
                 return
             }
             
+            // Clean up any existing scripts first
+            const existingScripts = document.querySelectorAll(`script[src="${scriptUrl}"]`)
+            existingScripts.forEach(script => script.remove())
+            
             const script = document.createElement('script')
             script.src = scriptUrl
             script.async = true
+            script.type = 'text/javascript'
+            
             script.onload = () => {
+                console.log('✅ Script loaded successfully:', scriptUrl)
                 scriptLoadedRef.current = true
                 setAdLoaded(true)
+                
+                // Try to initialize the ad if there's a container
+                setTimeout(() => {
+                    if (adContainerRef.current) {
+                        console.log('🎯 Ad container found, script should initialize')
+                    }
+                }, 1000)
+                
                 resolve()
             }
-            script.onerror = () => {
-                console.error('Failed to load ad script')
-                reject(new Error('Script loading failed'))
+            
+            script.onerror = (error) => {
+                console.error('❌ Failed to load ad script:', scriptUrl, error)
+                setAdLoaded(true) // Mark as loaded anyway to continue
+                reject(new Error(`Script loading failed: ${scriptUrl}`))
             }
             
+            // Add script to head
             document.head.appendChild(script)
+            console.log('📜 Script element added to DOM')
+            
+            // Fallback timeout
+            setTimeout(() => {
+                if (!scriptLoadedRef.current) {
+                    console.log('⚠️ Script loading timeout, marking as loaded anyway')
+                    setAdLoaded(true)
+                    resolve()
+                }
+            }, 5000)
         })
     }, [])
     
@@ -275,74 +395,29 @@ export function useAdRedirect() {
         }
     }, [])
 
-    const handleDirectDownload = useCallback(() => {
-        try {
-            console.log('📦 Starting direct download...')
-            
-            // Clear countdown if running
-            if (countdownIntervalRef.current) {
-                clearInterval(countdownIntervalRef.current)
-            }
-            
-            // If there's a direct link advertisement, redirect to it first
-            if (advertisement?.crackmarket?.adFormat === 'direct_link' && advertisement?.crackmarket?.directLink) {
-                console.log('🔗 Redirecting to ad link first:', advertisement.crackmarket.directLink)
-                
-                try {
-                    // Track ad click
-                    trackAdClick(advertisement)
-                    
-                    // Open ad in new tab and continue with download
-                    window.open(advertisement.crackmarket.directLink, '_blank')
-                    
-                    // Small delay then proceed with download
-                    setTimeout(() => {
-                        proceedWithDownload()
-                    }, 1000)
-                } catch (adError) {
-                    console.error('❌ Ad redirect error:', adError)
-                    // Continue with download even if ad fails
-                    proceedWithDownload()
-                }
-            } else {
-                console.log('📦 No direct link ad, proceeding with download directly')
-                proceedWithDownload()
-            }
-        } catch (error) {
-            console.error('❌ Direct download error:', error)
-            setError('Unable to process your download. Please try again.')
-            
-            // Fallback: try to proceed anyway
-            setTimeout(() => {
-                proceedWithDownload()
-            }, 2000)
-        }
-    }, []) // Remove dependencies to prevent re-renders
-
     const loadAdvertisement = useCallback(async () => {
         try {
-            console.log('🔄 Loading advertisement...')
-            console.log('📦 Pending download:', pendingDownload)
+            console.log('📡 Loading advertisement...')
             
-            // Detect ad blockers first
+            // First detect ad blockers
             detectAdBlocker()
             
-            // Try to load real ad networks first (for revenue)
+            console.log('🔄 Trying real ad networks first...')
+            // Try real ad networks first for revenue
             const adNetworkResult = await loadRealAdNetworks()
-            
             if (adNetworkResult.success) {
-                console.log('✅ Real ad network loaded:', adNetworkResult.network)
-                // Real ad network loaded successfully
+                console.log('✅ Real ad network loaded successfully')
                 setAdvertisement({
                     title: 'Advertisement',
-                    description: 'Please wait for the advertisement to complete',
+                    description: 'Please view this advertisement to support our service',
+                    loadTime: Date.now(),
                     crackmarket: {
-                        adFormat: 'script',
-                        provider: adNetworkResult.network,
-                        network: adNetworkResult.network
+                        adFormat: 'network',
+                        provider: adNetworkResult.network
                     }
                 })
                 setAdLoaded(true)
+                setCountdown(15) // Standard countdown for network ads
                 startCountdown()
                 return
             }
@@ -361,7 +436,13 @@ export function useAdRedirect() {
                 if (response.data && response.data.advertisement) {
                     console.log('✅ API advertisement loaded')
                     const adData = response.data.advertisement
-                    console.log('📋 Advertisement data:', adData)
+                    console.log('📝 Advertisement data:', adData)
+                    console.log('🆔 Advertisement ID:', adData._id)
+                    
+                    // Add load time for verification
+                    adData.loadTime = Date.now()
+                    console.log('🕰️ Advertisement load time set:', adData.loadTime)
+                    
                     setAdvertisement(adData)
                     
                     // Set countdown based on advertisement duration
@@ -370,20 +451,35 @@ export function useAdRedirect() {
                     console.log('⏰ Setting countdown to:', adDuration)
                     setCountdown(adDuration)
                     
-                    // Load advertisement script or content
-                    if (adData.crackmarket?.adFormat === 'script' && adData.crackmarket?.scriptUrl) {
+                    // Load advertisement script or content - prioritize crackmarket format
+                    if (adData.crackmarket?.adFormat === 'direct_link' && adData.crackmarket?.directLink) {
+                        // For direct links, no script loading needed
+                        console.log('🔗 Direct link advertisement detected:', adData.crackmarket.directLink)
+                        console.log('📝 Ad format is direct_link, no script loading required')
+                        setAdLoaded(true)
+                    } else if (adData.crackmarket?.adFormat === 'script' && adData.crackmarket?.scriptUrl) {
+                        console.log('📜 Loading crackmarket script:', adData.crackmarket.scriptUrl)
                         try {
                             await loadAdScript(adData.crackmarket.scriptUrl)
+                            console.log('✅ Crackmarket script loaded successfully')
                         } catch (scriptError) {
                             console.error('❌ Script loading failed:', scriptError)
                             setAdLoaded(true) // Continue without script
                         }
-                    } else if (adData.crackmarket?.adFormat === 'direct_link') {
-                        // For direct links, we'll redirect after countdown
-                        console.log('🔗 Direct link advertisement loaded:', adData.crackmarket.directLink)
-                        setAdLoaded(true)
+                    } else if (adData.script && !adData.crackmarket?.adFormat) {
+                        // Only load script if no crackmarket format is specified
+                        console.log('📜 Loading script advertisement:', adData.script)
+                        try {
+                            await loadAdScript(adData.script)
+                            console.log('✅ Script advertisement loaded successfully')
+                        } catch (scriptError) {
+                            console.error('❌ Script loading failed:', scriptError)
+                            setAdLoaded(true) // Continue without script
+                        }
                     } else {
                         // For other formats or no specific format, mark as loaded
+                        console.log('📝 No script needed, marking as loaded')
+                        console.log('📝 Ad data format:', adData.crackmarket?.adFormat || 'none')
                         setAdLoaded(true)
                     }
                     
@@ -400,41 +496,39 @@ export function useAdRedirect() {
             
             console.log('⚠️ No advertisements available, using fallback')
             // No ads available, create a fallback ad
-            setAdvertisement({
+            const fallbackAd = {
                 title: 'Download Ready',
                 description: 'Your download will start shortly',
+                loadTime: Date.now(),
                 crackmarket: {
                     adFormat: 'fallback',
                     provider: 'CrackMarket'
                 }
-            })
+            }
+            console.log('🕰️ Fallback ad load time set:', fallbackAd.loadTime)
+            setAdvertisement(fallbackAd)
             setAdLoaded(true)
             setCountdown(5) // Shorter countdown when no ads
             startCountdown()
         } catch (error) {
             console.error('❌ Error loading advertisement:', error)
             // If ad loading fails, still allow download but with shorter countdown
-            setAdvertisement({
+            const errorFallbackAd = {
                 title: 'Download Ready',
                 description: 'Your download will start shortly',
+                loadTime: Date.now(),
                 crackmarket: {
                     adFormat: 'fallback',
                     provider: 'CrackMarket'
                 }
-            })
+            }
+            console.log('🕰️ Error fallback ad load time set:', errorFallbackAd.loadTime)
+            setAdvertisement(errorFallbackAd)
             setCountdown(5)
             setAdLoaded(true)
             startCountdown()
         }
     }, []) // Remove dependencies to prevent infinite re-renders
-
-    const handleEnhancedSkip = useCallback(() => {
-        if (countdown > 5) {
-            setCountdown(5)
-        } else {
-            handleDirectDownload()
-        }
-    }, []) // Remove dependencies to prevent re-renders
 
     // Initialize download data
     useEffect(() => {
@@ -535,8 +629,167 @@ export function useAdRedirect() {
             if (countdownIntervalRef.current) {
                 clearInterval(countdownIntervalRef.current)
             }
-        }
+        }  
     }, []) // Remove dependencies to prevent infinite re-renders
+
+    // Handle direct download with ad verification
+    const handleDirectDownload = useCallback(async () => {
+        console.log('📥 Starting download process...')
+        console.log('📝 Advertisement state:', advertisement)
+        console.log('🕰️ Advertisement load time:', advertisement?.loadTime)
+        
+        if (!advertisement) {
+            console.log('❌ No advertisement loaded, blocking download')
+            setError('Advertisement verification failed. Please refresh and try again.')
+            return
+        }
+        
+                 // Calculate viewing time
+         const currentTime = Date.now()
+         const adLoadTime = advertisement.loadTime || currentTime
+         const viewingTime = currentTime - adLoadTime
+         const minimumViewTime = 5000 // 5 seconds minimum (reduced from 10)
+        
+        console.log('🕰️ Current time:', currentTime)
+        console.log('🕰️ Ad load time:', adLoadTime)
+        console.log('🕰️ Viewing time:', viewingTime, 'ms')
+        console.log('🕰️ Minimum required:', minimumViewTime, 'ms')
+        
+        try {
+            // First try backend verification if we have an ad ID
+            if (advertisement._id) {
+                console.log('📡 Attempting backend verification...')
+                try {
+                    const verificationData = {
+                        adId: advertisement._id,
+                        downloadToken: pendingDownload?.token || 'direct',
+                        downloadUrl: pendingDownload?.url,
+                        userAgent: navigator.userAgent,
+                        referrer: document.referrer,
+                        viewingTime: viewingTime,
+                        deviceType: deviceType,
+                        timestamp: currentTime
+                    }
+                    
+                    console.log('📝 Verification data:', verificationData)
+                    
+                                         const response = await api.post('/advertisements/verify-view', verificationData)
+                     console.log('📊 Backend verification response:', response)
+                     
+                     if (response.success) {
+                         console.log('✅ Backend verification successful')
+                         await initiateDownload()
+                         return
+                     } else {
+                         console.log('⚠️ Backend verification failed:', response.message)
+                         console.log('🔄 Falling back to client-side verification')
+                     }
+                } catch (backendError) {
+                    console.error('❌ Backend verification error:', backendError)
+                    console.log('🔄 Falling back to client-side verification')
+                }
+            }
+            
+            // Fallback to client-side verification
+            console.log('💻 Performing client-side verification...')
+            
+                         // Check if countdown has finished
+             if (!canSkip) {
+                 console.log('❌ Countdown not finished, blocking download')
+                 setError('Please wait for the countdown to finish before downloading.')
+                 return
+             }
+             
+             // If countdown finished, allow download regardless of viewing time
+             console.log('✅ Countdown finished, allowing download')
+             await initiateDownload()
+             return
+            
+            console.log('✅ Client-side verification passed')
+            await initiateDownload()
+            
+        } catch (error) {
+            console.error('❌ Download verification error:', error)
+            setError('Download verification failed. Please try again.')
+        }
+    }, [advertisement, pendingDownload, canSkip, deviceType])
+    
+    // Initiate the actual download
+    const initiateDownload = useCallback(async () => {
+        console.log('🚀 Initiating download...')
+        
+        if (!pendingDownload?.url) {
+            console.log('❌ No download URL available')
+            setError('Download URL not available. Please try again.')
+            return
+        }
+        
+        try {
+                         // Track impression if we have an ad ID
+             if (advertisement?._id) {
+                 try {
+                     await api.post(`/advertisements/${advertisement._id}/impression`, {
+                         action: 'download_initiated',
+                         metadata: {
+                             appName: pendingDownload.appName,
+                             downloadUrl: pendingDownload.url,
+                             deviceType: deviceType
+                         }
+                     })
+                     console.log('📊 Impression tracked successfully')
+                 } catch (trackingError) {
+                     console.error('⚠️ Impression tracking failed:', trackingError)
+                     // Don't block download for tracking failures
+                 }
+             }
+            
+            // Start the download
+            console.log('📥 Starting download:', pendingDownload.url)
+            
+            // Create download link
+            const link = document.createElement('a')
+            link.href = pendingDownload.url
+            link.download = pendingDownload.filename || pendingDownload.appName || 'download'
+            link.target = '_blank'
+            link.rel = 'noopener noreferrer'
+            
+            // Trigger download
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            
+            console.log('✅ Download initiated successfully')
+            
+            // Clear download data
+            sessionStorage.removeItem('pendingDownload')
+            
+            // Redirect after download
+            setTimeout(() => {
+                if (pendingDownload.returnUrl) {
+                    router.push(pendingDownload.returnUrl)
+                } else {
+                    router.push('/')
+                }
+            }, 2000)
+            
+        } catch (error) {
+            console.error('❌ Download initiation error:', error)
+            setError('Failed to start download. Please try again.')
+        }
+    }, [pendingDownload, advertisement, deviceType, router])
+    
+    // Enhanced skip function with verification
+    const handleEnhancedSkip = useCallback(async () => {
+        console.log('⏭️ Enhanced skip requested')
+        
+        if (!canSkip) {
+            console.log('❌ Skip not allowed yet')
+            setError('Please wait for the countdown to finish.')
+            return
+        }
+        
+        await handleDirectDownload()
+    }, [canSkip, handleDirectDownload])
 
     return {
         // State

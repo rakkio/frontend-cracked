@@ -23,6 +23,14 @@ const ErrorState = ({ error, onRetry, onContinue }) => {
                 suggestion: 'Please try again or contact support if the problem persists.'
             }
         }
+        if (error?.includes('view the advertisement') || error?.includes('countdown to finish')) {
+            return {
+                title: 'Advertisement Verification Required',
+                message: 'You must view the advertisement completely before downloading.',
+                suggestion: 'Please wait for the countdown to finish and view the advertisement properly.',
+                noContinue: true // Prevent bypass
+            }
+        }
         if (error?.includes('No download information')) {
             return {
                 title: 'No Download Information',
@@ -86,7 +94,7 @@ const ErrorState = ({ error, onRetry, onContinue }) => {
                         </button>
                     )}
                     
-                    {onContinue && (
+                    {onContinue && !errorInfo.noContinue && (
                         <button
                             onClick={onContinue}
                             className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"

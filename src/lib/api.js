@@ -488,6 +488,14 @@ class API {
             method: 'POST',
         })
     }
+
+    // Generic POST method for custom endpoints
+    async post(endpoint, data) {
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        })
+    }
 }
 
 export const api = new API()
