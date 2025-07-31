@@ -104,7 +104,7 @@ async function AppsContent() {
                 filters={{}}
             />
 
-            <main className="min-h-screen bg-black" itemScope itemType="https://schema.org/CollectionPage">
+            <main className="min-h-screen bg-white" itemScope itemType="https://schema.org/CollectionPage">
                 <AppsHeader 
                     searchTerm=""
                     appsCount={pagination.total}

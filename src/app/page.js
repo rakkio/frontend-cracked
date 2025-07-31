@@ -1,162 +1,137 @@
 import { Suspense } from 'react'
-import { api } from '@/lib/api'
 import { siteConfig } from './metadata'
-import CategoriesWithApps from '@/components/CategoriesWithApps'
-
-// Componentes SOLID
-import SEOHead from '@/components/home/SEOHead'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-import HeroSection from '@/components/home/HeroSection'
-import StatsSection from '@/components/home/StatsSection'
-import FeaturedAppsSection from '@/components/home/FeaturedAppsSection'
-import WhyChooseSection from '@/components/home/WhyChooseSection'
-import FinalCTASection from '@/components/home/FinalCTASection'
-import HomePageClient from './HomePageClient'
+import MarketplaceHero from '@/components/home/MarketplaceHero'
+import FeaturedCarousel from '@/components/home/FeaturedCarousel'
+import CategoriesGrid from '@/components/home/CategoriesGrid'   
+import StatsMarquee from '@/components/home/StatsMarquee'
+import PlatformSections from '@/components/home/PlatformSections'
+import TrendingSection from '@/components/home/TrendingSection'
+import SecurityBanner from '@/components/home/SecurityBanner'
 
 // Generate metadata for SEO
 export async function generateMetadata() {
-    try {
-        // Fetch initial data for metadata
-        const [appsResponse, categoriesResponse] = await Promise.all([
-            api.getFeaturedApps(12),
-            api.getCategories()
-        ])
-        
-        const featuredApps = appsResponse.apps || []
-        const totalApps = appsResponse.pagination?.total || 50000
-        const categoriesCount = categoriesResponse.categories?.length || 20
-        
-        return {
-            title: 'AppsCracked - Free Premium Software Downloads',
-            description: `Download ${totalApps}+ premium cracked apps and software for free. All categories available including productivity, games, design tools and more. Latest versions with full features unlocked.`,
-            keywords: [
-                'cracked apps',
-                'free software',
-                'premium apps download',
-                'software crack',
-                'free premium software',
-                'apps download',
-                'cracked software',
-                'free apps',
-                'premium software free'
-            ].join(', '),
-            openGraph: {
-                title: 'AppsCracked - Free Premium Software Downloads',
-                description: `Access ${totalApps}+ premium cracked apps across ${categoriesCount} categories. All free to download with full features unlocked.`,
-                type: 'website',
-                url: siteConfig.url,
-                images: featuredApps.slice(0, 3).map(app => ({
-                    url: app.icon || app.images?.[0] || '/default-app-icon.png',
-                    width: 512,
-                    height: 512,
-                    alt: `${app.name} - Free Download`
-                }))
-            },
-            twitter: {
-                card: 'summary_large_image',
-                title: 'AppsCracked - Free Premium Software Downloads',
-                description: `Download ${totalApps}+ premium cracked apps for free`
-            },
-            alternates: {
-                canonical: siteConfig.url
-            }
-        }
-    } catch (error) {
-        console.error('Error generating homepage metadata:', error)
-        return {
-            title: 'AppsCracked - Free Premium Software Downloads',
-            description: 'Download premium cracked applications for free. All software with full features unlocked and direct download links.',
-            alternates: {
-                canonical: siteConfig.url
-            }
+    return {
+        title: 'CrackMarket - Premium Apps, APKs, IPAs & Games for Free',
+        description: 'Download 50,000+ premium cracked applications, Android APKs, iOS IPAs, and PC games for free. All platforms supported with latest versions and full features unlocked.',
+        keywords: [
+            'cracked apps',
+            'free apk download',
+            'ios ipa free',
+            'premium games crack',
+            'android mod apk',
+            'free software download',
+            'cracked games',
+            'premium apps free',
+            'marketplace apps',
+            'mod apk download'
+        ].join(', '),
+        openGraph: {
+            title: 'CrackMarket - Premium Apps, APKs, IPAs & Games',
+            description: 'Your ultimate marketplace for free premium software across all platforms. Android, iOS, Windows, and Mac supported.',
+            type: 'website',
+            url: siteConfig.url,
+            images: [{
+                url: '/og-marketplace.jpg',
+                width: 1200,
+                height: 512,
+                alt: 'CrackMarket - Premium Apps Marketplace'
+            }]
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: 'CrackMarket - Premium Apps, APKs, IPAs & Games',
+            description: 'Download 50,000+ premium software for free across all platforms'
+        },
+        alternates: {
+            canonical: siteConfig.url
         }
     }
 }
 
-// Server-side data fetching
-async function getHomeData() {
+// Server-side data fetching for marketplace
+async function getMarketplaceData() {
     try {
-        console.log('Fetching homepage data for SSR...')
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
         
-        // Fetch all data needed for homepage
-        const [appsResponse, categoriesResponse, featuredAppsResponse] = await Promise.all([
-            api.getApps({ limit: 1 }),
-            api.getCategories(),
-            api.getFeaturedApps(6)
+        // Fetch data from all platforms
+        const [appsResponse, apksResponse, ipasResponse, gamesResponse] = await Promise.all([
+            fetch(`${baseUrl}/api/v1/apps/featured?limit=6`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] })),
+            fetch(`${baseUrl}/api/v1/apk/featured?limit=6`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] })),
+            fetch(`${baseUrl}/api/v1/ipa/featured?limit=6`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] })),
+            fetch(`${baseUrl}/api/v1/games/featured?limit=6`).then(r => r.ok ? r.json() : { data: [] }).catch(() => ({ data: [] }))
         ])
         
-        const totalApps = appsResponse.data?.pagination?.total || 0
-        const categories = categoriesResponse.categories || []
-        const featuredApps = featuredAppsResponse.data?.apps || featuredAppsResponse.apps || []
-        
-        // Generate stats
-        const stats = {
-            totalApps,
-            totalCategories: categories.length,
-            totalDownloads: totalApps * 150, // Estimated
-            activeUsers: Math.floor(totalApps * 2.5) // Estimated
-        }
-        
-        console.log('Homepage SSR data fetched:', { 
-            totalApps, 
-            categoriesCount: categories.length,
-            featuredAppsCount: featuredApps.length 
-        })
-        
         return {
-            featuredApps,
-            stats,
-            categories
+            featuredApps: appsResponse.data || [],
+            featuredApks: apksResponse.data || [],
+            featuredIpas: ipasResponse.data || [],
+            featuredGames: gamesResponse.data || [],
+            stats: {
+                totalApps: 15000,
+                totalApks: 25000,
+                totalIpas: 8000,
+                totalGames: 12000,
+                totalDownloads: 5000000,
+                activeUsers: 250000
+            }
         }
     } catch (error) {
-        console.error('Error fetching homepage data for SSR:', error)
+        console.error('Error fetching marketplace data:', error)
         return {
             featuredApps: [],
+            featuredApks: [],
+            featuredIpas: [],
+            featuredGames: [],
             stats: {
-                totalApps: 0,
-                totalCategories: 0,
-                totalDownloads: 0,
-                activeUsers: 0
-            },
-            categories: []
+                totalApps: 15000,
+                totalApks: 25000,
+                totalIpas: 8000,
+                totalGames: 12000,
+                totalDownloads: 5000000,
+                activeUsers: 250000
+            }
         }
     }
 }
 
-// Server-side homepage content component
-async function HomeContent() {
-    const { featuredApps, stats, categories } = await getHomeData()
+// Server-side marketplace content component
+async function MarketplaceContent() {
+    const marketplaceData = await getMarketplaceData()
     
     return (
         <>
-            <SEOHead stats={stats} featuredApps={featuredApps} />
-            
-            <main className="min-h-screen bg-matrix-dark">
-                <HeroSection stats={stats} />
+            <main className="w-full min-h-screen bg-gradient-to-br bg-white from-white via-white to-white relative overflow-x-hidden">
+                {/* Hero Section */}
+                <MarketplaceHero stats={marketplaceData.stats} />
                 
-                <StatsSection stats={stats} />
+                {/* Stats Marquee */}
+                <StatsMarquee stats={marketplaceData.stats} />
                 
-                <FeaturedAppsSection 
-                    featuredApps={featuredApps}
-                    stats={stats}
+                {/* Featured Carousel */}
+                <FeaturedCarousel 
+                    apps={marketplaceData.featuredApps}
+                    apks={marketplaceData.featuredApks}
+                    ipas={marketplaceData.featuredIpas}
+                    games={marketplaceData.featuredGames}
                 />
                 
-                <CategoriesWithApps
-                    maxCategories={8}
-                    maxAppsPerCategory={6}
-                    showViewAll={true}
+                {/* Platform Sections */}
+                <PlatformSections 
+                    apps={marketplaceData.featuredApps}
+                    apks={marketplaceData.featuredApks}
+                    ipas={marketplaceData.featuredIpas}
+                    games={marketplaceData.featuredGames}
                 />
                 
-                <WhyChooseSection />
+                {/* Categories Grid */}
+                <CategoriesGrid />
                 
-                <FinalCTASection />
+                {/* Trending Section */}
+                <TrendingSection />
                 
-                {/* Client-side interactive components */}
-                <HomePageClient 
-                    featuredApps={featuredApps}
-                    stats={stats}
-                    categories={categories}
-                />
+                {/* Security Banner */}
+                <SecurityBanner />
             </main>
             
             {/* Structured Data for SEO */}
@@ -166,19 +141,19 @@ async function HomeContent() {
                     __html: JSON.stringify({
                         "@context": "https://schema.org",
                         "@type": "WebSite",
-                        "name": "AppsCracked",
-                        "description": "Download premium cracked applications for free",
-                        "url": "https://appscracked.com",
+                        "name": "CrackMarket",
+                        "description": "Premium apps, APKs, IPAs and games marketplace",
+                        "url": siteConfig.url,
                         "potentialAction": {
                             "@type": "SearchAction",
-                            "target": "https://appscracked.com/apps?search={search_term_string}",
+                            "target": `${siteConfig.url}/search?q={search_term_string}`,
                             "query-input": "required name=search_term_string"
                         },
                         "mainEntity": {
                             "@type": "Organization",
-                            "name": "AppsCracked",
-                            "url": "https://appscracked.com",
-                            "description": "Free premium software downloads platform",
+                            "name": "CrackMarket",
+                            "url": siteConfig.url,
+                            "description": "Multi-platform software marketplace",
                             "serviceType": "Software Distribution"
                         }
                     })
@@ -191,7 +166,7 @@ async function HomeContent() {
 export default function Home() {
     return (
         <Suspense fallback={<LoadingScreen />}>
-            <HomeContent />
+            <MarketplaceContent />
         </Suspense>
     )
 }

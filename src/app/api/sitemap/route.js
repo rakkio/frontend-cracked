@@ -13,6 +13,9 @@ export async function GET() {
         const staticPages = [
             { url: baseUrl, lastmod: new Date().toISOString(), changefreq: 'daily', priority: '1.0' },
             { url: `${baseUrl}/apps`, lastmod: new Date().toISOString(), changefreq: 'daily', priority: '0.8' },
+            { url: `${baseUrl}/apk`, lastmod: new Date().toISOString(), changefreq: 'daily', priority: '0.8' },
+            { url: `${baseUrl}/ipa`, lastmod: new Date().toISOString(), changefreq: 'daily', priority: '0.8' },
+            { url: `${baseUrl}/games`, lastmod: new Date().toISOString(), changefreq: 'daily', priority: '0.8' },
             { url: `${baseUrl}/categories`, lastmod: new Date().toISOString(), changefreq: 'weekly', priority: '0.8' },
             { url: `${baseUrl}/contact`, lastmod: new Date().toISOString(), changefreq: 'monthly', priority: '0.5' },
             { url: `${baseUrl}/legal/terms`, lastmod: new Date().toISOString(), changefreq: 'yearly', priority: '0.3' },

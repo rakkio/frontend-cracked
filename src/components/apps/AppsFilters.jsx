@@ -6,10 +6,7 @@ import {
     FaFilter, 
     FaSort, 
     FaTimes,
-    FaChevronDown,
-    FaTerminal,
-    FaCode,
-    FaBolt
+    FaChevronDown
 } from 'react-icons/fa'
 
 export const AppsFilters = ({
@@ -33,211 +30,171 @@ export const AppsFilters = ({
     const activeFiltersCount = Object.values(filters).filter(Boolean).length
     
     return (
-        <section className="container mx-auto px-4 py-6">
-            {/* Metro UI Hacker Header */}
-            <div className="mb-6">
-                <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-3 h-3 bg-red-500 animate-pulse"></div>
-                    <h2 className="text-red-400 font-mono text-sm uppercase tracking-wider">
-                        [SYSTEM_FILTERS_ACTIVE]
-                    </h2>
-                    <div className="flex-1 h-px bg-gradient-to-r from-red-500/50 to-transparent"></div>
-                </div>
-                <p className="text-gray-400 font-mono text-xs">
-                    {totalApps} applications found in database
-                </p>
-            </div>
-
-            {/* Main Filter Panel */}
-            <div className="bg-black/80 border-2 border-red-500/30 rounded-none shadow-2xl shadow-red-500/10 backdrop-blur-sm">
-                {/* Header Bar */}
-                <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <FaTerminal className="text-white text-sm" />
-                        <span className="text-white font-mono text-sm font-bold">FILTER_CONSOLE.EXE</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    </div>
-                </div>
-
-                <div className="p-6 space-y-6">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+            <div className="container mx-auto px-4 py-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                    
                     {/* Search Bar */}
-                    <div className="relative">
-                        <div className="absolute left-0 top-0 w-full h-full bg-gradient-to-r from-red-500/10 to-transparent pointer-events-none"></div>
-                        <div className="relative flex items-center">
-                            <FaSearch className="absolute left-4 text-red-400 text-lg z-10" />
+                    <div className="flex-1 max-w-md">
+                        <div className="relative">
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="> SEARCH_APPLICATIONS..."
+                                placeholder="Search applications..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 bg-gray-900/50 border-2 border-red-500/30 text-white placeholder-red-300/50 focus:outline-none focus:border-red-400 focus:shadow-lg focus:shadow-red-500/20 font-mono text-lg transition-all duration-300"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                             {searchTerm && (
                                 <button
                                     onClick={() => setSearchTerm('')}
-                                    className="absolute right-4 text-red-400 hover:text-red-300 transition-colors z-10"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                 >
                                     <FaTimes />
                                 </button>
                             )}
                         </div>
-                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 via-red-400 to-red-500 opacity-50"></div>
                     </div>
 
-                    {/* Quick Actions Row */}
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        {/* View Mode */}
-                        <div className="flex items-center space-x-3">
-                            <span className="text-red-400 font-mono text-sm uppercase">VIEW:</span>
-                            <div className="flex bg-gray-900/50 border border-red-500/30 overflow-hidden">
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`p-3 transition-all duration-300 ${
-                                        viewMode === 'grid' 
-                                            ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' 
-                                            : 'text-red-300 hover:bg-red-500/20 hover:text-white'
-                                    }`}
-                                >
-                                    <FaTh />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`p-3 transition-all duration-300 ${
-                                        viewMode === 'list' 
-                                            ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' 
-                                            : 'text-red-300 hover:bg-red-500/20 hover:text-white'
-                                    }`}
-                                >
-                                    <FaList />
-                                </button>
-                            </div>
+                    {/* Category Filter */}
+                    <div className="flex items-center space-x-4">
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => handleCategoryChange(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                        >
+                            <option value="">All Categories</option>
+                            {categories.map((category , index) => (
+                                <option key={index} value={category.id}>
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Sort Dropdown */}
+                        <select
+                            value={`${sortBy}-${sortOrder}`}
+                            onChange={(e) => {
+                                const [field, order] = e.target.value.split('-')
+                                handleSortChange(field, order)
+                            }}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                        >
+                            <option value="name-asc">Name A-Z</option>
+                            <option value="name-desc">Name Z-A</option>
+                            <option value="downloads-desc">Most Downloaded</option>
+                            <option value="downloads-asc">Least Downloaded</option>
+                            <option value="rating-desc">Highest Rated</option>
+                            <option value="rating-asc">Lowest Rated</option>
+                            <option value="createdAt-desc">Newest First</option>
+                            <option value="createdAt-asc">Oldest First</option>
+                        </select>
+
+                        {/* View Mode Toggle */}
+                        <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`px-3 py-2 ${
+                                    viewMode === 'grid'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                                }`}
+                            >
+                                <FaTh />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`px-3 py-2 ${
+                                    viewMode === 'list'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                                }`}
+                            >
+                                <FaList />
+                            </button>
                         </div>
 
-                        {/* Advanced Toggle */}
+                        {/* Advanced Filters Toggle */}
                         <button
                             onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="flex items-center space-x-2 px-4 py-2 bg-gray-900/50 border border-red-500/30 text-red-300 hover:bg-red-500/20 hover:text-white transition-all duration-300 font-mono text-sm"
+                            className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                            <FaCode />
-                            <span>ADVANCED</span>
-                            <FaChevronDown className={`transform transition-transform ${
-                                showAdvanced ? 'rotate-180' : ''
-                            }`} />
+                            <FaFilter />
+                            <span>Filters</span>
+                            {activeFiltersCount > 0 && (
+                                <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                    {activeFiltersCount}
+                                </span>
+                            )}
+                            <FaChevronDown className={`transform transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
                         </button>
+                    </div>
+                </div>
 
-                        {/* Clear All */}
-                        {(searchTerm || selectedCategory || activeFiltersCount > 0) && (
-                            <button
-                                onClick={clearAllFilters}
-                                className="flex items-center space-x-2 px-4 py-2 bg-red-600/20 border border-red-500/50 text-red-300 hover:bg-red-600/40 hover:text-white transition-all duration-300 font-mono text-sm"
-                            >
-                                <FaTimes />
-                                <span>CLEAR_ALL</span>
-                            </button>
+                {/* Advanced Filters Panel */}
+                {showAdvanced && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Featured Filter */}
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.featured || false}
+                                    onChange={(e) => handleFilterChange('featured', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Featured Apps</span>
+                            </label>
+
+                            {/* Premium Filter */}
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.premium || false}
+                                    onChange={(e) => handleFilterChange('premium', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Premium Apps</span>
+                            </label>
+
+                            {/* New Apps Filter */}
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.new || false}
+                                    onChange={(e) => handleFilterChange('new', e.target.checked)}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">New Apps</span>
+                            </label>
+                        </div>
+
+                        {/* Clear Filters */}
+                        {activeFiltersCount > 0 && (
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    onClick={clearAllFilters}
+                                    className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                >
+                                    <FaTimes />
+                                    <span>Clear All Filters</span>
+                                </button>
+                            </div>
                         )}
                     </div>
+                )}
 
-                    {/* Advanced Filters */}
-                    {showAdvanced && (
-                        <div className="space-y-4 border-t border-red-500/20 pt-6">
-                            {/* Category Filter */}
-                            <div className="flex flex-col space-y-2">
-                                <label className="text-red-400 font-mono text-sm uppercase">CATEGORY_FILTER:</label>
-                                <select
-                                    value={selectedCategory}
-                                    onChange={(e) => handleCategoryChange(e.target.value)}
-                                    className="bg-gray-900/50 border-2 border-red-500/30 px-4 py-3 text-white focus:outline-none focus:border-red-400 font-mono transition-all duration-300"
-                                >
-                                    <option value="">ALL_CATEGORIES</option>
-                                    {categories.map(category => (
-                                        <option key={category._id} value={category._id}>
-                                            {category.name.toUpperCase()}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Quick Filters */}
-                            <div className="space-y-2">
-                                <label className="text-red-400 font-mono text-sm uppercase">QUICK_FILTERS:</label>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    {Object.entries({
-                                        featured: 'FEATURED',
-                                        popular: 'POPULAR',
-                                        newest: 'NEWEST',
-                                        topRated: 'TOP_RATED'
-                                    }).map(([key, label]) => (
-                                        <button
-                                            key={key}
-                                            onClick={() => handleFilterChange(key)}
-                                            className={`p-3 font-mono text-sm transition-all duration-300 border-2 ${
-                                                filters[key]
-                                                    ? 'bg-red-600 border-red-400 text-white shadow-lg shadow-red-500/30'
-                                                    : 'bg-gray-900/50 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-400 hover:text-white'
-                                            }`}
-                                        >
-                                            <div className="flex items-center justify-center space-x-2">
-                                                <FaBolt className="text-xs" />
-                                                <span>{label}</span>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Sort Options */}
-                            <div className="space-y-2">
-                                <label className="text-red-400 font-mono text-sm uppercase">SORT_ALGORITHM:</label>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    {[
-                                        { key: 'createdAt', label: 'DATE' },
-                                        { key: 'name', label: 'NAME' },
-                                        { key: 'downloads', label: 'DOWNLOADS' },
-                                        { key: 'rating', label: 'RATING' }
-                                    ].map(({ key, label }) => (
-                                        <button
-                                            key={key}
-                                            onClick={() => handleSortChange(key)}
-                                            className={`p-3 font-mono text-sm transition-all duration-300 border-2 ${
-                                                sortBy === key
-                                                    ? 'bg-red-600 border-red-400 text-white shadow-lg shadow-red-500/30'
-                                                    : 'bg-gray-900/50 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-400 hover:text-white'
-                                            }`}
-                                        >
-                                            <div className="flex items-center justify-center space-x-2">
-                                                <span>{label}</span>
-                                                {sortBy === key && (
-                                                    <FaSort className={`text-xs transform ${
-                                                        sortOrder === 'asc' ? 'rotate-180' : ''
-                                                    }`} />
-                                                )}
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                {/* Results Summary */}
+                <div className="mt-4 text-sm text-gray-600">
+                    {totalApps} applications found
+                    {selectedCategory && (
+                        <span> in {categories.find(c => c.id === selectedCategory)?.name}</span>
+                    )}
+                    {searchTerm && (
+                        <span> matching "{searchTerm}"</span>
                     )}
                 </div>
-
-                {/* Status Bar */}
-                <div className="bg-red-600/20 border-t border-red-500/30 px-4 py-2 flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-xs font-mono">
-                        <span className="text-red-400">STATUS:</span>
-                        <span className="text-green-400">ONLINE</span>
-                        <span className="text-red-400">FILTERS:</span>
-                        <span className="text-white">{activeFiltersCount}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-400 animate-pulse rounded-full"></div>
-                        <span className="text-green-400 text-xs font-mono">CONNECTED</span>
-                    </div>
-                </div>
             </div>
-        </section>
+        </div>
     )
 }

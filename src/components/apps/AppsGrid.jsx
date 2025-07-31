@@ -14,10 +14,10 @@ export const AppsGrid = ({ apps, viewMode, handleAppClick }) => {
     if (apps.length === 0) {
         return (
             <div className="container mx-auto px-4 py-16 text-center">
-                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/40 rounded-2xl p-12">
-                    <div className="text-6xl text-gray-600 mb-4">🔍</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">No Apps Found</h3>
-                    <p className="text-gray-400">Try adjusting your search criteria or filters</p>
+                <div className="bg-white shadow-xl border border-gray-200 rounded-3xl p-12 hover:shadow-2xl transition-all duration-300">
+                    <div className="text-6xl text-gray-400 mb-6">🔍</div>
+                    <h3 className="text-3xl font-bold text-gray-800 mb-3">No Apps Found</h3>
+                    <p className="text-gray-500 text-lg">Try adjusting your search criteria or filters</p>
                 </div>
             </div>
         )
@@ -25,7 +25,7 @@ export const AppsGrid = ({ apps, viewMode, handleAppClick }) => {
 
     return (
         <section className="container mx-auto px-4 py-8">
-            <div className={`grid gap-6 ${
+            <div className={`grid gap-8 ${
                 viewMode === 'grid' 
                     ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                     : 'grid-cols-1'
@@ -45,98 +45,101 @@ export const AppsGrid = ({ apps, viewMode, handleAppClick }) => {
 
 const AppCard = ({ app, viewMode, onClick }) => {
     const cardClasses = viewMode === 'list' 
-        ? 'flex items-center space-x-4 p-4'
-        : 'flex flex-col p-6'
+        ? 'flex items-center space-x-6 p-6'
+        : 'flex flex-col p-8'
 
     return (
         <div 
-            className={`bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/40 rounded-2xl hover:border-red-500/50 transition-all duration-300 cursor-pointer group hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20 ${cardClasses}`}
+            className={`bg-white shadow-lg hover:shadow-2xl border border-gray-200 hover:border-blue-300 transition-all duration-500 cursor-pointer group hover:scale-[1.02] rounded-2xl overflow-hidden backdrop-blur-sm ${cardClasses}`}
             onClick={onClick}
         >
             {/* App Icon */}
-            <div className={`relative ${viewMode === 'list' ? 'w-16 h-16' : 'w-20 h-20 mx-auto mb-4'} flex-shrink-0`}>
+            <div className={`relative ${
+                viewMode === 'list' ? 'w-20 h-20' : 'w-24 h-24 mx-auto mb-6'
+            } flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
                 <Image
                     src={app.images?.[0] || '/placeholder-app.png'}
                     alt={app.name}
                     fill
-                    className="rounded-xl object-cover"
-                    sizes={viewMode === 'list' ? '64px' : '80px'}
+                    className="rounded-2xl object-cover shadow-md"
+                    sizes={viewMode === 'list' ? '80px' : '96px'}
                 />
                 {app.isPremium && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                        <FaCrown className="text-xs text-white" />
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                        <FaCrown className="text-sm text-white" />
                     </div>
                 )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
 
             {/* App Info */}
             <div className={`${viewMode === 'list' ? 'flex-1' : 'text-center'}`}>
-                <h3 className={`font-bold text-white group-hover:text-red-400 transition-colors ${
-                    viewMode === 'list' ? 'text-lg' : 'text-xl mb-2'
+                <h3 className={`font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300 ${
+                    viewMode === 'list' ? 'text-xl' : 'text-2xl mb-3'
                 }`}>
                     {app.name}
                 </h3>
                 
-                <p className={`text-gray-400 mb-3 ${
-                    viewMode === 'list' ? 'text-sm' : 'text-sm'
+                <p className={`text-gray-500 mb-4 font-medium ${
+                    viewMode === 'list' ? 'text-base' : 'text-base'
                 }`}>
                     {app.developer}
                 </p>
 
                 {/* Stats - Only show real data */}
-                <div className={`flex items-center justify-center space-x-3 text-sm mb-3 ${
+                <div className={`flex items-center justify-center space-x-3 text-sm mb-4 ${
                     viewMode === 'list' ? 'justify-start' : ''
                 }`}>
                     {/* Only show rating if it exists and is greater than 0 */}
                     {app.rating > 0 && (
-                        <div className="flex items-center space-x-1 text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">
-                            <FaStar className="text-xs" />
-                            <span className="font-medium">{app.rating.toFixed(1)}</span>
+                        <div className="flex items-center space-x-2 text-yellow-600 bg-yellow-50 px-3 py-2 rounded-full border border-yellow-200 hover:bg-yellow-100 transition-colors duration-200">
+                            <FaStar className="text-sm" />
+                            <span className="font-semibold">{app.rating.toFixed(1)}</span>
                         </div>
                     )}
                     
                     {/* Show downloads if they exist and are greater than 0 */}
                     {(app.downloads > 0 || app.downloadCount > 0) && (
-                        <div className="flex items-center space-x-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
-                            <FaDownload className="text-xs" />
-                            <span className="font-medium">{formatNumber(app.downloads || app.downloadCount)}</span>
+                        <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-3 py-2 rounded-full border border-green-200 hover:bg-green-100 transition-colors duration-200">
+                            <FaDownload className="text-sm" />
+                            <span className="font-semibold">{formatNumber(app.downloads || app.downloadCount)}</span>
                         </div>
                     )}
                     
                     {/* Show reviews count if it exists */}
                     {app.reviewsCount > 0 && (
-                        <div className="flex items-center space-x-1 text-purple-400 bg-purple-400/10 px-2 py-1 rounded-full">
-                            <FaHeart className="text-xs" />
-                            <span className="font-medium">{app.reviewsCount}</span>
+                        <div className="flex items-center space-x-2 text-pink-600 bg-pink-50 px-3 py-2 rounded-full border border-pink-200 hover:bg-pink-100 transition-colors duration-200">
+                            <FaHeart className="text-sm" />
+                            <span className="font-semibold">{app.reviewsCount}</span>
                         </div>
                     )}
                 </div>
 
                 {/* Badges for special apps */}
-                <div className={`flex items-center justify-center space-x-2 mb-3 ${
+                <div className={`flex items-center justify-center space-x-2 mb-4 flex-wrap gap-2 ${
                     viewMode === 'list' ? 'justify-start' : ''
                 }`}>
                     {app.isFeatured && (
-                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30">
-                            <FaCrown className="text-xs" />
+                        <span className="inline-flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-full text-sm font-semibold border border-red-200 hover:from-red-100 hover:to-red-200 transition-all duration-200">
+                            <FaCrown className="text-sm" />
                             <span>Featured</span>
                         </span>
                     )}
                     {app.isHot && (
-                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-400 rounded-full text-xs font-medium border border-orange-500/30">
-                            <FaFire className="text-xs" />
+                        <span className="inline-flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-orange-50 to-red-50 text-orange-600 rounded-full text-sm font-semibold border border-orange-200 hover:from-orange-100 hover:to-red-100 transition-all duration-200">
+                            <FaFire className="text-sm" />
                             <span>Hot</span>
                         </span>
                     )}
                     {app.isNewApp && (
-                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 rounded-full text-xs font-medium border border-blue-500/30">
-                            <FaClock className="text-xs" />
+                        <span className="inline-flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 rounded-full text-sm font-semibold border border-blue-200 hover:from-blue-100 hover:to-cyan-100 transition-all duration-200">
+                            <FaClock className="text-sm" />
                             <span>New</span>
                         </span>
                     )}
                     {app.isPremium && (
-                        <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-400 rounded-full text-xs font-medium border border-yellow-500/30">
-                            <FaGem className="text-xs" />
+                        <span className="inline-flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-600 rounded-full text-sm font-semibold border border-yellow-200 hover:from-yellow-100 hover:to-yellow-200 transition-all duration-200">
+                            <FaGem className="text-sm" />
                             <span>Premium</span>
                         </span>
                     )}
@@ -144,10 +147,10 @@ const AppCard = ({ app, viewMode, onClick }) => {
 
                 {/* Category */}
                 {app.category && (
-                    <div className={`${
+                    <div className={`mb-3 ${
                         viewMode === 'list' ? 'text-left' : 'text-center'
                     }`}>
-                        <span className="inline-block px-3 py-1 bg-gray-700/50 text-gray-300 rounded-lg text-xs font-medium border border-gray-600/50 hover:bg-gray-600/50 transition-colors">
+                        <span className="inline-block px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold border border-gray-200 hover:bg-gray-200 hover:text-gray-800 transition-all duration-200 cursor-pointer">
                             {app.category.name}
                         </span>
                     </div>
@@ -155,10 +158,10 @@ const AppCard = ({ app, viewMode, onClick }) => {
                 
                 {/* Version info */}
                 {app.version && (
-                    <div className={`mt-2 ${
+                    <div className={`${
                         viewMode === 'list' ? 'text-left' : 'text-center'
                     }`}>
-                        <span className="text-xs text-gray-500 font-mono">
+                        <span className="text-sm text-gray-400 font-mono bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
                             v{app.version}
                         </span>
                     </div>

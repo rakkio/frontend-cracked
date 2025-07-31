@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { FaSearch, FaLightbulb, FaTrendingUp } from 'react-icons/fa'
+import { FaSearch, FaLightbulb, FaChartLine } from 'react-icons/fa'
 
 export default function SearchSuggestions({ searchQuery, onSuggestionClick }) {
     // Generate suggestions based on search query

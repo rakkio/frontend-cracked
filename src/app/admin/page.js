@@ -22,7 +22,10 @@ import {
   FaTachometerAlt,
   FaBullhorn,
   FaImage,
-  FaMousePointer
+  FaMousePointer,
+  FaAndroid,
+  FaApple,
+  FaGamepad
 } from 'react-icons/fa'
 
 export default function AdminDashboard() {
@@ -161,6 +164,62 @@ export default function AdminDashboard() {
                             </div>
                             <div className="text-right">
                                 <div className="text-white text-lg sm:text-xl lg:text-2xl font-light">{stats.overview?.contentHealth || 0}%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* New Content Modules - Windows Phone Style */}
+                    <div className="mb-6">
+                        <h2 className="text-xl sm:text-2xl font-extralight text-white mb-1 tracking-wide">content</h2>
+                        <h3 className="text-base sm:text-lg font-light text-blue-400 mb-4 sm:mb-6">modules</h3>
+                        
+                        <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 gap-2 auto-rows-[120px] sm:auto-rows-[140px]">
+                            {/* APK Management Tile */}
+                            <div 
+                                onClick={() => router.push('/admin/apk')}
+                                className="col-span-2 sm:col-span-4 lg:col-span-4 bg-green-600 hover:bg-green-500 p-3 sm:p-4 cursor-pointer transition-all duration-200 transform hover:scale-[1.02] flex flex-col justify-between"
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <div>
+                                    <FaAndroid className="text-xl sm:text-2xl lg:text-3xl text-white mb-2 sm:mb-3 opacity-90" />
+                                    <h3 className="text-white text-sm sm:text-base lg:text-lg font-light">android apk</h3>
+                                    <p className="text-green-100 text-xs sm:text-sm font-light">manage apks</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-green-200 text-sm font-light">→</span>
+                                </div>
+                            </div>
+
+                            {/* IPA Management Tile */}
+                            <div 
+                                onClick={() => router.push('/admin/ipa')}
+                                className="col-span-2 sm:col-span-4 lg:col-span-4 bg-gray-600 hover:bg-gray-500 p-3 sm:p-4 cursor-pointer transition-all duration-200 transform hover:scale-[1.02] flex flex-col justify-between"
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <div>
+                                    <FaApple className="text-xl sm:text-2xl lg:text-3xl text-white mb-2 sm:mb-3 opacity-90" />
+                                    <h3 className="text-white text-sm sm:text-base lg:text-lg font-light">ios ipa</h3>
+                                    <p className="text-gray-100 text-xs sm:text-sm font-light">manage ipas</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-gray-200 text-sm font-light">→</span>
+                                </div>
+                            </div>
+
+                            {/* Games Management Tile */}
+                            <div 
+                                onClick={() => router.push('/admin/games')}
+                                className="col-span-2 sm:col-span-4 lg:col-span-4 bg-purple-600 hover:bg-purple-500 p-3 sm:p-4 cursor-pointer transition-all duration-200 transform hover:scale-[1.02] flex flex-col justify-between"
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <div>
+                                    <FaGamepad className="text-xl sm:text-2xl lg:text-3xl text-white mb-2 sm:mb-3 opacity-90" />
+                                    <h3 className="text-white text-sm sm:text-base lg:text-lg font-light">pc games</h3>
+                                    <p className="text-purple-100 text-xs sm:text-sm font-light">manage games</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-purple-200 text-sm font-light">→</span>
+                                </div>
                             </div>
                         </div>
                     </div>

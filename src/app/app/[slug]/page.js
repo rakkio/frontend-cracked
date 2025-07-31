@@ -1,13 +1,9 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { api } from '@/lib/api'
-import AppSEO from '@/components/app/AppSEO'
-import AppBreadcrumb from '@/components/app/AppBreadcrumb'
-import AppHeader from '@/components/app/AppHeader'
-import AppDescription from '@/components/app/AppDescription'
-import AppScreenshots from '@/components/app/AppScreenshots'
-import AppSystemRequirements from '@/components/app/AppSystemRequirements'
-import AppSidebar from '@/components/app/AppSidebar'
+import { FaDownload, FaStar, FaEye, FaHeart, FaShare, FaShieldAlt, FaWindows, FaApple, FaLinux } from 'react-icons/fa'
+import { HiOutlineDownload } from 'react-icons/hi'
+import { BiCategory } from 'react-icons/bi'
 import AppLoading from '@/components/app/AppLoading'
 import AppPageClient from './AppPageClient'
 
@@ -149,58 +145,328 @@ async function AppContent({ slug }) {
 
     const { app, relatedApps } = data
 
+    // Format numbers
+    const formatNumber = (num) => {
+        if (!num || num === 0) return '0'
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
+        return num.toString()
+    }
+
+    // Get platform icon
+    const getPlatformIcon = (platforms) => {
+        if (!platforms || platforms.length === 0) return null
+        const platform = platforms[0].toLowerCase()
+        if (platform.includes('windows')) return <FaWindows className="text-blue-500" />
+        if (platform.includes('mac')) return <FaApple className="text-gray-600" />
+        if (platform.includes('linux')) return <FaLinux className="text-orange-500" />
+        return <FaWindows className="text-blue-500" />
+    }
+
     return (
         <>
-            <AppSEO app={app} />
-            <main className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-blue-900">
+            <main className="w-full min-h-screen bg-white relative overflow-x-hidden">
+                {/* Breadcrumb */}
+                <div className="bg-gray-50 border-b border-gray-200">
+                    <div className="container mx-auto px-4 py-3">
+                        <nav className="flex items-center space-x-2 text-sm text-gray-600">
+                            <a href="/" className="hover:text-blue-600 transition-colors">Home</a>
+                            <span>/</span>
+                            <a href="/apps" className="hover:text-blue-600 transition-colors">Apps</a>
+                            <span>/</span>
+                            <span className="text-gray-900 font-medium">{app.name}</span>
+                        </nav>
+                    </div>
+                </div>
+
                 <div className="container mx-auto px-4 py-8">
-                    <AppBreadcrumb app={app} />
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-                        <div className="lg:col-span-2 space-y-8">
-                            <AppHeader app={app} />
-                            <AppDescription app={app} />
-                            <AppScreenshots app={app} />
-                            <AppSystemRequirements app={app} />
+                    {/* Hero Section */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
+                            {/* App Icon */}
+                            <div className="flex-shrink-0">
+                                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl">
+                                    {app.icon ? (
+                                        <img 
+                                            src={app.icon} 
+                                            alt={app.name}
+                                            className="w-28 h-28 rounded-2xl object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-4xl font-bold text-white">
+                                            {app.name.charAt(0)}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* App Info */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h1 className="text-3xl font-bold text-gray-900 truncate">{app.name}</h1>
+                                    {getPlatformIcon(app.platforms)}
+                                </div>
+                                
+                                <div className="flex items-center gap-4 mb-4">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <BiCategory className="w-4 h-4 mr-1" />
+                                        {app.category?.name || 'Software'}
+                                    </span>
+                                    {app.isPremium && (
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                            Premium
+                                        </span>
+                                    )}
+                                </div>
+
+                                <p className="text-gray-600 text-lg mb-6 line-clamp-2">
+                                    {app.shortDescription || app.description}
+                                </p>
+
+                                {/* Rating */}
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center">
+                                            {[...Array(5)].map((_, i) => (
+                                                <FaStar 
+                                                    key={i} 
+                                                    className={`w-5 h-5 ${
+                                                        i < Math.floor(app.rating || 4.5) 
+                                                            ? 'text-yellow-400' 
+                                                            : 'text-gray-300'
+                                                    }`} 
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="text-lg font-semibold text-gray-900">
+                                            {app.rating || '4.5'}
+                                        </span>
+                                        <span className="text-gray-500">
+                                            ({formatNumber(app.reviewsCount || 90)} reviews)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Download Button */}
+                            <div className="flex-shrink-0">
+                                <button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-3">
+                                    <HiOutlineDownload className="w-6 h-6" />
+                                    Get Latest Version
+                                </button>
+                                
+                                <div className="flex items-center justify-center gap-4 mt-4">
+                                    <button className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                                        <FaHeart className="w-5 h-5 text-gray-600" />
+                                    </button>
+                                    <button className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                                        <FaShare className="w-5 h-5 text-gray-600" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div className="lg:col-span-1">
-                            <Suspense fallback={<div className="animate-pulse bg-gray-800 rounded-lg h-96"></div>}>
-                                <AppSidebar 
-                                    app={app} 
-                                    relatedApps={relatedApps}
-                                />
-                            </Suspense>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 text-center">
+                            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <FaDownload className="w-6 h-6 text-green-600" />
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900 mb-1">
+                                {formatNumber(app.downloads || app.downloadCount || 2300)}
+                            </div>
+                            <div className="text-sm text-gray-500">Downloads</div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 text-center">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <FaShieldAlt className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900 mb-1">
+                                {app.version || '1.0.0'}
+                            </div>
+                            <div className="text-sm text-gray-500">Version</div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 text-center">
+                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <FaEye className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900 mb-1">
+                                {app.size || '150 MB'}
+                            </div>
+                            <div className="text-sm text-gray-500">Size</div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 text-center">
+                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <FaStar className="w-6 h-6 text-orange-600" />
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900 mb-1">
+                                {new Date(app.updatedAt || app.createdAt).toLocaleDateString()}
+                            </div>
+                            <div className="text-sm text-gray-500">Updated</div>
                         </div>
                     </div>
-                    
-                    {/* Client-side interactive components */}
-                    <AppPageClient app={app} relatedApps={relatedApps} />
-                </div>
-                
-                {/* Structured Data for SEO */}
-                <div 
-                    itemScope 
-                    itemType="https://schema.org/SoftwareApplication" 
-                    style={{ display: 'none' }}
-                >
-                    <meta itemProp="name" content={app.name} />
-                    <meta itemProp="description" content={app.description} />
-                    <meta itemProp="applicationCategory" content={app.category?.name || 'Software'} />
-                    <meta itemProp="operatingSystem" content="Windows" />
-                    <meta itemProp="url" content={`https://appscracked.com/app/${app.slug}`} />
-                    <meta itemProp="downloadUrl" content={`https://appscracked.com/app/${app.slug}`} />
-                    <div itemProp="offers" itemScope itemType="https://schema.org/Offer">
-                        <meta itemProp="price" content="0.00" />
-                        <meta itemProp="priceCurrency" content="USD" />
-                        <meta itemProp="availability" content="https://schema.org/InStock" />
+
+                    {/* Tabs Section */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-8">
+                        <div className="border-b border-gray-200">
+                            <nav className="flex space-x-8 px-8">
+                                <button className="py-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm">
+                                    Overview
+                                </button>
+                                <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm">
+                                    Screenshots
+                                </button>
+                                <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm">
+                                    System Requirements
+                                </button>
+                                <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm">
+                                    Reviews
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div className="p-8">
+                            {/* Description */}
+                            <div className="mb-8">
+                                <h3 className="text-xl font-semibold text-gray-900 mb-4">About this app</h3>
+                                <div className="prose max-w-none text-gray-600">
+                                    <p>{app.description}</p>
+                                </div>
+                            </div>
+
+                            {/* Screenshots */}
+                            {app.images && app.images.length > 0 && (
+                                <div className="mb-8">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Screenshots</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {app.images.slice(0, 6).map((image, index) => (
+                                            <div key={index} className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                                                <img 
+                                                    src={image} 
+                                                    alt={`${app.name} screenshot ${index + 1}`}
+                                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* System Requirements */}
+                            <div className="mb-8">
+                                <h3 className="text-xl font-semibold text-gray-900 mb-4">System Requirements</h3>
+                                <div className="bg-gray-50 rounded-lg p-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <h4 className="font-medium text-gray-900 mb-2">Minimum Requirements</h4>
+                                            <ul className="space-y-2 text-sm text-gray-600">
+                                                <li>• OS: Windows 10 or later</li>
+                                                <li>• Processor: Intel Core i3 or equivalent</li>
+                                                <li>• Memory: 4 GB RAM</li>
+                                                <li>• Storage: {app.size || '150 MB'} available space</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium text-gray-900 mb-2">Recommended</h4>
+                                            <ul className="space-y-2 text-sm text-gray-600">
+                                                <li>• OS: Windows 11</li>
+                                                <li>• Processor: Intel Core i5 or equivalent</li>
+                                                <li>• Memory: 8 GB RAM</li>
+                                                <li>• Graphics: DirectX 11 compatible</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div itemProp="publisher" itemScope itemType="https://schema.org/Organization">
-                        <meta itemProp="name" content="AppsCracked" />
-                        <meta itemProp="url" content="https://appscracked.com" />
-                    </div>
+
+                    {/* Related Apps */}
+                    {relatedApps && relatedApps.length > 0 && (
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-6">Similar Apps</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {relatedApps.slice(0, 6).map((relatedApp) => (
+                                    <div key={relatedApp._id} className="group cursor-pointer">
+                                        <div className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-gray-200">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                    {relatedApp.icon ? (
+                                                        <img 
+                                                            src={relatedApp.icon} 
+                                                            alt={relatedApp.name}
+                                                            className="w-10 h-10 rounded-lg object-cover"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-lg font-bold text-white">
+                                                            {relatedApp.name.charAt(0)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                                                        {relatedApp.name}
+                                                    </h4>
+                                                    <p className="text-sm text-gray-500">
+                                                        {relatedApp.category?.name || 'Software'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-1">
+                                                    <FaStar className="w-4 h-4 text-yellow-400" />
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        {relatedApp.rating || '4.5'}
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    {formatNumber(relatedApp.downloads || relatedApp.downloadCount || 1200)} downloads
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
+
+                {/* Client-side interactive components */}
+                <AppPageClient app={app} relatedApps={relatedApps} />
             </main>
+                
+            {/* Structured Data for SEO */}
+            <script 
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": app.name,
+                        "description": app.description,
+                        "applicationCategory": app.category?.name || 'Software',
+                        "operatingSystem": "Windows",
+                        "url": `https://crackmarket.xyz/app/${app.slug}`,
+                        "downloadUrl": `https://crackmarket.xyz/app/${app.slug}`,
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0.00",
+                            "priceCurrency": "USD",
+                            "availability": "https://schema.org/InStock"
+                        },
+                        "publisher": {
+                            "@type": "Organization",
+                            "name": "CrackMarket",
+                            "url": "https://crackmarket.xyz"
+                        }
+                    })
+                }}
+            />
         </>
     )
 }

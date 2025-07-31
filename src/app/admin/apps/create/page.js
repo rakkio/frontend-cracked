@@ -5,21 +5,55 @@ import { useRouter } from 'next/navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { api } from '@/lib/api'
 import RichTextEditor from '@/components/RichTextEditor'
-import { FaSave, FaArrowLeft, FaPlus, FaTrash, FaWindows, FaApple, FaLinux, FaAndroid, FaDownload } from 'react-icons/fa'
+import AIGenerator from '@/components/admin/AIGenerator'
+import { FaSave, FaArrowLeft, FaPlus, FaTrash, FaWindows, FaApple, FaLinux, FaAndroid, FaDownload, FaRobot } from 'react-icons/fa'
 
 export default function CreateApp() {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
+        shortDescription: '',
         category: '',
         version: '',
         size: '',
-        developer: ''
+        developer: '',
+        publisher: '',
+        platforms: ['Windows'],
+        packageName: '',
+        minVersion: '',
+        targetVersion: '',
+        architecture: [],
+        permissions: [],
+        modFeatures: [],
+        originalPrice: 0,
+        tags: [],
+        rating: 0,
+        downloads: 0,
+        reviewsCount: 0,
+        instructions: '',
+        isPremium: false,
+        isHot: false,
+        isFeatured: false,
+        crackInfo: {
+            crackGroup: '',
+            crackDate: '',
+            crackNotes: ''
+        },
+        systemRequirements: {
+            minimum: {
+                os: '',
+                processor: '',
+                memory: '',
+                graphics: '',
+                storage: ''
+            }
+        }
     })
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(false)
     const [images, setImages] = useState([])
     const [downloadLinks, setDownloadLinks] = useState([])
+    const [showAIGenerator, setShowAIGenerator] = useState(false)
 
     const router = useRouter()
 
@@ -37,10 +71,55 @@ export default function CreateApp() {
 
     const fetchCategories = async () => {
         try {
-            const response = await api.getCategories()
-            setCategories(response.categories)
+            // Primero intentar crear las categorías básicas si no existen
+            try {
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.crackmarket.xyz'}/api/v1/apps/create-categories`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
+            } catch (error) {
+                console.log('Categories may already exist:', error)
+            }
+            
+            // Luego obtener todas las categorías
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.crackmarket.xyz'}/api/v1/categories`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            
+            if (response.ok) {
+                const data = await response.json()
+                setCategories(data.categories || data.data || [])
+            } else {
+                console.error('Failed to fetch categories')
+                // Fallback: usar categorías predefinidas
+                setCategories([
+                    { _id: 'productivity', name: 'Productivity' },
+                    { _id: 'entertainment', name: 'Entertainment' },
+                    { _id: 'games', name: 'Games' },
+                    { _id: 'social', name: 'Social' },
+                    { _id: 'photography', name: 'Photography' },
+                    { _id: 'music', name: 'Music' },
+                    { _id: 'utilities', name: 'Utilities' },
+                    { _id: 'education', name: 'Education' }
+                ])
+            }
         } catch (error) {
             console.error('Error fetching categories:', error)
+            // Fallback: usar categorías predefinidas
+            setCategories([
+                { _id: 'productivity', name: 'Productivity' },
+                { _id: 'entertainment', name: 'Entertainment' },
+                { _id: 'games', name: 'Games' },
+                { _id: 'social', name: 'Social' },
+                { _id: 'photography', name: 'Photography' },
+                { _id: 'music', name: 'Music' },
+                { _id: 'utilities', name: 'Utilities' },
+                { _id: 'education', name: 'Education' }
+            ])
         }
     }
 
@@ -66,6 +145,97 @@ export default function CreateApp() {
         }
     }
 
+    // Handle checkbox changes
+    const handleCheckboxChange = (e) => {
+        const { name, checked } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: checked
+        }))
+    }
+
+    // Handle array fields (tags, platforms, architecture, permissions, modFeatures)
+    const handleArrayChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }))
+    }
+
+    // Handle nested object changes (crackInfo, systemRequirements)
+    const handleNestedChange = (parentField, childField, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [parentField]: {
+                ...prev[parentField],
+                [childField]: value
+            }
+        }))
+    }
+
+    // Handle system requirements nested changes
+    const handleSystemReqChange = (level, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            systemRequirements: {
+                ...prev.systemRequirements,
+                [level]: {
+                    ...prev.systemRequirements[level],
+                    [field]: value
+                }
+            }
+        }))
+    }
+
+    // Apply AI generated data to form
+    const applyAIData = (aiData) => {
+        setFormData({
+            name: aiData.name || '',
+            description: aiData.description || '',
+            shortDescription: aiData.shortDescription || '',
+            category: aiData.category || '',
+            version: aiData.version || '',
+            size: aiData.size || '',
+            developer: aiData.developer || '',
+            publisher: aiData.publisher || '',
+            platforms: aiData.platforms || ['Windows'],
+            packageName: aiData.packageName || '',
+            minVersion: aiData.minVersion || '',
+            targetVersion: aiData.targetVersion || '',
+            architecture: aiData.architecture || [],
+            permissions: aiData.permissions || [],
+            modFeatures: aiData.modFeatures || [],
+            originalPrice: aiData.originalPrice || 0,
+            tags: aiData.tags || [],
+            rating: aiData.rating || 0,
+            downloads: aiData.downloads || 0,
+            reviewsCount: aiData.reviewsCount || 0,
+            instructions: aiData.instructions || '',
+            isPremium: aiData.isPremium || false,
+            isHot: aiData.isHot || false,
+            isFeatured: aiData.featured || aiData.isFeatured || false,
+            crackInfo: aiData.crackInfo || {
+                crackGroup: '',
+                crackDate: '',
+                crackNotes: ''
+            },
+            systemRequirements: aiData.systemRequirements || {
+                minimum: {
+                    os: '',
+                    processor: '',
+                    memory: '',
+                    graphics: '',
+                    storage: ''
+                }
+            }
+        })
+
+        // Also update download links if provided
+        if (aiData.downloadLinks && Array.isArray(aiData.downloadLinks)) {
+            setDownloadLinks(aiData.downloadLinks)
+        }
+    }
+
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files)
         setImages(files)
@@ -87,6 +257,14 @@ export default function CreateApp() {
         setDownloadLinks(prev => prev.map((link, i) => 
             i === index ? { ...link, [field]: value } : link
         ))
+    }
+
+    const handleAIDataApply = (aiData) => {
+        if (aiData) {
+            applyAIData(aiData)
+            setShowAIGenerator(false)
+            alert('AI data has been applied to the form!')
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -159,22 +337,36 @@ export default function CreateApp() {
         try {
             const formDataToSend = new FormData()
             
-            // Append basic fields
-            Object.keys(formData).forEach(key => {
-                formDataToSend.append(key, formData[key])
+            // Append basic string fields
+            const basicFields = ['name', 'description', 'shortDescription', 'category', 'version', 'size', 'developer', 'publisher', 'packageName', 'minVersion', 'targetVersion', 'instructions']
+            basicFields.forEach(field => {
+                if (formData[field]) {
+                    formDataToSend.append(field, formData[field])
+                }
             })
 
-            // Append default boolean values
-            formDataToSend.append('isPremium', 'false')
-            formDataToSend.append('isHot', 'false')
-            formDataToSend.append('isFeatured', 'false')
-            formDataToSend.append('isActive', 'true')
+            // Append numeric fields
+            formDataToSend.append('originalPrice', formData.originalPrice || 0)
+            formDataToSend.append('rating', formData.rating || 0)
+            formDataToSend.append('downloads', formData.downloads || 0)
+            formDataToSend.append('reviewsCount', formData.reviewsCount || 0)
 
-            // Append empty tags array
-            formDataToSend.append('tags', '[]')
+            // Append boolean fields
+            formDataToSend.append('isPremium', formData.isPremium || false)
+            formDataToSend.append('isHot', formData.isHot || false)
+            formDataToSend.append('isFeatured', formData.isFeatured || false)
+            formDataToSend.append('isActive', true)
 
-            // Append empty system requirements
-            formDataToSend.append('systemRequirements', '{}')
+            // Append array fields as JSON
+            formDataToSend.append('platforms', JSON.stringify(formData.platforms || ['Windows']))
+            formDataToSend.append('architecture', JSON.stringify(formData.architecture || []))
+            formDataToSend.append('permissions', JSON.stringify(formData.permissions.filter(p => p.trim() !== '') || []))
+            formDataToSend.append('modFeatures', JSON.stringify(formData.modFeatures.filter(f => f.trim() !== '') || []))
+            formDataToSend.append('tags', JSON.stringify(formData.tags.filter(t => t.trim() !== '') || []))
+
+            // Append nested objects as JSON
+            formDataToSend.append('crackInfo', JSON.stringify(formData.crackInfo || {}))
+            formDataToSend.append('systemRequirements', JSON.stringify(formData.systemRequirements || {}))
 
             // Append download links as JSON
             formDataToSend.append('downloadLinks', JSON.stringify(downloadLinks))
@@ -215,6 +407,14 @@ export default function CreateApp() {
                             <h1 className="text-3xl font-bold text-white mb-2">Create New App</h1>
                             <p className="text-gray-400">Add a new application to the marketplace</p>
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowAIGenerator(true)}
+                            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            <FaRobot className="text-lg" />
+                            <span>Generate with AI</span>
+                        </button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
@@ -324,6 +524,128 @@ export default function CreateApp() {
                                 </p>
                             </div>
 
+                            {/* Additional Basic Fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Publisher
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="publisher"
+                                        value={formData.publisher}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="Enter publisher name"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Package Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="packageName"
+                                        value={formData.packageName}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="e.g., com.example.app"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Min Version
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="minVersion"
+                                        value={formData.minVersion}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="e.g., Windows 10, Android 8.0"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Target Version
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="targetVersion"
+                                        value={formData.targetVersion}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="e.g., Windows 11, Android 14"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Original Price ($)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="originalPrice"
+                                        value={formData.originalPrice}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                        step="0.01"
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Rating (0-5)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="rating"
+                                        value={formData.rating}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                        max="5"
+                                        step="0.1"
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="4.5"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Short Description */}
+                            <div className="mt-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Short Description
+                                </label>
+                                <textarea
+                                    name="shortDescription"
+                                    value={formData.shortDescription}
+                                    onChange={handleInputChange}
+                                    rows={3}
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Brief description for app cards and previews"
+                                />
+                            </div>
+
+                            {/* Instructions */}
+                            <div className="mt-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Installation Instructions
+                                </label>
+                                <textarea
+                                    name="instructions"
+                                    value={formData.instructions}
+                                    onChange={handleInputChange}
+                                    rows={4}
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Step-by-step installation instructions"
+                                />
+                            </div>
+
                             <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
                                     App Images
@@ -343,6 +665,109 @@ export default function CreateApp() {
                                         <p className="text-green-400 text-sm">{images.length} image(s) selected</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Platforms and Configuration */}
+                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <h3 className="text-xl font-semibold text-white mb-6">Platforms & Configuration</h3>
+                            
+                            {/* Platforms */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-3">
+                                    Supported Platforms
+                                </label>
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                    {platformOptions.map(platform => (
+                                        <label key={platform.value} className="flex items-center space-x-2 p-3 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.platforms.includes(platform.value)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        handleArrayChange('platforms', [...formData.platforms, platform.value])
+                                                    } else {
+                                                        handleArrayChange('platforms', formData.platforms.filter(p => p !== platform.value))
+                                                    }
+                                                }}
+                                                className="text-red-500"
+                                            />
+                                            <platform.icon className="text-lg" />
+                                            <span className="text-sm text-gray-300">{platform.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Architecture */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-3">
+                                    Architecture Support
+                                </label>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {['x86', 'x64', 'arm64', 'arm64-v8a', 'armeabi-v7a'].map(arch => (
+                                        <label key={arch} className="flex items-center space-x-2 p-3 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.architecture.includes(arch)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        handleArrayChange('architecture', [...formData.architecture, arch])
+                                                    } else {
+                                                        handleArrayChange('architecture', formData.architecture.filter(a => a !== arch))
+                                                    }
+                                                }}
+                                                className="text-red-500"
+                                            />
+                                            <span className="text-sm text-gray-300">{arch}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* App Flags */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <label className="flex items-center space-x-3 p-4 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="isPremium"
+                                        checked={formData.isPremium}
+                                        onChange={handleCheckboxChange}
+                                        className="text-red-500 scale-125"
+                                    />
+                                    <div>
+                                        <span className="text-white font-medium">Premium App</span>
+                                        <p className="text-gray-400 text-xs">Mark as premium/paid app</p>
+                                    </div>
+                                </label>
+
+                                <label className="flex items-center space-x-3 p-4 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="isHot"
+                                        checked={formData.isHot}
+                                        onChange={handleCheckboxChange}
+                                        className="text-red-500 scale-125"
+                                    />
+                                    <div>
+                                        <span className="text-white font-medium">Hot/Trending</span>
+                                        <p className="text-gray-400 text-xs">Mark as hot or trending</p>
+                                    </div>
+                                </label>
+
+                                <label className="flex items-center space-x-3 p-4 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="isFeatured"
+                                        checked={formData.isFeatured}
+                                        onChange={handleCheckboxChange}
+                                        className="text-red-500 scale-125"
+                                    />
+                                    <div>
+                                        <span className="text-white font-medium">Featured</span>
+                                        <p className="text-gray-400 text-xs">Show in featured section</p>
+                                    </div>
+                                </label>
                             </div>
                         </div>
 
@@ -446,6 +871,258 @@ export default function CreateApp() {
                             )}
                         </div>
 
+                        {/* Permissions and Features */}
+                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <h3 className="text-xl font-semibold text-white mb-6">Permissions & Features</h3>
+                            
+                            {/* Permissions */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-3">
+                                    Required Permissions
+                                </label>
+                                <div className="space-y-2">
+                                    {formData.permissions.map((permission, index) => (
+                                        <div key={index} className="flex items-center space-x-2">
+                                            <input
+                                                type="text"
+                                                value={permission}
+                                                onChange={(e) => {
+                                                    const newPermissions = [...formData.permissions]
+                                                    newPermissions[index] = e.target.value
+                                                    handleArrayChange('permissions', newPermissions)
+                                                }}
+                                                className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                placeholder="e.g., INTERNET, CAMERA, STORAGE"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newPermissions = formData.permissions.filter((_, i) => i !== index)
+                                                    handleArrayChange('permissions', newPermissions)
+                                                }}
+                                                className="text-red-400 hover:text-red-300 p-2"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleArrayChange('permissions', [...formData.permissions, ''])}
+                                        className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
+                                    >
+                                        <FaPlus />
+                                        <span>Add Permission</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Mod Features */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-3">
+                                    Mod Features (for cracked apps)
+                                </label>
+                                <div className="space-y-2">
+                                    {formData.modFeatures.map((feature, index) => (
+                                        <div key={index} className="flex items-center space-x-2">
+                                            <input
+                                                type="text"
+                                                value={feature}
+                                                onChange={(e) => {
+                                                    const newFeatures = [...formData.modFeatures]
+                                                    newFeatures[index] = e.target.value
+                                                    handleArrayChange('modFeatures', newFeatures)
+                                                }}
+                                                className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                placeholder="e.g., Premium Unlocked, Ad-Free, All Features Unlocked"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newFeatures = formData.modFeatures.filter((_, i) => i !== index)
+                                                    handleArrayChange('modFeatures', newFeatures)
+                                                }}
+                                                className="text-red-400 hover:text-red-300 p-2"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleArrayChange('modFeatures', [...formData.modFeatures, ''])}
+                                        className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
+                                    >
+                                        <FaPlus />
+                                        <span>Add Mod Feature</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Tags */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-3">
+                                    Tags
+                                </label>
+                                <div className="space-y-2">
+                                    {formData.tags.map((tag, index) => (
+                                        <div key={index} className="flex items-center space-x-2">
+                                            <input
+                                                type="text"
+                                                value={tag}
+                                                onChange={(e) => {
+                                                    const newTags = [...formData.tags]
+                                                    newTags[index] = e.target.value
+                                                    handleArrayChange('tags', newTags)
+                                                }}
+                                                className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                                placeholder="e.g., productivity, photo-editor, gaming"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newTags = formData.tags.filter((_, i) => i !== index)
+                                                    handleArrayChange('tags', newTags)
+                                                }}
+                                                className="text-red-400 hover:text-red-300 p-2"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleArrayChange('tags', [...formData.tags, ''])}
+                                        className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
+                                    >
+                                        <FaPlus />
+                                        <span>Add Tag</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Crack Information */}
+                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <h3 className="text-xl font-semibold text-white mb-6">Crack Information</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Crack Group
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.crackInfo.crackGroup}
+                                        onChange={(e) => handleNestedChange('crackInfo', 'crackGroup', e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        placeholder="e.g., CODEX, PLAZA, FitGirl"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Crack Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={formData.crackInfo.crackDate}
+                                        onChange={(e) => handleNestedChange('crackInfo', 'crackDate', e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-6">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Crack Notes
+                                </label>
+                                <textarea
+                                    value={formData.crackInfo.crackNotes}
+                                    onChange={(e) => handleNestedChange('crackInfo', 'crackNotes', e.target.value)}
+                                    rows={3}
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Additional notes about the crack, installation, or compatibility"
+                                />
+                            </div>
+                        </div>
+
+                        {/* System Requirements */}
+                        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+                            <h3 className="text-xl font-semibold text-white mb-6">System Requirements</h3>
+                            
+                            <div className="space-y-4">
+                                <h4 className="text-lg font-medium text-gray-300">Minimum Requirements</h4>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Operating System
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.systemRequirements.minimum.os}
+                                            onChange={(e) => handleSystemReqChange('minimum', 'os', e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="e.g., Windows 10 64-bit"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Processor
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.systemRequirements.minimum.processor}
+                                            onChange={(e) => handleSystemReqChange('minimum', 'processor', e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="e.g., Intel Core i3-2100 / AMD FX-6300"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Memory (RAM)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.systemRequirements.minimum.memory}
+                                            onChange={(e) => handleSystemReqChange('minimum', 'memory', e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="e.g., 4 GB RAM"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Graphics
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.systemRequirements.minimum.graphics}
+                                            onChange={(e) => handleSystemReqChange('minimum', 'graphics', e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="e.g., DirectX 11 compatible"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Storage
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.systemRequirements.minimum.storage}
+                                            onChange={(e) => handleSystemReqChange('minimum', 'storage', e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            placeholder="e.g., 25 GB available space"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex items-center justify-end space-x-4">
                             <button
                                 type="button"
@@ -466,6 +1143,28 @@ export default function CreateApp() {
                     </form>
                 </div>
             </div>
+
+            {/* AI Generator Modal */}
+            {showAIGenerator && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-bold text-white">AI App Generator</h2>
+                            <button
+                                onClick={() => setShowAIGenerator(false)}
+                                className="text-gray-400 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <AIGenerator
+                            type="app"
+                            onDataGenerated={(data) => console.log('Generated:', data)}
+                            onApplyData={handleAIDataApply}
+                        />
+                    </div>
+                </div>
+            )}
         </ProtectedRoute>
     )
 } 

@@ -28,7 +28,10 @@ export default function MobileMenu() {
 
     const navigationItems = [
         { name: 'Home', href: '/', icon: '🏠' },
-        { name: 'Apps', href: '/apps', icon: '📱' },
+        { name: 'PC Apps', href: '/apps', icon: '💻' },
+        { name: 'Android APK', href: '/apk', icon: '🤖' },
+        { name: 'iOS IPA', href: '/ipa', icon: '🍎' },
+        { name: 'PC Games', href: '/games', icon: '🎮' },
         { name: 'Categories', href: '/categories', icon: '📂' },
         { name: 'Top Rated', href: '/top-rated', icon: '⭐' },
         { name: 'New Releases', href: '/new-releases', icon: '🆕' },

@@ -5,21 +5,21 @@ export const AppsPagination = ({ currentPage, totalPages, setCurrentPage, totalA
 
     const getPageNumbers = () => {
         const pages = []
-        const maxVisible = 7
+        const maxVisible = 5
         
         if (totalPages <= maxVisible) {
             for (let i = 1; i <= totalPages; i++) {
                 pages.push(i)
             }
         } else {
-            if (currentPage <= 4) {
-                for (let i = 1; i <= 5; i++) pages.push(i)
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 4; i++) pages.push(i)
                 pages.push('...')
                 pages.push(totalPages)
-            } else if (currentPage >= totalPages - 3) {
+            } else if (currentPage >= totalPages - 2) {
                 pages.push(1)
                 pages.push('...')
-                for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i)
+                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i)
             } else {
                 pages.push(1)
                 pages.push('...')
@@ -36,92 +36,66 @@ export const AppsPagination = ({ currentPage, totalPages, setCurrentPage, totalA
     const endItem = Math.min(currentPage * 20, totalApps)
 
     return (
-        <section className="container mx-auto px-4 py-8">
-            {/* Metro UI Header */}
-            <div className="mb-6">
-                <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-3 h-3 bg-red-500 animate-pulse"></div>
-                    <h3 className="text-red-400 font-mono text-sm uppercase tracking-wider">
-                        [PAGINATION_SYSTEM]
-                    </h3>
-                    <div className="flex-1 h-px bg-gradient-to-r from-red-500/50 to-transparent"></div>
-                </div>
-                <p className="text-gray-400 font-mono text-xs">
-                    Showing {startItem}-{endItem} of {totalApps} applications
+        <div className="flex flex-col items-center space-y-6 py-12">
+            {/* Results Info */}
+            <div className="text-center">
+                <p className="text-gray-600 text-lg font-medium">
+                    Showing <span className="font-bold text-blue-600">{startItem}-{endItem}</span> of{' '}
+                    <span className="font-bold text-blue-600">{totalApps}</span> applications
                 </p>
             </div>
 
-            {/* Pagination Panel */}
-            <div className="bg-black/80 border-2 border-red-500/30 rounded-none shadow-2xl shadow-red-500/10">
-                {/* Header Bar */}
-                <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-white font-mono text-sm font-bold">PAGE_NAVIGATOR.EXE</span>
-                    </div>
-                    <div className="text-white font-mono text-xs">
-                        {currentPage}/{totalPages}
-                    </div>
-                </div>
-
-                <div className="p-6">
-                    <div className="flex items-center justify-center space-x-2">
-                        {/* Previous Button */}
+            {/* Pagination Controls */}
+            <div className="flex items-center space-x-2">
+                {/* Previous Button */}
+                <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-300 transition-all duration-200 font-medium shadow-sm"
+                >
+                    <FaChevronLeft className="text-sm" />
+                    <span>Previous</span>
+                </button>
+                
+                {/* Page Numbers */}
+                {getPageNumbers().map((page, index) => (
+                    page === '...' ? (
+                        <div key={index} className="flex items-center justify-center px-3 py-2">
+                            <FaEllipsisH className="text-gray-400" />
+                        </div>
+                    ) : (
                         <button
-                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
-                            className="flex items-center space-x-2 px-4 py-3 bg-gray-900/50 border-2 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-900/50 disabled:hover:border-red-500/30 disabled:hover:text-red-300 transition-all duration-300 font-mono text-sm"
+                            key={index}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-4 py-2 font-medium transition-all duration-200 border rounded-lg min-w-[44px] shadow-sm ${
+                                currentPage === page
+                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                            }`}
                         >
-                            <FaChevronLeft className="text-xs" />
-                            <span>PREV</span>
+                            {page}
                         </button>
-                        
-                        {/* Page Numbers */}
-                        {getPageNumbers().map((page, index) => (
-                            page === '...' ? (
-                                <div key={index} className="flex items-center justify-center px-3 py-3">
-                                    <FaEllipsisH className="text-red-400 text-xs" />
-                                </div>
-                            ) : (
-                                <button
-                                    key={index}
-                                    onClick={() => setCurrentPage(page)}
-                                    className={`px-4 py-3 font-mono text-sm transition-all duration-300 border-2 min-w-[50px] ${
-                                        currentPage === page
-                                            ? 'bg-red-600 border-red-400 text-white shadow-lg shadow-red-500/30'
-                                            : 'bg-gray-900/50 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-400 hover:text-white'
-                                    }`}
-                                >
-                                    {page}
-                                </button>
-                            )
-                        ))}
-                        
-                        {/* Next Button */}
-                        <button
-                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                            disabled={currentPage === totalPages}
-                            className="flex items-center space-x-2 px-4 py-3 bg-gray-900/50 border-2 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-900/50 disabled:hover:border-red-500/30 disabled:hover:text-red-300 transition-all duration-300 font-mono text-sm"
-                        >
-                            <span>NEXT</span>
-                            <FaChevronRight className="text-xs" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Status Bar */}
-                <div className="bg-red-600/20 border-t border-red-500/30 px-4 py-2 flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-xs font-mono">
-                        <span className="text-red-400">CURRENT:</span>
-                        <span className="text-white">{currentPage}</span>
-                        <span className="text-red-400">TOTAL:</span>
-                        <span className="text-white">{totalPages}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-400 animate-pulse rounded-full"></div>
-                        <span className="text-green-400 text-xs font-mono">ACTIVE</span>
-                    </div>
-                </div>
+                    )
+                ))}
+                
+                {/* Next Button */}
+                <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-300 transition-all duration-200 font-medium shadow-sm"
+                >
+                    <span>Next</span>
+                    <FaChevronRight className="text-sm" />
+                </button>
             </div>
-        </section>
+
+            {/* Page Info */}
+            <div className="text-center">
+                <p className="text-sm text-gray-500">
+                    Page <span className="font-semibold text-gray-700">{currentPage}</span> of{' '}
+                    <span className="font-semibold text-gray-700">{totalPages}</span>
+                </p>
+            </div>
+        </div>
     )
 }
