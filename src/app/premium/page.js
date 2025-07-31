@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { api } from '@/lib/api'
 import { FaCrown, FaStar, FaDownload, FaShieldAlt } from 'react-icons/fa'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-import DownloadButton from '@/components/app/DownloadButton'
+import UnifiedItemCard from '@/components/marketplace/UnifiedItemCard'
 
 // Generate metadata for SEO
 export async function generateMetadata() {
@@ -71,117 +71,7 @@ async function getPremiumData() {
     }
 }
 
-// Premium content component
-function PremiumCard({ item, type }) {
-    const formatNumber = (num) => {
-        if (!num || num === 0) return '0'
-        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
-        return num.toString()
-    }
 
-    const getItemUrl = () => {
-        switch (type) {
-            case 'apk': return `/apk/${item.slug}`
-            case 'ipa': return `/ipa/${item.slug}`
-            case 'game': return `/games/${item.slug}`
-            default: return `/app/${item.slug}`
-        }
-    }
-
-    const getOriginalPrice = () => {
-        if (item.originalPrice) return item.originalPrice
-        // Generate realistic prices based on type
-        const prices = {
-            app: ['$29.99', '$49.99', '$99.99', '$199.99'],
-            apk: ['$4.99', '$9.99', '$19.99', '$29.99'],
-            ipa: ['$2.99', '$7.99', '$14.99', '$24.99'],
-            game: ['$19.99', '$39.99', '$59.99', '$79.99']
-        }
-        const typePrices = prices[type] || prices.app
-        return typePrices[Math.floor(Math.random() * typePrices.length)]
-    }
-
-    return (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-200 group relative overflow-hidden">
-            {/* Premium Badge */}
-            <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                <FaCrown className="w-3 h-3" />
-                PREMIUM
-            </div>
-
-            <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                    {item.images && item.images[0] ? (
-                        <img 
-                            src={item.images[0]} 
-                            alt={item.name}
-                            className="w-14 h-14 rounded-lg object-cover"
-                        />
-                    ) : (
-                        <span className="text-xl font-bold text-white">
-                            {item.name.charAt(0)}
-                        </span>
-                    )}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-gray-900 truncate group-hover:text-orange-600 transition-colors">
-                        {item.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-2">
-                        {item.category?.name || 'Software'} • {item.version || '1.0.0'}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                            <FaStar className="w-4 h-4 text-yellow-400" />
-                            <span>{item.rating || '4.8'}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <FaDownload className="w-4 h-4 text-green-500" />
-                            <span>{formatNumber(item.downloads || item.downloadCount || 2500)}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                {item.shortDescription || item.description}
-            </p>
-
-            {/* Price Section */}
-            <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <div className="text-lg font-bold text-green-600">FREE</div>
-                        <div className="text-xs text-gray-500 line-through">{getOriginalPrice()}</div>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-xs text-gray-600">100% Savings</div>
-                        <div className="text-xs text-green-600 font-medium">All Features Unlocked</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                    type === 'apk' ? 'bg-green-100 text-green-800' :
-                    type === 'ipa' ? 'bg-blue-100 text-blue-800' :
-                    type === 'game' ? 'bg-purple-100 text-purple-800' :
-                    'bg-gray-100 text-gray-800'
-                }`}>
-                    {type.toUpperCase()}
-                </span>
-                
-                <DownloadButton 
-                    app={item} 
-                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
-                    showIcon={true}
-                    text="Get Free"
-                />
-            </div>
-        </div>
-    )
-}
 
 // Server-side premium content component
 async function PremiumContent() {
@@ -243,7 +133,7 @@ async function PremiumContent() {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {allItems.map((item, index) => (
-                                <PremiumCard 
+                                <UnifiedItemCard 
                                     key={`${item.type}-${item._id || index}`} 
                                     item={item} 
                                     type={item.type} 
