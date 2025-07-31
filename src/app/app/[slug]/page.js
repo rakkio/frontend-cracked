@@ -4,7 +4,6 @@ import { api } from '@/lib/api'
 import { FaDownload, FaStar, FaEye, FaShieldAlt, FaWindows, FaApple, FaLinux } from 'react-icons/fa'
 import { BiCategory } from 'react-icons/bi'
 import AppLoading from '@/components/app/AppLoading'
-import DownloadButton from '@/components/app/DownloadButton'
 import AppPageClient from './AppPageClient'
     
 // Generate metadata for SEO
@@ -251,7 +250,15 @@ async function AppContent({ slug }) {
                             </div>
 
                             {/* Download Button */}
-                            <DownloadButton app={app} />
+                            <AppPageClient app={app} />
+                            
+                            <script dangerouslySetInnerHTML={{
+                                __html: `
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        // This will be handled by the client component
+                                    });
+                                `
+                            }} />       
                         </div>
                     </div>
 

@@ -159,7 +159,7 @@ export default function ApkPageClient({ apk, relatedApks }) {
                         
                         {/* Download Button */}
                         <div className="flex gap-3">
-                            <button
+                           <button
                                 onClick={handleDownload}
                                 disabled={isDownloading}
                                 className={`
@@ -169,7 +169,7 @@ export default function ApkPageClient({ apk, relatedApks }) {
                                         : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 hover:scale-105 shadow-lg hover:shadow-green-500/25'
                                     }
                                     text-white
-                                `}
+                                `} 
                             >
                                 <FaDownload className={isDownloading ? 'animate-bounce' : ''} />
                                 {isDownloading ? 'Downloading...' : 'Download APK'}

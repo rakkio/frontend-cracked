@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { api } from '@/lib/api'
 import { FaStar, FaFire, FaDownload } from 'react-icons/fa'
 import LoadingScreen from '@/components/ui/LoadingScreen'
+import DownloadButton from '@/components/app/DownloadButton'
 
 // Generate metadata for SEO
 export async function generateMetadata() {
@@ -128,7 +129,7 @@ function FeaturedCard({ item, type }) {
                 {item.shortDescription || item.description}
             </p>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                     type === 'apk' ? 'bg-green-100 text-green-800' :
                     type === 'ipa' ? 'bg-blue-100 text-blue-800' :
@@ -138,12 +139,19 @@ function FeaturedCard({ item, type }) {
                     {type.toUpperCase()}
                 </span>
                 
-                <a 
-                    href={getItemUrl()}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
-                >
-                    View Details
-                </a>
+                <div className="flex items-center gap-2">
+                    <DownloadButton 
+                        app={item} 
+                        size="sm"
+                        className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+                    />
+                    <a 
+                        href={getItemUrl()}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+                    >
+                        Details
+                    </a>
+                </div>
             </div>
         </div>
     )

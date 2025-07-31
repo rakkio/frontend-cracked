@@ -70,12 +70,9 @@ export default function AppPageClient({ app, relatedApps }) {
     return (
         <div className="mt-8 space-y-6">
             {/* Interactive Download Section */}
-            <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6">
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6">
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                    <div className="text-center sm:text-left">
-                        <h3 className="text-xl font-bold text-white mb-2">Ready to Download?</h3>
-                        <p className="text-gray-300">Get {app.name} with all premium features unlocked</p>
-                    </div>
+
                     
                     <div className="flex gap-3">
                         <button

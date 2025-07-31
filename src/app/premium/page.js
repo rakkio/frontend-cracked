@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { api } from '@/lib/api'
 import { FaCrown, FaStar, FaDownload, FaShieldAlt } from 'react-icons/fa'
 import LoadingScreen from '@/components/ui/LoadingScreen'
+import DownloadButton from '@/components/app/DownloadButton'
 
 // Generate metadata for SEO
 export async function generateMetadata() {
@@ -171,13 +172,12 @@ function PremiumCard({ item, type }) {
                     {type.toUpperCase()}
                 </span>
                 
-                <a 
-                    href={getItemUrl()}
-                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
-                >
-                    <FaDownload className="w-3 h-3" />
-                    Get Free
-                </a>
+                <DownloadButton 
+                    app={item} 
+                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
+                    showIcon={true}
+                    text="Get Free"
+                />
             </div>
         </div>
     )

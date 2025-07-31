@@ -4,7 +4,15 @@ import { HiOutlineDownload } from 'react-icons/hi'
 import { FaHeart, FaShare } from 'react-icons/fa'
 import { useDownload } from '@/hooks/useDownload'
 
-export default function DownloadButton({ app }) {
+export default function DownloadButton({ 
+    app, 
+    className = "", 
+    text = "Download App", 
+    size = "md", 
+    showIcon = true,
+    showFavorite = true,
+    showShare = true 
+}) {
     const { triggerDownload } = useDownload()
 
     const handleDownload = () => {
