@@ -390,9 +390,9 @@ async function AppContent({ slug }) {
                                         <div className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-all duration-200 border border-gray-100 hover:border-gray-200">
                                             <div className="flex items-center gap-4 mb-4">
                                                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                    {relatedApp.icon ? (
+                                                    {relatedApp.images ? (
                                                         <img 
-                                                            src={relatedApp.icon} 
+                                                            src={relatedApp.images[0]} 
                                                             alt={relatedApp.name}
                                                             className="w-10 h-10 rounded-lg object-cover"
                                                         />
